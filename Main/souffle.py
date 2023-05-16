@@ -1,0 +1,24 @@
+import os
+import subprocess
+import json
+
+
+path = os.getcwd()
+print("Current PATH:", path)
+
+command = '../souffle-master/build/src/souffle -F. -D. souffle-example.dl -p souffle-log.json'
+
+process = subprocess.Popen(command.split(), stdout=subprocess.PIPE)
+output, error = process.communicate()
+with open('souffle-log.json') as f:
+    data = json.load(f)
+    start = data['root']['program']['runtime']['start']
+    end = data['root']['program']['runtime']['end']
+    program_duration = end - start
+    print(f'Souffle execution took {program_duration} microseconds')  # check if really microseconds
+    timepoints = data['root']['program']['usage']['timepoint'].values()
+    max_rss_list = [timepoint['maxRSS'] for timepoint in timepoints]
+    max_rss = max(max_rss_list)/1024/1024
+    print(f'Souffle execution took maximum RSS (Resident Set Size) of {max_rss} MB')
+
+
