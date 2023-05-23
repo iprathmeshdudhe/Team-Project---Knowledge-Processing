@@ -1,0 +1,8 @@
+%Facts
+parent("Anna", "Brian").
+parent("Mary", "Anna").
+parent("Nathan", "Brian").
+
+%Rules with transitivity
+ancestorOf(?X, ?Y) :- parent(?Y, ?X).
+ancestorOf(?X, ?Y) :- ancestorOf(?X, ?Z), parent(?Y, ?Z).
