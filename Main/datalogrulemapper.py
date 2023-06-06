@@ -38,39 +38,39 @@ class DatalogRuleMapper:
         print("JVM Stopped")
 
 
-    def rulewerk_to_clingo(self, rulewerk_rule, parser):
+    def rulewerk_to_clingo(self, rule_file, parser):
 
-        # Parse the Rulewerk rule into an object model
-        kb = parser.parse(rulewerk_rule)
-        print("RuleParser: ", kb)
+        # Parse the Rulewerk rule file into an object model
+        with open(rule_file, 'r') as rule_file:
+            kb = parser.parse(rule_file.read())
 
-        #Converting KnowledgeBase into Core Rule
-        rule_List = kb.getRules()
+        #Getting facts from the Rule File
+        facts = kb.getFacts()
+        facts_list = [str(facts[i].toString()).lower() for i in range(len(facts))]
+        
+        #Getting Rules from the Rule File
+        rules = kb.getRules()
+        rules_list = []
 
-        print("Rules: ", rule_List)
+        for i in range(len(rules)):
+            head = rules[i].getHead().getLiterals()[0]
+            head_pred = head.getPredicate().getName()
+            head_args = [str(arg.toString()).replace("?", "") for arg in head.getArguments()]
+            body = rules[i].getBody()
 
-        # Convert the object model into a Clingo rule
-        #Rule Head
-        head = rule_List[0].getHead().getLiterals()[0]
-        print("Head: ", head)
-        head_pred = head.getPredicate().getName()
-        print("Head Predicate: ", head_pred)
-        head_args = [str(arg.toString()).replace("?", "") for arg in head.getArguments()]
-        print("Head Args: ", head_args)
+            body_preds = []
+            for atom in rules[i].getBody():
+                pred_name = atom.getPredicate().getName()
+                if i == len(rules) - 1:
+                    pred_args = [str(arg.toString()).replace("?", "") if str(arg.toString()).startswith('?') else str(arg.toString()).lower() for arg in atom.getArguments()]
+                    qpred_name = head_pred
+                else:
+                    pred_args = [str(arg.toString()).replace("?", "") for arg in atom.getArguments()]
+                body_preds.append(str(pred_name.toString()).replace("?", "") + "(" + ", ".join(pred_args) + ")")
+            body = ", ".join(body_preds)
 
-        #Rule Body
-        body = rule_List[0].getBody()
-        print("Body: ", body)
+            clingo_rule = head_pred + "(" + ", ".join(head_args) + ") :- " + body + "."
 
-        body_preds = []
-        for atom in rule_List[0].getBody():
-            pred_name = atom.getPredicate().getName()
-            pred_args = [str(arg.toString()).replace("?", "") for arg in atom.getArguments()]
-            body_preds.append(str(pred_name.toString()).replace("?", "") + "(" + ", ".join(pred_args) + ")")
-        body = ", ".join(body_preds)
+            rules_list.append(str(clingo_rule))
 
-        print("Body Predicates: ",body_preds)
-
-        clingo_rule = head_pred + "(" + ", ".join(head_args) + ") :- " + body
-
-        return clingo_rule
+        return facts_list, rules_list, qpred_name
