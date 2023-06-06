@@ -11,7 +11,7 @@ def runClingo():
     print("Current PATH:", path)
 
     # Run a command on the command prompt with the new PATH environment variable
-    command = "clingo ../clingo-5.6.2/examples/gringo/queens/queens1.lp"
+    command = "clingo clingo.lp"
     
     process = subprocess.Popen(command.split(), stdout=subprocess.PIPE)
     output, error = process.communicate()
@@ -31,11 +31,23 @@ def runClingo():
 
 
 def main():
+    rule_file_path = 'ancestor2.rls'
+
+
     ruleMapper = DatalogRuleMapper()
     RuleParser, Rule = ruleMapper.start_jvm()
-    rule_raw = "ancestor(?X,?Y) :- parent(?X,?Z), ancestor(?Z,?Y)."
-    clingo_rule = ruleMapper.rulewerk_to_clingo(rule_raw, RuleParser)
-    print("Clingo Rule: ", clingo_rule)
+
+    #Converting Rulewerk Rule file into Clingo rules file
+    facts_list, rules_list, query_pred = ruleMapper.rulewerk_to_clingo(rule_file_path, RuleParser)
+
+    #Writing the Facts, rules and Query in the Clingo input file
+    with open('clingo.lp', 'w') as clingo_file:
+        clingo_file.writelines('\n'.join(facts_list))
+        clingo_file.write('\n')
+        clingo_file.writelines('\n'.join(rules_list))
+        clingo_file.write('\n#show '+ str(query_pred) + "/1.")
+
+    
     ruleMapper.stop_jvm()
 
 if __name__ == '__main__':
