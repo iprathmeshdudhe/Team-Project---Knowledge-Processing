@@ -1,0 +1,391 @@
+{
+ "root": {
+  "program": {
+   "configuration": {
+    "": "../souffle/input/ancestor2.dl",
+    "fact-dir": "../souffle/input",
+    "include-dir": ".",
+    "jobs": "1",
+    "libraries": "functors",
+    "library-dir": ".",
+    "output-dir": "../souffle/output",
+    "profile": "../souffle/output/souffle-log.json",
+    "relationCount": "5",
+    "ruleCount": "15",
+    "version": "UNKNOWN",
+    "warn": "all",
+    "wno": "none"
+   },
+   "relation": {
+    "ancestor": {
+     "iteration": {
+      "0": {
+       "copytime": { "start": 835686862074, "end": 835686862076},
+       "maxRSS": {
+        "post": 5251072,
+        "pre": 5214208
+       },
+       "num-tuples": 4,
+       "recursive-rule": {
+        "ancestor(X,Y) :- \n   parent(X,Z),\n   ancestor(Z,Y).": {
+         "0": {
+          "atom-frequency": {
+           "@new_ancestor(X,Y) :- \n   parent(X,Z),\n   @delta_ancestor(Z,Y).": {
+            "@delta_ancestor": {
+             "level": 1,
+             "num-tuples": 0
+            },
+            "parent": {
+             "level": 0,
+             "num-tuples": 0
+            }
+           }
+          },
+          "maxRSS": {
+           "post": 5242880,
+           "pre": 5214208
+          },
+          "num-tuples": 4,
+          "runtime": { "start": 835686861651, "end": 835686862027},
+          "source-locator": "ancestor2.dl [20:1-20:48]"
+         }
+        }
+       },
+       "runtime": { "start": 835686861650, "end": 835686862054}
+      },
+      "1": {
+       "copytime": { "start": 835686862113, "end": 835686862115},
+       "maxRSS": {
+        "post": 5251072,
+        "pre": 5251072
+       },
+       "num-tuples": 2,
+       "recursive-rule": {
+        "ancestor(X,Y) :- \n   parent(X,Z),\n   ancestor(Z,Y).": {
+         "0": {
+          "maxRSS": {
+           "post": 5251072,
+           "pre": 5251072
+          },
+          "num-tuples": 2,
+          "runtime": { "start": 835686862083, "end": 835686862086},
+          "source-locator": "ancestor2.dl [20:1-20:48]"
+         }
+        }
+       },
+       "runtime": { "start": 835686862082, "end": 835686862099}
+      },
+      "2": {
+       "copytime": { "start": 835686862157, "end": 835686862159},
+       "maxRSS": {
+        "post": 5255168,
+        "pre": 5251072
+       },
+       "num-tuples": 1,
+       "recursive-rule": {
+        "ancestor(X,Y) :- \n   parent(X,Z),\n   ancestor(Z,Y).": {
+         "0": {
+          "maxRSS": {
+           "post": 5251072,
+           "pre": 5251072
+          },
+          "num-tuples": 1,
+          "runtime": { "start": 835686862123, "end": 835686862126},
+          "source-locator": "ancestor2.dl [20:1-20:48]"
+         }
+        }
+       },
+       "runtime": { "start": 835686862120, "end": 835686862140}
+      },
+      "3": {
+       "maxRSS": {
+        "post": 5259264,
+        "pre": 5259264
+       },
+       "num-tuples": 0,
+       "recursive-rule": {
+        "ancestor(X,Y) :- \n   parent(X,Z),\n   ancestor(Z,Y).": {
+         "0": {
+          "maxRSS": {
+           "post": 5259264,
+           "pre": 5259264
+          },
+          "num-tuples": 0,
+          "runtime": { "start": 835686862165, "end": 835686862167},
+          "source-locator": "ancestor2.dl [20:1-20:48]"
+         }
+        }
+       },
+       "runtime": { "start": 835686862164, "end": 835686862179}
+      }
+     },
+     "maxRSS": {
+      "post": 5214208,
+      "pre": 5210112
+     },
+     "non-recursive-rule": {
+      "ancestor(X,Y) :- \n   parent(X,Y).": {
+       "atom-frequency": {
+        "ancestor(X,Y) :- \n   parent(X,Y).": {
+         "parent": {
+          "level": 0,
+          "num-tuples": 0
+         }
+        }
+       },
+       "maxRSS": {
+        "post": 5210112,
+        "pre": 5210112
+       },
+       "num-tuples": 8,
+       "runtime": { "start": 835686861629, "end": 835686861631},
+       "source-locator": "ancestor2.dl [19:1-19:32]"
+      }
+     },
+     "num-tuples": 8,
+     "reads": 7,
+     "runtime": { "start": 835686861628, "end": 835686861643},
+     "source-locator": "ancestor2.dl [18:7-18:15]"
+    },
+    "father": {
+     "maxRSS": {
+      "post": 5185536,
+      "pre": 5169152
+     },
+     "non-recursive-rule": {
+      "father(\"Alice\",\"Bob\").": {
+       "maxRSS": {
+        "post": 5185536,
+        "pre": 5185536
+       },
+       "num-tuples": 1,
+       "runtime": { "start": 835686861502, "end": 835686861504},
+       "source-locator": "ancestor2.dl [9:1-9:25]"
+      },
+      "father(\"Anna\",\"Richard\").": {
+       "maxRSS": {
+        "post": 5185536,
+        "pre": 5185536
+       },
+       "num-tuples": 1,
+       "runtime": { "start": 835686861487, "end": 835686861492},
+       "source-locator": "ancestor2.dl [7:1-7:28]"
+      },
+      "father(\"Bob\",\"David\").": {
+       "maxRSS": {
+        "post": 5185536,
+        "pre": 5169152
+       },
+       "num-tuples": 1,
+       "runtime": { "start": 835686860840, "end": 835686861471},
+       "source-locator": "ancestor2.dl [5:1-5:24]"
+      },
+      "father(\"Josh\",\"David\").": {
+       "maxRSS": {
+        "post": 5185536,
+        "pre": 5185536
+       },
+       "num-tuples": 1,
+       "runtime": { "start": 835686861513, "end": 835686861515},
+       "source-locator": "ancestor2.dl [11:1-11:26]"
+      }
+     },
+     "num-tuples": 4,
+     "reads": 0,
+     "runtime": { "start": 835686860835, "end": 835686861524},
+     "source-locator": "ancestor2.dl [2:7-2:13]"
+    },
+    "mother": {
+     "maxRSS": {
+      "post": 5193728,
+      "pre": 5185536
+     },
+     "non-recursive-rule": {
+      "mother(\"Alice\",\"Brenda\").": {
+       "maxRSS": {
+        "post": 5189632,
+        "pre": 5189632
+       },
+       "num-tuples": 1,
+       "runtime": { "start": 835686861560, "end": 835686861561},
+       "source-locator": "ancestor2.dl [10:1-10:27]"
+      },
+      "mother(\"Bob\",\"Anna\").": {
+       "maxRSS": {
+        "post": 5185536,
+        "pre": 5185536
+       },
+       "num-tuples": 1,
+       "runtime": { "start": 835686861535, "end": 835686861537},
+       "source-locator": "ancestor2.dl [6:1-6:23]"
+      },
+      "mother(\"Josh\",\"Paula\").": {
+       "maxRSS": {
+        "post": 5189632,
+        "pre": 5189632
+       },
+       "num-tuples": 1,
+       "runtime": { "start": 835686861569, "end": 835686861571},
+       "source-locator": "ancestor2.dl [12:1-12:25]"
+      },
+      "mother(\"Richard\",\"Lucy\").": {
+       "maxRSS": {
+        "post": 5189632,
+        "pre": 5189632
+       },
+       "num-tuples": 1,
+       "runtime": { "start": 835686861550, "end": 835686861551},
+       "source-locator": "ancestor2.dl [8:1-8:27]"
+      }
+     },
+     "num-tuples": 4,
+     "reads": 0,
+     "runtime": { "start": 835686861533, "end": 835686861582},
+     "source-locator": "ancestor2.dl [3:7-3:13]"
+    },
+    "parent": {
+     "maxRSS": {
+      "post": 5210112,
+      "pre": 5193728
+     },
+     "non-recursive-rule": {
+      "parent(X,Y) :- \n   father(X,Y).": {
+       "atom-frequency": {
+        "parent(X,Y) :- \n   father(X,Y).": {
+         "father": {
+          "level": 0,
+          "num-tuples": 0
+         }
+        }
+       },
+       "maxRSS": {
+        "post": 5210112,
+        "pre": 5193728
+       },
+       "num-tuples": 4,
+       "runtime": { "start": 835686861590, "end": 835686861599},
+       "source-locator": "ancestor2.dl [16:1-16:30]"
+      },
+      "parent(X,Y) :- \n   mother(X,Y).": {
+       "atom-frequency": {
+        "parent(X,Y) :- \n   mother(X,Y).": {
+         "mother": {
+          "level": 0,
+          "num-tuples": 0
+         }
+        }
+       },
+       "maxRSS": {
+        "post": 5210112,
+        "pre": 5210112
+       },
+       "num-tuples": 4,
+       "runtime": { "start": 835686861609, "end": 835686861612},
+       "source-locator": "ancestor2.dl [17:1-17:30]"
+      }
+     },
+     "num-tuples": 8,
+     "reads": 0,
+     "runtime": { "start": 835686861588, "end": 835686861622},
+     "source-locator": "ancestor2.dl [15:7-15:13]"
+    },
+    "result": {
+     "maxRSS": {
+      "post": 5263360,
+      "pre": 5259264
+     },
+     "non-recursive-rule": {
+      "result(Y) :- \n   ancestor(\"Alice\",Y).": {
+       "atom-frequency": {
+        "result(Y) :- \n   ancestor(\"Alice\",Y).": {
+         "ancestor": {
+          "level": 0,
+          "num-tuples": 0
+         }
+        }
+       },
+       "maxRSS": {
+        "post": 5263360,
+        "pre": 5259264
+       },
+       "num-tuples": 6,
+       "runtime": { "start": 835686862194, "end": 835686862199},
+       "source-locator": "ancestor2.dl [23:1-23:35]"
+      }
+     },
+     "num-tuples": 6,
+     "reads": 0,
+     "runtime": { "start": 835686862193, "end": 835686862210},
+     "savetime": { "start": 835686862216, "end": 835686864885},
+     "source-locator": "ancestor2.dl [22:7-22:13]"
+    }
+   },
+   "runtime": { "start": 835686860525, "end": 835686864894},
+   "starttime": { "time": 835686860044},
+   "usage": {
+    "timepoint": {
+     "835686860078": {
+      "maxRSS": 5132288,
+      "systemtime": 12940,
+      "usertime": 22237
+     },
+     "835686860571": {
+      "maxRSS": 5156864,
+      "systemtime": 13029,
+      "usertime": 22316
+     },
+     "835686860855": {
+      "maxRSS": 5173248,
+      "systemtime": 13074,
+      "usertime": 22336
+     },
+     "835686861503": {
+      "maxRSS": 5185536,
+      "systemtime": 13145,
+      "usertime": 22380
+     },
+     "835686861583": {
+      "maxRSS": 5193728,
+      "systemtime": 13165,
+      "usertime": 22459
+     },
+     "835686861655": {
+      "maxRSS": 5222400,
+      "systemtime": 13186,
+      "usertime": 22532
+     },
+     "835686862106": {
+      "maxRSS": 5251072,
+      "systemtime": 13242,
+      "usertime": 22619
+     },
+     "835686862126": {
+      "maxRSS": 5251072,
+      "systemtime": 13252,
+      "usertime": 22644
+     },
+     "835686862193": {
+      "maxRSS": 5259264,
+      "systemtime": 13268,
+      "usertime": 22712
+     },
+     "835686862249": {
+      "maxRSS": 5271552,
+      "systemtime": 13301,
+      "usertime": 22747
+     },
+     "835686863334": {
+      "maxRSS": 5308416,
+      "systemtime": 13444,
+      "usertime": 22784
+     },
+     "835686864526": {
+      "maxRSS": 5308416,
+      "systemtime": 13495,
+      "usertime": 22794
+     }
+    }
+   }
+  }
+ }
+}
