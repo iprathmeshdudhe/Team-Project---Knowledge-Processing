@@ -4,7 +4,8 @@ import jpype.imports
 from jpype.types import *
 
 # Replace with the actual path to the lib folder
-rulewerk_lib_path = 'J:/Semester 2/5. Team Project/MyCode/Main/lib'
+# rulewerk_lib_path = 'J:/Semester 2/5. Team Project/MyCode/Main/lib'
+rulewerk_lib_path = '/Users/v.sinichenko/PycharmProjects/Team-Project---Knowledge-Processing4/Main/lib'
 
 class DatalogRuleMapper:
 
@@ -74,3 +75,41 @@ class DatalogRuleMapper:
         clingo_rule = head_pred + "(" + ", ".join(head_args) + ") :- " + body
 
         return clingo_rule
+
+    def rulewerk_to_souffle(self, rulewerk_rule, parser):
+        # Parse the Rulewerk rule into an object model
+        kb = parser.parse(rulewerk_rule)
+        print("RuleParser: ", kb)
+
+        # Converting KnowledgeBase into Core Rule
+        rule_List = kb.getRules()
+
+        print("Rules: ", rule_List)
+
+        # Convert the object model into a Clingo rule
+        # Rule Head
+        head = rule_List[0].getHead().getLiterals()[0]
+        print("Head: ", head)
+        head_pred = head.getPredicate().getName()
+        print("Head Predicate: ", head_pred)
+        head_args = [str(arg.toString()).replace("?", "") for arg in head.getArguments()]
+        print("Head Args: ", head_args)
+
+        # Rule Body
+        body = rule_List[0].getBody()
+        print("Body: ", body)
+
+        body_preds = []
+        for atom in rule_List[0].getBody():
+            pred_name = atom.getPredicate().getName()
+            pred_args = [str(arg.toString()).replace("?", "") for arg in atom.getArguments()]
+            body_preds.append(str(pred_name.toString()).replace("?", "") + "(" + ", ".join(pred_args) + ")")
+        body = ", ".join(body_preds)
+
+        print("Body Predicates: ", body_preds)
+
+        souffle_rule = head_pred + "(" + ", ".join(head_args) + ") :- " + body
+
+        return souffle_rule
+
+

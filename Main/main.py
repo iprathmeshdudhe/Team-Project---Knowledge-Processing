@@ -34,9 +34,12 @@ def main():
     ruleMapper = DatalogRuleMapper()
     RuleParser, Rule = ruleMapper.start_jvm()
     rule_raw = "ancestor(?X,?Y) :- parent(?X,?Z), ancestor(?Z,?Y)."
-    clingo_rule = ruleMapper.rulewerk_to_clingo(rule_raw, RuleParser)
-    print("Clingo Rule: ", clingo_rule)
+    # clingo_rule = ruleMapper.rulewerk_to_clingo(rule_raw, RuleParser)
+    # print("Clingo Rule: ", clingo_rule)
+
+
     ruleMapper.stop_jvm()
+
 
 if __name__ == '__main__':
     main()
