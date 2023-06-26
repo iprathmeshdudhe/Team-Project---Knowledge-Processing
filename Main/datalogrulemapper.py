@@ -1,12 +1,14 @@
 import os
+import ast
 import jpype
 import jpype.imports
 from jpype.types import *
 
 # Replace with the actual path to the lib folder
-rulewerk_lib_path = 'J:/Semester 2/5. Team Project/MyCode/Main/lib'
+rulewerk_lib_path = '/Users/v.sinichenko/PycharmProjects/TeamProject/Main/lib'
 
 class DatalogRuleMapper:
+    list_of_variable_names = ['X', 'Y', 'Z', 'K', 'L', 'M', 'N']
 
     def start_jvm(self):
         try:
@@ -39,15 +41,13 @@ class DatalogRuleMapper:
 
 
     def rulewerk_to_clingo(self, rule_file, parser):
-
-        # Parse the Rulewerk rule file into an object model
         with open(rule_file, 'r') as rule_file:
             kb = parser.parse(rule_file.read())
 
         #Getting facts from the Rule File
         facts = kb.getFacts()
         facts_list = [str(facts[i].toString()).lower() for i in range(len(facts))]
-        
+
         #Getting Rules from the Rule File
         rules = kb.getRules()
         rules_list = []
@@ -74,3 +74,66 @@ class DatalogRuleMapper:
             rules_list.append(str(clingo_rule))
 
         return facts_list, rules_list, qpred_name
+
+    def rulewerk_to_souffle(self, rule_file, parser):
+        with open(rule_file, 'r') as rule_file:
+            kb = parser.parse(rule_file.read())
+
+        facts = kb.getFacts()
+        rules = kb.getRules()
+
+        type_declarations = []
+        rules_list = []
+        query = []
+        facts_list = []
+
+        # facts and type declarations
+        for i, fact in enumerate(facts):
+            # print(f'-----------------------fact # {i}, fact {fact}-----------------------')
+            souffle_arguments = [f'"{argument}"' for argument in fact.getArguments()]
+            souffle_declaration_arguments = []
+            for j, argument in enumerate(fact.getArguments()):
+                # type declarations
+                # type = ': number' if str(argument).isdigit() else ': symbol' # it is possible also to treat numbers
+                data_type = ': symbol'
+                souffle_declaration_argument = self.list_of_variable_names[j] + data_type
+                souffle_declaration_arguments.append(souffle_declaration_argument)
+
+            souffle_fact = str(fact.getPredicate().getName()) + '(' + ', '.join(souffle_arguments) + ').'
+            souffle_declaration = ".decl " + str(fact.getPredicate().getName()) + "(" + ", ".join(souffle_declaration_arguments) + ")"
+            facts_list.append(souffle_fact)
+            type_declarations.append(souffle_declaration)
+
+        # rules and type declarations
+        for i, rule in enumerate(rules):
+            print(f'-----------------------rule # {i}, rule {rule}-----------------------')
+            # first, check if there is a question mark in each argument. If not, treat it as a query
+            body_literals = rule.getBody().getLiterals()
+            body_arguments = [str(argument) for literal in body_literals for argument in literal.getArguments()]
+            is_fact = min([argument.startswith('?') for argument in body_arguments])
+            if is_fact:
+                # get facts
+                souffle_rule = str(rule).replace('?', '').replace(' .', '.').replace('~', '!')
+                rules_list.append(souffle_rule)
+
+                # type declarations
+                souffle_declaration_arguments = []
+                for j, argument in enumerate(rule.getHead().getLiterals()[0].getArguments()):
+                    data_type = ': symbol'
+                    souffle_declaration_argument = self.list_of_variable_names[j] + data_type
+                    souffle_declaration_arguments.append(souffle_declaration_argument)
+
+                souffle_declaration = '.decl ' + str(rule.getHead().getLiterals()[0].getPredicate().getName()) + '(' + \
+                    ', '.join(souffle_declaration_arguments) + ')'
+                type_declarations.append(souffle_declaration)
+
+
+            else:
+                # treat this "KB fact" as a query
+                pass
+                #
+
+        type_declarations = list(set(type_declarations))
+        return type_declarations, facts_list, rules_list, query
+
+
