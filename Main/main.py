@@ -2,7 +2,7 @@ import os
 import psutil
 import clingo
 import subprocess
-from datalogrulemapper import *
+from datalogrulemapper import DatalogRuleMapper
 
 
 def runClingo():
@@ -31,7 +31,7 @@ def runClingo():
 
 
 def main():
-    rule_file_path = 'ancestor2.rls'
+    rule_file_path = '../rulewerk_examples/relations.rls'
 
 
     ruleMapper = DatalogRuleMapper()
@@ -47,9 +47,27 @@ def main():
         clingo_file.writelines('\n'.join(rules_list))
         clingo_file.write('\n#show '+ str(query_pred) + "/1.")
 
-    
+    type_declarations, facts_list, rules_list, query = ruleMapper.rulewerk_to_souffle(rule_file_path, RuleParser)
+
+    with open('souffle-example.dl', 'w') as output_file:
+        output_file.write('// Declarations\n')
+        output_file.writelines('\n'.join(type_declarations))
+        output_file.write('\n\n')
+        output_file.write('// Facts\n')
+        output_file.writelines('\n'.join(facts_list))
+        output_file.write('\n\n')
+        output_file.write('// Rules\n')
+        output_file.writelines('\n'.join(rules_list))
+        output_file.write('\n\n')
+        output_file.write('// Query\n')
+        output_file.writelines('\n'.join(query))
+        output_file.write('\n\n')
+
+
+
     ruleMapper.stop_jvm()
 
 if __name__ == '__main__':
     main()
-    runClingo()
+    # runClingo()
+
