@@ -38,14 +38,14 @@ def main():
     RuleParser, Rule = ruleMapper.start_jvm()
 
     #Converting Rulewerk Rule file into Clingo rules file
-    # facts_list, rules_list, query_pred = ruleMapper.rulewerk_to_clingo(rule_file_path, RuleParser)
-    #
-    # #Writing the Facts, rules and Query in the Clingo input file
-    # with open('clingo.lp', 'w') as clingo_file:
-    #     clingo_file.writelines('\n'.join(facts_list))
-    #     clingo_file.write('\n')
-    #     clingo_file.writelines('\n'.join(rules_list))
-    #     clingo_file.write('\n#show '+ str(query_pred) + "/1.")
+    facts_list, rules_list, query_pred = ruleMapper.rulewerk_to_clingo(rule_file_path, RuleParser)
+
+    #Writing the Facts, rules and Query in the Clingo input file
+    with open('clingo.lp', 'w') as clingo_file:
+        clingo_file.writelines('\n'.join(facts_list))
+        clingo_file.write('\n')
+        clingo_file.writelines('\n'.join(rules_list))
+        clingo_file.write('\n#show '+ str(query_pred) + "/1.")
 
     type_declarations, facts_list, rules_list, query = ruleMapper.rulewerk_to_souffle(rule_file_path, RuleParser)
 

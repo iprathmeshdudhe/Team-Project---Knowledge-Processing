@@ -1,16 +1,15 @@
 // Declarations
-.decl mother(X: symbol, Y: symbol)
-.decl samePerson(X: symbol, Y: symbol)
 .decl siblings(X: symbol, Y: symbol)
-.decl sameMother(X: symbol, Y: symbol)
 .decl person(X: symbol)
 .decl parent(X: symbol, Y: symbol)
-.decl sameFather(X: symbol, Y: symbol)
-.decl halfSiblings(X: symbol, Y: symbol)
-.decl occupation(X: symbol, Y: symbol)
 .decl father(X: symbol, Y: symbol)
-
-.decl hasChildDoctor(Y: symbol)
+.decl samePerson(X: symbol, Y: symbol)
+.decl mother(X: symbol, Y: symbol)
+.decl occupation(X: symbol, Y: symbol)
+.decl halfSiblings(X: symbol, Y: symbol)
+.decl hasChildDoctor(X: symbol)
+.decl sameFather(X: symbol, Y: symbol)
+.decl sameMother(X: symbol, Y: symbol)
 
 // Facts
 person("Anna").
@@ -49,5 +48,6 @@ halfSiblings(X, Y) :- sameMother(X, Y), !sameFather(X, Y).
 halfSiblings(X, Y) :- !sameMother(X, Y), sameFather(X, Y).
 
 // Query
-hasChildDoctor(X) :- parent(Y, X), occupation(Y, "Doctor").
 .output hasChildDoctor
+hasChildDoctor(X) :- parent(Y, X), occupation(Y, "Doctor").
+

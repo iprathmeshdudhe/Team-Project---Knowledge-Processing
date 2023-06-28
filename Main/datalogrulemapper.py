@@ -106,13 +106,13 @@ class DatalogRuleMapper:
 
         # rules and type declarations
         for i, rule in enumerate(rules):
-            print(f'-----------------------rule # {i}, rule {rule}-----------------------')
+            # print(f'-----------------------rule # {i}, rule {rule}-----------------------')
             # first, check if there is a question mark in each argument. If not, treat it as a query
             body_literals = rule.getBody().getLiterals()
             body_arguments = [str(argument) for literal in body_literals for argument in literal.getArguments()]
             is_fact = min([argument.startswith('?') for argument in body_arguments])
             if is_fact:
-                # get facts
+                # souffle facts
                 souffle_rule = str(rule).replace('?', '').replace(' .', '.').replace('~', '!')
                 rules_list.append(souffle_rule)
 
@@ -127,11 +127,42 @@ class DatalogRuleMapper:
                     ', '.join(souffle_declaration_arguments) + ')'
                 type_declarations.append(souffle_declaration)
 
-
             else:
                 # treat this "KB fact" as a query
-                pass
-                #
+                # type declaration
+                query_head_name = str(rule.getHead().getLiterals()[0].getPredicate().getName())
+                print(f'rls query is {rule}')
+                souffle_declaration_arguments = []
+                for j, argument in enumerate(rule.getHead().getLiterals()[0].getArguments()):
+                    data_type = ': symbol'
+                    souffle_declaration_argument = self.list_of_variable_names[j] + data_type
+                    souffle_declaration_arguments.append(souffle_declaration_argument)
+
+                souffle_declaration = '.decl ' + query_head_name + '(' + \
+                                      ', '.join(souffle_declaration_arguments) + ')'
+                type_declarations.append(souffle_declaration)
+                output_statement = '.output ' + query_head_name
+                query.append(output_statement)
+                query_statement = str(rule.getHead().getLiterals()[0]).replace('?', '') + ' :- '
+                for k, literal in enumerate(body_literals):
+                    if k > 0:
+                        query_statement = query_statement + ', '
+
+                    query_statement = query_statement + str(literal.getPredicate().getName())+'('
+                    for m, argument in enumerate(literal.getArguments()):
+                        if m > 0:
+                            query_statement = query_statement + ', '
+                        str_argument = str(argument)
+                        if str_argument.startswith('?'):
+                            query_statement = query_statement + str_argument.replace('?', '')
+                        else:
+                            query_statement = query_statement + '"' + str_argument + '"'
+                    query_statement = query_statement + ')'
+
+                    print(literal)
+
+                query_statement = query_statement + '.'
+                query.append(query_statement)
 
         type_declarations = list(set(type_declarations))
         return type_declarations, facts_list, rules_list, query
