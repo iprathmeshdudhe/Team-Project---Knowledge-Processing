@@ -1,0 +1,19 @@
+
+UPDATES:
+1. Rulewerk .rls file translation to clingo rule files
+2. Taking input as csv from datasources
+3. Running the clingo rule from cmd prompt within the python code
+4. Measuring the CPU & Memory usage
+
+
+Questions:
+
+1. In general one benchmark-case will consist of one (or more) rule-file(s) with various rules and directives (e.g. loading facts/data from other sources like csv-files).
+
+Can you clarify it?
+
+2.  Is this the correct way to write Existential variable in clingo?
+
+1 { prescription(v_id, v_patient, v_npi, C1) } 1 :- treatment(v_id, v_patient, v_hospital, v_npi, v_conf1), physician(v_npi, v_name, v_spec, v_conf2), C1 = 1..n.
+
+

@@ -3,6 +3,7 @@ import ast
 import jpype
 import jpype.imports
 from jpype.types import *
+from csvtofacts import *
 
 # Replace with the actual path to the lib folder
 rulewerk_lib_path = '/Users/v.sinichenko/PycharmProjects/TeamProject/Main/lib'
@@ -40,32 +41,53 @@ class DatalogRuleMapper:
         print("JVM Stopped")
 
 
-    def rulewerk_to_clingo(self, rule_file, parser):
+    def rulewerktoobject(self, rule_file, parser):
+
+        # Parse the Rulewerk rule file into an object model
         with open(rule_file, 'r') as rule_file:
             kb = parser.parse(rule_file.read())
 
-        #Getting facts from the Rule File
+        #Getting Datasources, Facts and Rules from the Rule File
         facts = kb.getFacts()
+        rules = kb.getRules()
+        data_sources = kb.getDataSourceDeclarations()
+              
+        return rules, facts, data_sources
+    
+    def processFacts(self, facts):
+        facts_list = []
         facts_list = [str(facts[i].toString()).lower() for i in range(len(facts))]
 
-        #Getting Rules from the Rule File
-        rules = kb.getRules()
+        return facts_list
+    
+    def processDataSources(self, data_Sources):
+
+        dataSource_dict = {}
+        
+        #Storing the DataSources in the following format
+        #{Table1_Name: [Num_of_variables used in it, Path of the csv zipped file], ......}
+        for datasource in data_Sources:
+            predicate = datasource.getPredicate()
+            source = datasource.getDataSource().getDeclarationFact().getArguments()[0].getName()
+
+            dataSource_dict[predicate.getName()] = [predicate.getArity(), str(source)]
+            print(dataSource_dict[predicate.getName()][1])     
+
+        return dataSource_dict
+
+    def processRules(self, rules):
         rules_list = []
 
         for i in range(len(rules)):
             head = rules[i].getHead().getLiterals()[0]
             head_pred = head.getPredicate().getName()
-            head_args = [str(arg.toString()).replace("?", "") for arg in head.getArguments()]
+            head_args = [str(arg.toString()).replace("!", "").lower() if str(arg.toString()).startswith('!') else str(arg.toString()).replace("?", "").capitalize() for arg in head.getArguments()]
             body = rules[i].getBody()
 
             body_preds = []
             for atom in rules[i].getBody():
                 pred_name = atom.getPredicate().getName()
-                if i == len(rules) - 1:
-                    pred_args = [str(arg.toString()).replace("?", "") if str(arg.toString()).startswith('?') else str(arg.toString()).lower() for arg in atom.getArguments()]
-                    qpred_name = head_pred
-                else:
-                    pred_args = [str(arg.toString()).replace("?", "") for arg in atom.getArguments()]
+                pred_args = [str(arg.toString()).replace("?", "").capitalize() for arg in atom.getArguments()]
                 body_preds.append(str(pred_name.toString()).replace("?", "") + "(" + ", ".join(pred_args) + ")")
             body = ", ".join(body_preds)
 
@@ -73,7 +95,42 @@ class DatalogRuleMapper:
 
             rules_list.append(str(clingo_rule))
 
-        return facts_list, rules_list, qpred_name
+        return rules_list
+
+    def writeRules(self, rule_list):
+
+        with open("doctors/run-doctors-100k.lp", "w") as clingo_rule:
+            clingo_rule.writelines('\n'.join(rule_list))
+
+    def rulewerk_to_clingo(self, rules, facts, data_sources):
+
+        rules_list = self.processRules(rules)
+        facts_list = self.processFacts(facts)
+        data_sources_dict = self.processDataSources(data_sources)
+        
+
+        if len(facts_list) == 0 and len(rules_list) == 0 and len(data_sources_dict) == 0:
+            print("The Rulewerk .rls provided file is Empty !!")
+
+        elif len(facts_list) == 0 and len(rules_list) > 0 and len(data_sources_dict) > 0:
+            print("Rules and DataSources")
+            csvtofacts = CSVtoFacts()
+            #csvtofacts.doctors(directory, facts_lp_file)
+
+
+            self.writeRules(rules_list)
+        
+        elif len(facts_list) > 0 and len(rules_list) > 0 and len(data_sources_dict) == 0:
+            print("Rules and Facts")
+
+            with open('facts.lp', 'w') as clingo_facts:
+                clingo_facts.writelines('\n'.join(facts_list))
+            
+            self.writeRules(rules_list)
+
+        else:
+            print("The Rulewerk .rls file contains only Rules")
+            self.writeRules(rules_list)
 
     def rulewerk_to_souffle(self, rule_file, parser):
         with open(rule_file, 'r') as rule_file:
