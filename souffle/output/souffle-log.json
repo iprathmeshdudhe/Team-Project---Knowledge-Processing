@@ -1,0 +1,330 @@
+{
+ "root": {
+  "program": {
+   "configuration": {
+    "": "../souffle/input/relations.dl",
+    "fact-dir": "../souffle/input",
+    "include-dir": ".",
+    "jobs": "1",
+    "libraries": "functors",
+    "library-dir": ".",
+    "output-dir": "../souffle/output",
+    "profile": "../souffle/output/souffle-log.json",
+    "relationCount": "5",
+    "ruleCount": "19",
+    "version": "UNKNOWN",
+    "warn": "all",
+    "wno": "none"
+   },
+   "relation": {
+    "father": {
+     "maxRSS": {
+      "post": 5124096,
+      "pre": 5095424
+     },
+     "non-recursive-rule": {
+      "father(\"Anna\",\"Richard\").": {
+       "maxRSS": {
+        "post": 5115904,
+        "pre": 5095424
+       },
+       "num-tuples": 1,
+       "runtime": { "start": 563192910236, "end": 563192910255},
+       "source-locator": "relations.dl [23:1-23:27]"
+      },
+      "father(\"Bob\",\"Richard\").": {
+       "maxRSS": {
+        "post": 5120000,
+        "pre": 5120000
+       },
+       "num-tuples": 1,
+       "runtime": { "start": 563192910277, "end": 563192910283},
+       "source-locator": "relations.dl [24:1-24:26]"
+      },
+      "father(\"John\",\"David\").": {
+       "maxRSS": {
+        "post": 5124096,
+        "pre": 5124096
+       },
+       "num-tuples": 1,
+       "runtime": { "start": 563192910319, "end": 563192910322},
+       "source-locator": "relations.dl [28:1-28:25]"
+      },
+      "father(\"Richard\",\"David\").": {
+       "maxRSS": {
+        "post": 5120000,
+        "pre": 5120000
+       },
+       "num-tuples": 1,
+       "runtime": { "start": 563192910298, "end": 563192910304},
+       "source-locator": "relations.dl [27:1-27:28]"
+      }
+     },
+     "num-tuples": 4,
+     "reads": 0,
+     "runtime": { "start": 563192910233, "end": 563192910335},
+     "source-locator": "relations.dl [5:7-5:13]"
+    },
+    "hasChildDoctor": {
+     "maxRSS": {
+      "post": 5173248,
+      "pre": 5156864
+     },
+     "non-recursive-rule": {
+      "hasChildDoctor(X) :- \n   parent(Y,X),\n   occupation(Y,\"Doctor\").": {
+       "atom-frequency": {
+        "hasChildDoctor(X) :- \n   parent(Y,X),\n   occupation(Y,\"Doctor\").": {
+         "parent": {
+          "level": 0,
+          "num-tuples": 0
+         }
+        }
+       },
+       "maxRSS": {
+        "post": 5173248,
+        "pre": 5156864
+       },
+       "num-tuples": 0,
+       "runtime": { "start": 563192910613, "end": 563192910628},
+       "source-locator": "relations.dl [52:1-52:60]"
+      }
+     },
+     "num-tuples": 0,
+     "reads": 0,
+     "runtime": { "start": 563192910611, "end": 563192910645},
+     "savetime": { "start": 563192910654, "end": 563192910860},
+     "source-locator": "relations.dl [10:7-10:21]"
+    },
+    "mother": {
+     "maxRSS": {
+      "post": 5136384,
+      "pre": 5136384
+     },
+     "non-recursive-rule": {
+      "mother(\"Anna\",\"Lia\").": {
+       "maxRSS": {
+        "post": 5136384,
+        "pre": 5136384
+       },
+       "num-tuples": 1,
+       "runtime": { "start": 563192910488, "end": 563192910490},
+       "source-locator": "relations.dl [25:1-25:23]"
+      },
+      "mother(\"Bob\",\"Natalie\").": {
+       "maxRSS": {
+        "post": 5136384,
+        "pre": 5136384
+       },
+       "num-tuples": 1,
+       "runtime": { "start": 563192910503, "end": 563192910507},
+       "source-locator": "relations.dl [26:1-26:26]"
+      },
+      "mother(\"John\",\"Maria\").": {
+       "maxRSS": {
+        "post": 5136384,
+        "pre": 5136384
+       },
+       "num-tuples": 1,
+       "runtime": { "start": 563192910518, "end": 563192910521},
+       "source-locator": "relations.dl [29:1-29:25]"
+      },
+      "mother(\"Richard\",\"Maria\").": {
+       "maxRSS": {
+        "post": 5136384,
+        "pre": 5136384
+       },
+       "num-tuples": 1,
+       "runtime": { "start": 563192910531, "end": 563192910534},
+       "source-locator": "relations.dl [30:1-30:28]"
+      }
+     },
+     "num-tuples": 4,
+     "reads": 0,
+     "runtime": { "start": 563192910486, "end": 563192910545},
+     "source-locator": "relations.dl [7:7-7:13]"
+    },
+    "occupation": {
+     "maxRSS": {
+      "post": 5136384,
+      "pre": 5124096
+     },
+     "non-recursive-rule": {
+      "occupation(\"Anna\",\"Professor\").": {
+       "maxRSS": {
+        "post": 5124096,
+        "pre": 5124096
+       },
+       "num-tuples": 1,
+       "runtime": { "start": 563192910350, "end": 563192910353},
+       "source-locator": "relations.dl [31:1-31:33]"
+      },
+      "occupation(\"Bob\",\"Professor\").": {
+       "maxRSS": {
+        "post": 5124096,
+        "pre": 5124096
+       },
+       "num-tuples": 1,
+       "runtime": { "start": 563192910366, "end": 563192910368},
+       "source-locator": "relations.dl [32:1-32:32]"
+      },
+      "occupation(\"David\",\"Musician\").": {
+       "maxRSS": {
+        "post": 5124096,
+        "pre": 5124096
+       },
+       "num-tuples": 1,
+       "runtime": { "start": 563192910381, "end": 563192910383},
+       "source-locator": "relations.dl [33:1-33:33]"
+      },
+      "occupation(\"John\",\"Architect\").": {
+       "maxRSS": {
+        "post": 5132288,
+        "pre": 5132288
+       },
+       "num-tuples": 1,
+       "runtime": { "start": 563192910459, "end": 563192910462},
+       "source-locator": "relations.dl [38:1-38:33]"
+      },
+      "occupation(\"Lia\",\"Doctor\").": {
+       "maxRSS": {
+        "post": 5128192,
+        "pre": 5128192
+       },
+       "num-tuples": 1,
+       "runtime": { "start": 563192910397, "end": 563192910400},
+       "source-locator": "relations.dl [34:1-34:29]"
+      },
+      "occupation(\"Maria\",\"Lawyer\").": {
+       "maxRSS": {
+        "post": 5128192,
+        "pre": 5128192
+       },
+       "num-tuples": 1,
+       "runtime": { "start": 563192910412, "end": 563192910415},
+       "source-locator": "relations.dl [35:1-35:31]"
+      },
+      "occupation(\"Natalie\",\"Doctor\").": {
+       "maxRSS": {
+        "post": 5132288,
+        "pre": 5132288
+       },
+       "num-tuples": 1,
+       "runtime": { "start": 563192910445, "end": 563192910448},
+       "source-locator": "relations.dl [37:1-37:33]"
+      },
+      "occupation(\"Richard\",\"Manager\").": {
+       "maxRSS": {
+        "post": 5128192,
+        "pre": 5128192
+       },
+       "num-tuples": 1,
+       "runtime": { "start": 563192910426, "end": 563192910431},
+       "source-locator": "relations.dl [36:1-36:34]"
+      }
+     },
+     "num-tuples": 8,
+     "reads": 8,
+     "runtime": { "start": 563192910346, "end": 563192910476},
+     "source-locator": "relations.dl [8:7-8:17]"
+    },
+    "parent": {
+     "maxRSS": {
+      "post": 5156864,
+      "pre": 5140480
+     },
+     "non-recursive-rule": {
+      "parent(X,Y) :- \n   father(X,Y).": {
+       "atom-frequency": {
+        "parent(X,Y) :- \n   father(X,Y).": {
+         "father": {
+          "level": 0,
+          "num-tuples": 0
+         }
+        }
+       },
+       "maxRSS": {
+        "post": 5156864,
+        "pre": 5156864
+       },
+       "num-tuples": 4,
+       "runtime": { "start": 563192910586, "end": 563192910590},
+       "source-locator": "relations.dl [43:1-43:30]"
+      },
+      "parent(X,Y) :- \n   mother(X,Y).": {
+       "atom-frequency": {
+        "parent(X,Y) :- \n   mother(X,Y).": {
+         "mother": {
+          "level": 0,
+          "num-tuples": 0
+         }
+        }
+       },
+       "maxRSS": {
+        "post": 5156864,
+        "pre": 5140480
+       },
+       "num-tuples": 4,
+       "runtime": { "start": 563192910560, "end": 563192910572},
+       "source-locator": "relations.dl [42:1-42:30]"
+      }
+     },
+     "num-tuples": 8,
+     "reads": 0,
+     "runtime": { "start": 563192910557, "end": 563192910602},
+     "source-locator": "relations.dl [4:7-4:13]"
+    }
+   },
+   "runtime": { "start": 563192910214, "end": 563192910872},
+   "starttime": { "time": 563192910135},
+   "usage": {
+    "timepoint": {
+     "563192910168": {
+      "maxRSS": 5062656,
+      "systemtime": 6166,
+      "usertime": 28131
+     },
+     "563192910261": {
+      "maxRSS": 5115904,
+      "systemtime": 6207,
+      "usertime": 28232
+     },
+     "563192910286": {
+      "maxRSS": 5120000,
+      "systemtime": 6222,
+      "usertime": 28259
+     },
+     "563192910327": {
+      "maxRSS": 5124096,
+      "systemtime": 6235,
+      "usertime": 28299
+     },
+     "563192910401": {
+      "maxRSS": 5128192,
+      "systemtime": 6253,
+      "usertime": 28378
+     },
+     "563192910478": {
+      "maxRSS": 5136384,
+      "systemtime": 6275,
+      "usertime": 28459
+     },
+     "563192910555": {
+      "maxRSS": 5140480,
+      "systemtime": 6295,
+      "usertime": 28547
+     },
+     "563192910632": {
+      "maxRSS": 5173248,
+      "systemtime": 6323,
+      "usertime": 28617
+     },
+     "563192910666": {
+      "maxRSS": 5181440,
+      "systemtime": 6336,
+      "usertime": 28663
+     }
+    }
+   }
+  }
+ }
+}
