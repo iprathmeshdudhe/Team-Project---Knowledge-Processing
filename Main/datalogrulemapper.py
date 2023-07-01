@@ -127,7 +127,7 @@ class DatalogRuleMapper:
             predicate = datasource.getPredicate()
             source = datasource.getDataSource().getDeclarationFact().getArguments()[0].getName()
 
-            dataSource_dict[predicate.getName()] = [predicate.getArity(), str(source)]
+            dataSource_dict[predicate.getName()] = [predicate.getArity(), str(source.toString())]
             print(dataSource_dict[predicate.getName()][1])     
 
         return dataSource_dict
@@ -172,7 +172,7 @@ class DatalogRuleMapper:
         elif len(facts_list) == 0 and len(rules_list) > 0 and len(data_sources_dict) > 0:
             print("Rules and DataSources")
             csvtofacts = CSVtoFacts()
-            #csvtofacts.doctors(directory, facts_lp_file)
+            csvtofacts.toFactsfile(data_sources_dict, saving_location)
 
 
             self.writeRules(rules_list)

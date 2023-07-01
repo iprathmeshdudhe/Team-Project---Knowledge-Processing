@@ -30,6 +30,7 @@ def runClingo():
 
 def main():
     rule_file_path = 'Rulewerk_Rules/doctors/run-doctors-100k.rls'
+    facts_lp_file = 'doctors/run-doctors-100k'
 
 
     ruleMapper = DatalogRuleMapper()
@@ -37,7 +38,7 @@ def main():
 
     #Converting Rulewerk Rule file into Clingo rules file
     rules, facts, data_sources = ruleMapper.rulewerktoobject(rule_file_path, RuleParser)
-    ruleMapper.rulewerk_to_clingo(rules, facts, data_sources)
+    ruleMapper.rulewerk_to_clingo(rules, facts, data_sources, facts_lp_file)
 
 
     type_declarations, facts_list, rules_list, query = ruleMapper.rulewerk_to_souffle(rule_file_path, RuleParser)
