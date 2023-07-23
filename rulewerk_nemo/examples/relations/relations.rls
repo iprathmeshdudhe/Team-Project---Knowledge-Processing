@@ -1,0 +1,45 @@
+person(Anna).
+person(Bob).
+person(David).
+person(Lia).
+person(Maria).
+person(Richard).
+person(Natalie).
+person(John).
+
+father(Anna, Richard).
+father(Bob, Richard).
+mother(Anna, Lia).
+mother(Bob, Natalie).
+father(Richard, David).
+father(John, David).
+mother(John, Maria).
+mother(Richard, Maria).
+
+occupation(Anna, Professor).
+occupation(Bob, Professor).
+occupation(David, Musician).
+occupation(Lia, Doctor).
+occupation(Maria, Lawyer).
+occupation(Richard, Manager).
+occupation(Natalie, Doctor).
+occupation(John, Architect).
+
+samePerson(?X, ?X) :- person(?X).
+
+parent(?X, ?Y) :- mother(?X, ?Y).
+parent(?X, ?Y) :- father(?X, ?Y).
+
+sameMother(?X, ?Y) :- mother(?X, ?Z), mother(?Y, ?Z), ~samePerson(?X, ?Y).
+sameFather(?X, ?Y) :- father(?X, ?Z), father(?Y, ?Z), ~samePerson(?X, ?Y).
+
+
+siblings(?X, ?Y) :- sameMother(?X, ?Y), sameFather(?X, ?Y).
+
+
+halfSiblings(?X, ?Y) :- sameMother(?X, ?Y), ~sameFather(?X, ?Y).
+halfSiblings(?X, ?Y) :- ~sameMother(?X, ?Y), sameFather(?X, ?Y).
+
+%people who have a child who is a doctor.
+hasChildDoctor(?X) :- parent(?Y, ?X), occupation(?Y, Doctor).
+

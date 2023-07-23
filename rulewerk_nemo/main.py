@@ -8,11 +8,24 @@ import jpype.imports
 from jpype.types import *
 from datalogrulemapper import *
 
+def measure_usage(processid):
+
+    # Get the CPU and memory usage of the command prompt process
+    cpu_usage = psutil.Process(processid).cpu_percent()
+    memory_usage = psutil.Process(processid).memory_info().rss /1024/1024
+    
+    # Get the CPU frequency of the system
+    cpu_frequency = psutil.cpu_freq().current
+
+    print(f"CPU Usage: {cpu_usage}%")
+    print(f"Memory Usage: {memory_usage} MB")
+    print(f"CPU Frequency: {cpu_frequency} MHz")
+    return cpu_usage, memory_usage, cpu_frequency
+
 def rulefileElements(parser, Rule, Literal, rlsFilePath):
     
     with open(R"C:\Users\kansa\Desktop\Team Project TUD SoSe23\Team-Project---Knowledge-Processing\rulewerk_nemo\{}".format(rlsFilePath), 'r') as rule_file:
         kb = parser.parse(rule_file.read())
-
         rules = kb.getRules()
         ruleHeads=[]
         toQuery=[]
@@ -46,38 +59,28 @@ def runRulewerk(parser, Rule, Literal, ruleFilePath, ruleFileName):
     #to query/reasoning for every rule in our rulefile
     toQuery = ""
     for query in queries:
-        print(query)
         toQuery = toQuery + "--query=" + str(query) + " "
-    print(toQuery)
-    #run the rule file and query through rulewerk command line
-    command = "java -jar ..\\rulewerk.jar materialize --rule-file={} {} --print-query-result-size=false --print-complete-query-result".format(ruleFileName, toQuery)
 
-    process = psutil.Process()
-
-    process_start_time = time.process_time()
     start_time = time.time()
+    
+    #run the rule file and query through rulewerk command line
+    command = "java -jar ..\\rulewerk.jar materialize --rule-file={} {} --print-query-result-size=false --print-complete-query-result=true".format(ruleFileName, toQuery)
+    cmd_process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+    print(cmd_process.stdin)
+    cpu_usage, memory_usage, cpu_freq = measure_usage(cmd_process.pid)
 
-    #run the rulewerk command and store command prompt output to resFile
-    output = subprocess.run(command, capture_output=True, text=True)
-    print(output.stdout)
-    print(output.stderr)
+    # Calculate the execution time
+    execution_time = (time.time() - start_time)*1000
+    print(f"Execution Time: {execution_time} ms")
 
-    end_time = time.time()
-    process_end_time = time.process_time()
-    #memory usage of the program
-    memory_info = process.memory_info()
+    stdout, stderr = cmd_process.communicate()
 
-    #cpu runtime and overall runtime of the program
-    cpu_runtime = process_end_time - process_start_time
-    overall_runtime = end_time - start_time
-
-    # outputlines = output.split("\n")
-    # print("Output lines:", outputlines)
+    output = stdout.decode()
     printFlag = False
-    output = output.stdout.split("\n")
+    output = output.split("\n")
     for line in output:
-        if line != "":
-            print(line)
+        if line != "" and not line.isspace():
+            print(line.split())
             if(line.split()[0]=="Answers"):
                 printFlag = True
                 queryName = line.split()[3].split("(")[0]
@@ -92,12 +95,12 @@ def runRulewerk(parser, Rule, Literal, ruleFilePath, ruleFileName):
         
             if printFlag==True:
                 queryResFile = open(currPath +R"\{}.txt".format(queryName), 'a')
-                queryResFile.write(line+"\n")
+                queryResFile.write(line)
                 queryResFile.close()
 
     #output the measures to the result file
     benchFile = open(bench, 'w+')
-    benchFile.write("Memory usage: \n CPU Runtime: {} seconds\n Overall Runtime: {} seconds".format(cpu_runtime, overall_runtime))
+    benchFile.write("CPU usage: {}%\nMemory Usage: {}MB\nCPU_Frequence = {}MHz\nExecution time: {}ms".format(cpu_usage, memory_usage, cpu_freq, execution_time))
     benchFile.close()
 
     print("Query complete")
@@ -107,7 +110,7 @@ def rulewerkBench():
     ruleMapper = DatalogRuleMapper()
     parser, Rule, Literal = ruleMapper.start_jvm()
     # runRulewerk(parser, Rule, Literal, "rulewerk-examples\\ancestor", "ancestor.rls")
-    for root, dirs, files in os.walk('rulewerk-examples'):
+    for root, dirs, files in os.walk('examples'):
         for rlsFile in files:
             if rlsFile.endswith(".rls"):
                 print(root, rlsFile)
@@ -115,13 +118,15 @@ def rulewerkBench():
     ruleMapper.stop_jvm()            
 
 def runNemo(ruleFilePath, ruleFileName):
+    pid = psutil.Process().pid
+
     owd = os.getcwd()
     os.chdir(ruleFilePath)
     currPath = os.getcwd()
-    process = psutil.Process()
-    process_start_time = time.process_time()
-    start_time = time.time()
 
+    initial_cpu_usage, initial_memory_usage, cpu_freq = measure_usage(pid)
+
+    start_time = time.time()
     # using the python nemo bings nmo_python to load the rule file
     ruleFile = nmo_python.load_file("{}\{}".format(currPath, ruleFileName))
 
@@ -138,25 +143,22 @@ def runNemo(ruleFilePath, ruleFileName):
         nemoRule.write_result(str(pred), nmo_python.NemoOutputManager(ruleFileName.split(".")[0], True, False))
     
     end_time = time.time()
-    process_end_time = time.process_time()
+    final_cpu_usage, final_memory_usage, cpu_freq = measure_usage(pid)
 
-    # memory usage of the program
-    memory_info = process.memory_info()
-
-    #cpu runtime and overall runtime of the program
-    cpu_runtime = process_end_time - process_start_time
-    overall_runtime = end_time - start_time
+    cpu_usage = final_cpu_usage -initial_cpu_usage
+    memory_usage = final_memory_usage - initial_memory_usage
+    execution_time = (end_time - start_time)*1000
 
     #output the measures to the result file
     resFile = open("{}/{}/benches.txt".format(currPath, ruleFileName.split(".")[0]), "w")
-    resFile.write("Memory usage: {} \n CPU Runtime: {} seconds\n Overall Runtime: {} seconds".format(memory_info.rss/1024/1024, cpu_runtime, overall_runtime))
+    resFile.write("CPU usage:{}%\nMemory usage: {}MB\nCPU frequency: {}MHz\nExecution time: {}ms".format(cpu_usage, memory_usage, cpu_freq, execution_time))
     resFile.close()
 
     print("Query results processed!")
     os.chdir(owd)
     
 def NemoBench():
-    for root, dirs, files in os.walk('nemo_examples'):
+    for root, dirs, files in os.walk('examples'):
         for rlsFile in files:
             if rlsFile.endswith(".rls"):
                 print(root, rlsFile)
