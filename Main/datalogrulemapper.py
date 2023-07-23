@@ -1,16 +1,4 @@
 import os
-<<<<<<< HEAD
-import jpype
-import jpype.imports
-from jpype.types import *
-
-#JAVA_HOME setup not detected without explicitly mentioning in the code itself
-os.environ["JAVA_HOME"] = "C:\Program Files\Java\jdk-20"
-# Replace with the actual path to the lib folder
-rulewerk_lib_path = "C:/Users/kansa/Desktop/Team Project TUD SoSe23/Team-Project---Knowledge-Processing/target/lib"
-
-class DatalogRuleMapper:
-=======
 import ast
 import jpype
 import jpype.imports
@@ -22,7 +10,6 @@ rulewerk_lib_path = '/Users/v.sinichenko/PycharmProjects/TeamProject/Main/lib'
 
 class DatalogRuleMapper:
     list_of_variable_names = ['X', 'Y', 'Z', 'K', 'L', 'M', 'N']
->>>>>>> 4010f2fbc22f61b9ccd79c024c06f9215e072680
 
     def start_jvm(self):
         try:
@@ -34,23 +21,17 @@ class DatalogRuleMapper:
 
             #Add the classPath
             jpype.addClassPath(os.path.join(rulewerk_lib_path,"*"))
-<<<<<<< HEAD
-            print(rulewerk_lib_path)
-            print("Added the Class Path")
-
-=======
             print("Added the Class Path")
     
->>>>>>> 4010f2fbc22f61b9ccd79c024c06f9215e072680
             from org.semanticweb.rulewerk.parser import RuleParser as rp
-            from org.semanticweb.rulewerk.core.model.api import Rule
+            from org.semanticweb.rulewerk.core.model.api import Rule, Literal
             print("Libraries Imported")
             print("==========================================================================================================================================================")
         
         except Exception as e:
             print("An exception occurred: ", e)
         
-        return rp, Rule
+        return rp, Rule, Literal
 
 
     def stop_jvm(self):
@@ -60,7 +41,6 @@ class DatalogRuleMapper:
         print("JVM Stopped")
 
 
-<<<<<<< HEAD
     def rulewerk_to_clingo(self, rulewerk_rule, parser):
 
         # Parse the Rulewerk rule into an object model
@@ -97,7 +77,6 @@ class DatalogRuleMapper:
         clingo_rule = head_pred + "(" + ", ".join(head_args) + ") :- " + body
 
         return clingo_rule
-=======
     def rulewerktoobject(self, rule_file, parser):
 
         # Parse the Rulewerk rule file into an object model
@@ -282,4 +261,3 @@ class DatalogRuleMapper:
         return type_declarations, facts_list, rules_list, query
 
 
->>>>>>> 4010f2fbc22f61b9ccd79c024c06f9215e072680

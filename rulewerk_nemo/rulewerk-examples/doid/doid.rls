@@ -1,7 +1,7 @@
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix wdqs: <https://query.wikidata.org/> .
 
-@source doidTriple[3]: load-rdf("example1/doid.nt.gz") .
+@source doidTriple[3]: load-rdf("doid.nt.gz") .
 @source diseaseId[2]: sparql(wdqs:sparql, "disease,doid", "?disease wdt:P699 ?doid .") .
 @source recentDeaths[1]: sparql(wdqs:sparql, "human",
    '''?human wdt:P31 wd:Q5;

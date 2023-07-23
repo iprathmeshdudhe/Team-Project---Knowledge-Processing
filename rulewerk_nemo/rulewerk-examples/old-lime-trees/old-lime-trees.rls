@@ -6,8 +6,8 @@
 % find old trees. It can be modified to use a different species or genus of
 % plant, and by changing the required age.
 
-@source tree[4]: load-csv("trees/dresden-trees-ages-heights.csv") .    % location URL, species, age, height in m
-@source taxon[3]: load-csv("trees/wikidata-taxon-name-parent.csv.gz") . % Wikidata ID, taxon name, Wikidata ID of parent taxon
+@source tree[4]: load-csv("dresden-trees-ages-heights.csv") .    % location URL, species, age, height in m
+@source taxon[3]: load-csv("wikidata-taxon-name-parent.csv.gz") . % Wikidata ID, taxon name, Wikidata ID of parent taxon
 
 human(Anna).
 
@@ -16,6 +16,6 @@ human(Anna).
 limeSpecies(?X, "Tilia") :- taxon(?X, "Tilia", ?P).
 limeSpecies(?X, ?Name) :- taxon(?X, ?Name, ?Y), limeSpecies(?Y, ?N).
 
-oldLime(?location,?species,?age) :- tree(?location,?species,?age,?heightInMeters), ?age > 200, limeSpecies(?id,?species) .
+oldLime(?location,?species,?age) :- tree(?location,?species,?age,?heightInMeters), limeSpecies(?id,?species).
 
 person(?X) :- human(?X).
