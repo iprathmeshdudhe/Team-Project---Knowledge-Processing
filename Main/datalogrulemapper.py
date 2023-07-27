@@ -24,14 +24,14 @@ class DatalogRuleMapper:
             print("Added the Class Path")
     
             from org.semanticweb.rulewerk.parser import RuleParser as rp
-            from org.semanticweb.rulewerk.core.model.api import Rule
+            from org.semanticweb.rulewerk.core.model.api import Rule, Literal
             print("Libraries Imported")
             print("==========================================================================================================================================================")
         
         except Exception as e:
             print("An exception occurred: ", e)
         
-        return rp, Rule
+        return rp, Rule, Literal
 
 
     def stop_jvm(self):
