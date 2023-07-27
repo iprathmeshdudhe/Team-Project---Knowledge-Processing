@@ -108,7 +108,7 @@ def main():
     sav_loc_and_rule_head_predicates = {}
 
     ruleMapper = DatalogRuleMapper()
-    RuleParser, Rule = ruleMapper.start_jvm()
+    RuleParser, Rule, _ = ruleMapper.start_jvm()
 
     #Added the parser to use the code as tool
     parser = argparse.ArgumentParser()
