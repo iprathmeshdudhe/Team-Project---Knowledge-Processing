@@ -1,5 +1,0 @@
-exists(Ann).
-exists(Hopie).
-human(Ann).
-
-notHuman(?X) :- exists(?X), ~human(?X).

@@ -1,8 +1,0 @@
- - QueryResult [terms=[Bob, Anna]]
- - QueryResult [terms=[Richard, Lucy]]
- - QueryResult [terms=[Alice, Brenda]]
- - QueryResult [terms=[Josh, Paula]]
- - QueryResult [terms=[Bob, David]]
- - QueryResult [terms=[Anna, Richard]]
- - QueryResult [terms=[Alice, Bob]]
- - QueryResult [terms=[Josh, David]]

@@ -1,4 +1,0 @@
- - QueryResult [terms=[Anna, Bob]]
- - QueryResult [terms=[Richard, John]]
- - QueryResult [terms=[Bob, Anna]]
- - QueryResult [terms=[John, Richard]]

@@ -1,0 +1,1 @@
+ - QueryResult [terms=[John, Richard]] - QueryResult [terms=[Richard, John]]

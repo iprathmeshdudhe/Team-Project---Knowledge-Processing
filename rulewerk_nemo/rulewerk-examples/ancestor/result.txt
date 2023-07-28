@@ -1,6 +1,0 @@
- - QueryResult [terms=[Bob]]
- - QueryResult [terms=[David]]
- - QueryResult [terms=[Anna]]
- - QueryResult [terms=[Brenda]]
- - QueryResult [terms=[Richard]]
- - QueryResult [terms=[Lucy]]

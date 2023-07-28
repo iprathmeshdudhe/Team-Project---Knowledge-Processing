@@ -1,2 +1,0 @@
- - QueryResult [terms=[Anna, Bob]]
- - QueryResult [terms=[Bob, Anna]]
