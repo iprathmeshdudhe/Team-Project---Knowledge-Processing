@@ -6,7 +6,7 @@ from jpype.types import *
 from csvtofacts import *
 
 # Replace with the actual path to the lib folder
-rulewerk_lib_path = '/Users/v.sinichenko/PycharmProjects/TeamProject/Main/lib'
+rulewerk_lib_path = 'lib'
 
 class DatalogRuleMapper:
     list_of_variable_names = ['X', 'Y', 'Z', 'K', 'L', 'M', 'N']
@@ -92,6 +92,10 @@ class DatalogRuleMapper:
                 head_pred = head_atom.getPredicate().getName()
                 head_args = [str(arg.toString()).replace("!", "").lower() if str(arg.toString()).startswith('!') else str(arg.toString()).replace("?", "").capitalize() for arg in head_atom.getArguments()]
                 head_preds.append(str(head_pred.toString())+ "(" + ", ".join(head_args) + ")")
+
+                #It will get used while saving the output in CSV
+                head_atom_pred.append(str(head_pred.toString()))
+                
             head = ", ".join(head_preds)
 
             body_preds = []
@@ -105,7 +109,7 @@ class DatalogRuleMapper:
 
             rules_list.append(str(clingo_rule))
 
-        return rules_list
+        return rules_list, head_atom_pred
 
     def write_clingo_rules(self, rule_list, location_to_save):
 
@@ -124,7 +128,7 @@ class DatalogRuleMapper:
 
     def rulewerk_to_clingo(self, rules, facts, data_sources, saving_location):
 
-        rules_list = self.process_clingo_rules(rules)
+        rules_list, head_predicates  = self.process_clingo_rules(rules)
         facts_list = self.process_clingo_facts(facts)
         data_sources_dict = self.processDataSources(data_sources)
         
@@ -161,6 +165,8 @@ class DatalogRuleMapper:
         else:
             print("The Rulewerk .rls file contains only Rules")
             self.write_clingo_rules(rules_list)
+
+        return head_predicates
 
     def rulewerk_to_souffle(self, rule_file, parser):
         with open(rule_file, 'r') as rule_file:

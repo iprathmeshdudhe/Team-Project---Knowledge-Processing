@@ -37,7 +37,36 @@ def get_clingo_location(ex_name):
 
     return clingo_location
 
-def runClingo(files_location):
+def save_clingo_output(loc_rule_head_predicate):
+
+    for output_file, rule_head_preds in loc_rule_head_predicate.items():
+        models = []
+
+        with open(f"{output_file}-output.txt", 'r') as file:
+            output_list = file.readlines()
+            symbols=output_list[4].strip().split()
+
+        for symbol in symbols:
+            model = clingo.parse_term(symbol)
+            models.append(model)
+        
+        # Find the last occurrence of "/"
+        index = output_file.rfind("/")
+        new_path = output_file[:index+1]
+        #print(new_path)
+
+        directory_path = os.path.join(new_path, "Output")
+        os.makedirs(directory_path, exist_ok=True)
+
+        output_sav_loc = directory_path
+
+        #print(list(set(rule_head_preds)))
+        for pred in list(set(rule_head_preds)):
+            output_list = [[const.name for const in model.arguments] for model in models if pred == model.name]
+            output_df = pd.DataFrame(output_list)
+            output_df.to_csv(f"{output_sav_loc}/{pred}.csv",  index=False, header=False)
+
+def run_clingo(files_location):
     
     commands = []
 
@@ -70,25 +99,46 @@ def runClingo(files_location):
     cmd_process.stdout.read()
     cmd_process.stdout.close()
 
+    save_clingo_output(loc_and_rule_head_predicates)
+
 
 def main():
-    
-    rule_file_path = 'Rulewerk_Rules'
-    rls_files = get_rls_file_paths(rule_file_path)
-    clingo_files_location = []
 
+    #Dictionary to save locaion and rule head Predicates
+    sav_loc_and_rule_head_predicates = {}
 
     ruleMapper = DatalogRuleMapper()
-    RuleParser, Rule = ruleMapper.start_jvm()
+    RuleParser, Rule, _ = ruleMapper.start_jvm()
 
-    #Converting Rulewerk Rule file into Clingo rules file
-    for rls in rls_files:
-        rules, facts, data_sources, example_name = ruleMapper.rulewerktoobject(rls, RuleParser)
-        saving_location = get_clingo_location(example_name)
-        ruleMapper.rulewerk_to_clingo(rules, facts, data_sources, saving_location)
-        clingo_files_location.append(saving_location)
-    
-    runClingo(clingo_files_location)
+    #Added the parser to use the code as tool
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--solver', required=True, type=str, choices=['clingo', 'nemo', 'rulewerk', 'souflle'])
+    parser.add_argument('--input_dir', type=str, required=True)
+
+    args = parser.parse_args()
+
+    rule_file_path = args.input_dir
+    rls_files = get_rls_file_paths(rule_file_path)
+
+    if args.solver == 'clingo':
+        
+        #Converting Rulewerk Rule file into Clingo rules file
+        for rls in rls_files:
+            rules, facts, data_sources, example_name = ruleMapper.rulewerktoobject(rls, RuleParser)
+            saving_location = get_clingo_location(example_name)
+            rule_head_preds = ruleMapper.rulewerk_to_clingo(rules, facts, data_sources, saving_location)
+
+            #Dictionary {"rule_file_location": [list of rule head predicates]........}
+            sav_loc_and_rule_head_predicates[saving_location] = rule_head_preds
+
+        run_clingo(sav_loc_and_rule_head_predicates)
+
+    elif args.solver == 'nemo':
+        print("nemo")
+    elif args.solver == 'rulewerk':
+        print("rulewerk")
+    elif args.solver == 'souflle':
+        print("souflle")
 
 
     type_declarations, facts_list, rules_list, query = ruleMapper.rulewerk_to_souffle(rule_file_path, RuleParser)
