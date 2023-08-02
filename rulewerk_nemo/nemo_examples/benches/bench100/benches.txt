@@ -1,3 +1,0 @@
-Memory usage: 61.7578125 
- CPU Runtime: 44.03125 seconds
- Overall Runtime: 44.99988150596619 seconds
