@@ -1,4 +1,0 @@
-CPU usage: 0.0%
-Memory Usage: 1.7734375MB
-CPU_Frequence = 1792.0MHz
-Execution time: 1237.8017902374268ms

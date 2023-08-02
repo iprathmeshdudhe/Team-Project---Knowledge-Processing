@@ -1,1 +1,0 @@
- - QueryResult [terms=[Anna, Lia]] - QueryResult [terms=[Richard, Maria]] - QueryResult [terms=[Bob, Natalie]] - QueryResult [terms=[John, Maria]] - QueryResult [terms=[Anna, Richard]] - QueryResult [terms=[Richard, David]] - QueryResult [terms=[Bob, Richard]] - QueryResult [terms=[John, David]]

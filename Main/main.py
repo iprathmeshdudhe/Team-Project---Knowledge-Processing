@@ -2,11 +2,11 @@ import os
 import psutil
 import time
 import subprocess
-import clingo
+# import clingo
 import argparse
-import pandas as pd
+# import pandas as pd
 from datalogrulemapper import *
-
+from rulewerk_controller import *
 
 def measure_usage(processid):
 
@@ -111,7 +111,7 @@ def main():
     sav_loc_and_rule_head_predicates = {}
 
     ruleMapper = DatalogRuleMapper()
-    RuleParser, Rule, _ = ruleMapper.start_jvm()
+    RuleParser, Rule, Literal = ruleMapper.start_jvm()
 
     #Added the parser to use the code as tool
     parser = argparse.ArgumentParser()
@@ -137,28 +137,36 @@ def main():
         run_clingo(sav_loc_and_rule_head_predicates)
 
     elif args.solver == 'nemo':
-        print("nemo")
+        for rls in rls_files:
+            runNemo(rls)
+
     elif args.solver == 'rulewerk':
-        print("rulewerk")
+        query_dict={}
+        for rls in rls_files:
+            file_name = os.path.basename(rls)
+            query, head_pred = rulefileElements(RuleParser, Rule, Literal, rls)
+            query_dict[rls]=[query, head_pred]
+        runRulewerk(rule_file_path, query_dict)
+
     elif args.solver == 'souflle':
         print("souflle")
 
 
-    type_declarations, facts_list, rules_list, query = ruleMapper.rulewerk_to_souffle(rule_file_path, RuleParser)
+    # type_declarations, facts_list, rules_list, query = ruleMapper.rulewerk_to_souffle(rule_file_path, RuleParser)
 
-    with open('souffle-example.dl', 'w') as output_file:
-        output_file.write('// Declarations\n')
-        output_file.writelines('\n'.join(type_declarations))
-        output_file.write('\n\n')
-        output_file.write('// Facts\n')
-        output_file.writelines('\n'.join(facts_list))
-        output_file.write('\n\n')
-        output_file.write('// Rules\n')
-        output_file.writelines('\n'.join(rules_list))
-        output_file.write('\n\n')
-        output_file.write('// Query\n')
-        output_file.writelines('\n'.join(query))
-        output_file.write('\n\n')
+    # with open('souffle-example.dl', 'w') as output_file:
+    #     output_file.write('// Declarations\n')
+    #     output_file.writelines('\n'.join(type_declarations))
+    #     output_file.write('\n\n')
+    #     output_file.write('// Facts\n')
+    #     output_file.writelines('\n'.join(facts_list))
+    #     output_file.write('\n\n')
+    #     output_file.write('// Rules\n')
+    #     output_file.writelines('\n'.join(rules_list))
+    #     output_file.write('\n\n')
+    #     output_file.write('// Query\n')
+    #     output_file.writelines('\n'.join(query))
+    #     output_file.write('\n\n')
 
 
 
