@@ -87,6 +87,7 @@ class DatalogRuleMapper:
 
     def process_clingo_rules(self, rules):
         rules_list = []
+        head_atom_pred = []
 
         for i in range(len(rules)):
 
@@ -171,7 +172,7 @@ class DatalogRuleMapper:
 
         return head_predicates
 
-    # def rulewerk_to_souffle(self, rule_file, parser):
+    def rulewerk_to_souffle(self, rule_file, parser):
         with open(rule_file, 'r') as rule_file:
             kb = parser.parse(rule_file.read())
 
