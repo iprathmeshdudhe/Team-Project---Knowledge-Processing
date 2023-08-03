@@ -2,8 +2,10 @@ import os
 import argparse
 from datalogrulemapper import *
 from rulewerk_controller import *
+import datetime
 from clingo_controller import ClingoController
 
+#--keep this in main.py (here)
 def get_rls_file_paths(directory):
     rls_file_paths = []
     for root, dirs, files in os.walk(directory):
@@ -14,7 +16,7 @@ def get_rls_file_paths(directory):
     return rls_file_paths
 
 def main():
-
+    timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     #Dictionary to save locaion and rule head Predicates
     sav_loc_and_rule_head_predicates = {}
 
@@ -47,8 +49,15 @@ def main():
         c_memory, c_exec_time = cc.run_clingo(sav_loc_and_rule_head_predicates)
 
     elif args.solver == 'nemo':
+        rls_file_list = []
         for rls in rls_files:
-            runNemo(rls)
+            rule_file_name = os.path.basename(rls)
+            rule_file_path = os.path.dirname(rls)
+            rls_file_list.append([rule_file_name, rule_file_path])
+        execution_time, memory_info = runNemo(rls_file_list)
+
+        #call function to write bencmarking results to csv file
+        write_benchmark_results(timestamp, "random_taskname_for_now", "Nemo", execution_time, memory_info)
 
     elif args.solver == 'rulewerk':
         query_dict={}
@@ -56,7 +65,9 @@ def main():
             file_name = os.path.basename(rls)
             query, head_pred = rulefileElements(RuleParser, Rule, Literal, rls)
             query_dict[rls]=[query, head_pred]
-        runRulewerk(rule_file_path, query_dict)
+        execution_time, memory_info = runRulewerk(rule_file_path, query_dict)
+        #call function to write bencmarking results to csv file
+        write_benchmark_results(timestamp, "random_taskname_for_now", "Rulewerk", execution_time, memory_info)
 
     elif args.solver == 'souflle':
         print("souflle")
@@ -78,6 +89,22 @@ def main():
 
 
     ruleMapper.stop_jvm()
+
+
+def write_benchmark_results(timestamp, task, tool, execution_time, memory_info):
+    #if not csv file exist create a new one : in which directory?
+    #header: timestamp task, tool, execution_time, memory_info
+    #row: parameters in order
+    #close csv
+    flag=os.path.exists("BenchResults.csv")
+    print(flag)
+    with open("BenchResults.csv", mode='a', newline='') as csv_file:
+        csv_writer = csv.writer(csv_file)
+        
+        if flag==False:
+            dw = csv.DictWriter(csv_file, delimiter=',', fieldnames=["Timestamp", "Task", "Tool", "Execution Time (ms)", "Memory Info (MB)"])
+            dw.writeheader()
+        csv_writer.writerow([timestamp, task, tool, execution_time, memory_info])
 
 if __name__ == '__main__':
     main()
