@@ -8,6 +8,7 @@ import jpype.imports
 from jpype.types import *
 from memory_profiler import memory_usage, profile
 import csv
+import json
 
 def measure_usage(processid):
 
@@ -43,6 +44,9 @@ def runRulewerk(rule_file_path, query_dict):
     # go to the user input rls file directory which contains the rulewerk-client.jar to run rulewerk
     os.chdir(os.path.join(owd, rule_file_path))
     command = "java -jar rulewerk-client.jar"
+
+    memory_usage()
+    start_mem = memory_usage()[0]
     cmd_process = subprocess.Popen(['cmd'], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False)
     process_id = cmd_process.pid
     cmd_process.stdin.write(command.encode('utf-8') + b'\n')
@@ -68,6 +72,8 @@ def runRulewerk(rule_file_path, query_dict):
         #go back to the directory with rulewerk-client.jar
         os.chdir(owd)
         os.chdir(os.path.join(owd, rule_file_path))
+    end_mem = memory_usage()[0]
+    print("mem_usgae", (end_mem-start_mem)*1.048576)
     #measure usage of the process
     memory_info = measure_usage(process_id)
 
@@ -94,37 +100,22 @@ def runNemo(rls_file_list):
     memory_usage()
     mem_usage_start = memory_usage()[0]
     mem_usage_end = memory_usage()[0]
-      
-    for rls_file in rls_file_list:
-        rule_file_name = rls_file[0]
-        rule_file_path = rls_file[1]
-        os.chdir(os.path.join(owd, rule_file_path))
-        currPath = os.getcwd()        
     
-        # using the python nemo bings nmo_python to load the rule file
-        rls_file = nmo_python.load_file("{}\{}".format(currPath, rule_file_name))
+    #convert 2D list to json to pass as arguments to subprocess "nemo-reasoning.py"
+    list_json = json.dumps(rls_file_list)
+    subprocess_command = ["python", "nemo_reasoning.py", owd, list_json]
+    process = subprocess.Popen(subprocess_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    process_id = process.pid
 
-        # passing the loaded rls file to the nemo engine and running the nemo reasoner
-        nemo_rule = nmo_python.NemoEngine(rls_file)
-        print("Running the reasoner...")
-        nemo_rule.reason()
-
-        # the write_result function accepts parmaters: predicate of the query to  be executed, outfile_manager that takes the NemoOutputManager structure with parameters file dir as string, bool overrite?, bool gzip? 
-        # write_result writes the query results of the specified query to the specified output dir
-        # for every output predicate in the rulefile, run the query and store results in a file
-        for pred in rls_file.output_predicates():
-            print(pred)
-            nemo_rule.write_result(str(pred), nmo_python.NemoOutputManager(rule_file_name.split(".")[0], True, False)) 
-        mem_usage_end = memory_usage()[0]
-        os.chdir(owd)
-
+    process_memory = measure_usage(process_id)
+    stdout, stderr = process.communicate()
+    # print(stdout.decode())
+    # print(stderr.decode())
     execution_time = (time.time() - start_time)*1000
-
-    memory_usage()
-    memory_info = (mem_usage_end - mem_usage_start) * 1.048576
+    
     print("<-------------------- Process Completed! ----------------------->")
     print(f"Execution Time: {execution_time} ms")
-    print(f"Memory usage: {memory_info} MB")
+    print(f"Memory usage: {process_memory} MB")
         
-    return execution_time, memory_info
-    
+    return execution_time, process_memory
+
