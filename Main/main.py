@@ -137,8 +137,12 @@ def main():
         run_clingo(sav_loc_and_rule_head_predicates)
 
     elif args.solver == 'nemo':
+        rls_file_list = []
         for rls in rls_files:
-            runNemo(rls)
+            rule_file_name = os.path.basename(rls)
+            rule_file_path = os.path.dirname(rls)
+            rls_file_list.append([rule_file_name, rule_file_path])
+        runNemo(rls_file_list)
 
     elif args.solver == 'rulewerk':
         query_dict={}
@@ -171,6 +175,14 @@ def main():
 
 
     ruleMapper.stop_jvm()
+
+
+def write_benchmark_results(timestamp, task, tool, execution_time, memory_info):
+    #if not csv file exist create a new one : in which directory?
+    #header: timestamp task, tool, execution_time, memory_info
+    #row: parameters in order
+    #close csv
+    pass
 
 if __name__ == '__main__':
     main()
