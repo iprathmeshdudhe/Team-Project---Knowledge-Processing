@@ -1,4 +1,0 @@
-.decl A(x:symbol)
-.input A()
-.output A()
-
