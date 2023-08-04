@@ -49,7 +49,7 @@ Different tools support more or less features, data types, and  have different n
 |     Support of diferent varibale data types     |                                 No                                  |           ?           |                                              Yes: 4 primitive data types (`symbol`, `number`, `unsigned`, and `float`) and custom data types                                               |                                 ?                                  |
 |           Support of float data type            |                                 Yes                                 |           ?           |                                                                                        Yes                                                                                         |                                 No                                 |
 
-For now, we only support features that are common to all tools. 
+Respectively, our benchmarking tool only translate the ruleverk exampless that are supported in the respective tools and throws and error otherwise. 
 
 ## Souffle
 [Documentation](https://souffle-lang.github.io/index.html)
@@ -61,6 +61,9 @@ To Run the tool, we just need to the run main.py script using the command:
 ```bash
 python -m main --solver clingo --input_dir /path/to/rule/files
 ```
-For other solvers, you may simply modify the arguments `--solver` accordingly with the options [clingo, nemo, souflle].
+For other solvers, you may simply modify the arguments `--solver` accordingly with the options: `clingo`, `nemo`, `souflle`.
 
 Replace /path/to/rule/files with the directory containing the Rulewerk rule files which we use as starting point.
+
+<img src="./Tool diagram.png">
+
