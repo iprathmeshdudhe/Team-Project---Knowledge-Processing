@@ -1,11 +1,24 @@
 # A Benchmarking System for Datalog Reasoners
 
 
-Welcome to the GitHub repository for our Master's Team project, a Datalog benchmarking tool developing under the guidance of our esteemed professors. 
+Welcome to the GitHub repository for our Master's Team project, a Datalog benchmarking tool developing under the guidance of our esteemed professors at TU Dresden: **Markus Krötsch, Stefan 
+Ellmauthaler, Lukas Gerlach** 
 
-Datalog is a popular rule language, which is widely used in data management, knowledge representation, logic programming, and data analytics. Many different implementations have been developed, including logic programming engines (such as Clingo), existential rule reasoners (such as VLog and Nemo), and specialised data analytics tools (such as Souffle, for program analytics). Due to the different input formats, features, and APIs, it is difficult to compare these implementations. 
+Datalog is a popular rule language, which is widely used in data management, knowledge representation, logic programming, and data analytics. Many different implementations have been developed. Due to the different input formats, features, and APIs, it is difficult to compare these implementations. 
 
-The goal of this team project is to design and develop system for benchmarking various Datalog implementations. The system should be able to conduct experiments with several Datalog engines, collect results and relevant performance metrics (runtimes, memory usage), and store the latter for further analysis. To accomplish this, the system should maintain a library of Datalog benchmarks and test cases in a unified format, and provide functions for translating these logic programs into the formats used by different Datalog systems. Different systems need different translations and to be called in different ways, and the architecture should be designed in a way that makes it easy to add new systems in the future. In addition, it would be useful to provide functionality for managing the test cases and the measured results. Analytical capabilities and visualisations can be added to further enhance this functionality.
+Currently supported languages for benchmarking are:
+* Clingo (logic programming engine)
+* Nemo (existential rule reasoner)
+* Souffle (specialised data analytics tool for program analytics)
+* Rulewerk
+
+The system is able to conduct experiments with several Datalog engines, collects results and relevant performance metrics: runtime and memory usage, and stores the results for further analysis in 
+a CSV format.
+
+To accomplish this, the system contains a library of Datalog benchmarks (in a folder rulewerk_examples) and test cases in a unified Rulewerk format, and contains functions for translating these 
+logic programs into the  formats  used by different Datalog systems. It is possible to add new modules to support other tools in the future.
+
+
 
 ## Installation
 
@@ -19,8 +32,13 @@ git clone https://github.com/iprathmeshdudhe/Team-Project---Knowledge-Processing
 * pandas                --  ```pip install pandas```
 * clingo                --  ```pip install clingo```
 * psutil                --  ```pip install psutil```
+* Soufflé tool  -- see  [Build Soufflé](https://souffle-lang.github.io/index.html). As a result of installation, you must have a  "souffle-master" folder installed on your computer  
 
-## Experiment
+
+## Souffle
+[Documentation](https://souffle-lang.github.io/index.html)
+
+## Tool usage
 
 To Run the tool, we just need to the run main.py script using the command:
 
