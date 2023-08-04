@@ -65,5 +65,5 @@ For other solvers, you may simply modify the arguments `--solver` accordingly wi
 
 Replace /path/to/rule/files with the directory containing the Rulewerk rule files which we use as starting point.
 
-<img src="./Tool diagram.png">
+<img src="./Tool diagram.png"> #TODO : Add image
 

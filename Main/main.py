@@ -57,7 +57,7 @@ def main():
         execution_time, memory_info = runNemo(rls_file_list)
 
         #call function to write bencmarking results to csv file
-        write_benchmark_results(timestamp, "random_taskname_for_now", "Nemo", execution_time, memory_info)
+        write_benchmark_results(timestamp, "random_taskname_for_now", "Nemo", execution_time, memory_info)  # TODO add count of grounded atoms
 
     elif args.solver == 'rulewerk':
         query_dict={}
@@ -67,11 +67,13 @@ def main():
             query_dict[rls]=[query, head_pred]
         execution_time, memory_info = runRulewerk(rule_file_path, query_dict)
         #call function to write bencmarking results to csv file
-        write_benchmark_results(timestamp, "random_taskname_for_now", "Rulewerk", execution_time, memory_info)
+        write_benchmark_results(timestamp, "random_taskname_for_now", "Rulewerk", execution_time, memory_info) # TODO add count of grounded atoms
 
     elif args.solver == 'souflle':
         print("souflle")
         type_declarations, facts_list, rules_list, query = ruleMapper.rulewerk_to_souffle(rule_file_path, RuleParser)
+        # TODO add handling of data sources
+        # TODO do
         with open('souffle-example.dl', 'w') as output_file:
              output_file.write('// Declarations\n')
              output_file.writelines('\n'.join(type_declarations))
@@ -100,11 +102,13 @@ def write_benchmark_results(timestamp, task, tool, execution_time, memory_info):
     print(flag)
     with open("BenchResults.csv", mode='a', newline='') as csv_file:
         csv_writer = csv.writer(csv_file)
-        
-        if flag==False:
-            dw = csv.DictWriter(csv_file, delimiter=',', fieldnames=["Timestamp", "Task", "Tool", "Execution Time (ms)", "Memory Info (MB)"])
+        if flag:
+            # TODO add new ruled to the existing file if it exists
+            pass
+        else:
+            dw = csv.DictWriter(csv_file, delimiter=',', fieldnames=["Timestamp", "Task", "Tool", "Execution Time (ms)", "Memory Info (MB)", "Count of grounded atoms"])
             dw.writeheader()
-        csv_writer.writerow([timestamp, task, tool, execution_time, memory_info])
+        csv_writer.writerow([timestamp, task, tool, execution_time, memory_info]) # TODO add count of grounded atoms
 
 if __name__ == '__main__':
     main()
