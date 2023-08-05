@@ -30,7 +30,7 @@ git clone https://github.com/iprathmeshdudhe/Team-Project---Knowledge-Processing
 
 * Python 3.9 or higher   
 * pandas                --  ```pip install pandas```
-* clingo                --  ```pip install clingo```
+* clingo                --  ```pip install clingo``` or  ```conda install -c potassco clingo```
 * psutil                --  ```pip install psutil```
 * Soufflé tool  -- see  [Build Soufflé](https://souffle-lang.github.io/index.html). As a result of installation, you must have a  "souffle-master" folder installed on your computer  
 
