@@ -32,6 +32,7 @@ git clone https://github.com/iprathmeshdudhe/Team-Project---Knowledge-Processing
 * pandas                --  ```pip install pandas```
 * clingo                --  ```pip install clingo``` or  ```conda install -c conda-forge clingo```
 * psutil                --  ```pip install psutil```
+* jypype                --  ```pip install JPype1``` or  ```conda install -c conda-forge jpype1```
 * Soufflé tool  -- see  [Build Soufflé](https://souffle-lang.github.io/index.html). As a result of installation, you must have a  "souffle-master" folder installed on your computer  
 
 ## Comparison of Datalog Tools
