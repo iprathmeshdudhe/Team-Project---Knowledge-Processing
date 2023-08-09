@@ -1,4 +1,4 @@
-Timestamp,Task,Tool,Execution Time (ms),Memory Info (MB)
+Timestamp (YYYY-MM-DD HH:MM:SS),Task,Tool,Execution Time (ms),Memory Info (MB),Count of grounded Rule Predicates
 2023-08-03_12-32-29,random_taskname_for_now,Nemo,400.10523796081543,1.5390625
 2023-08-03_12-32-47,random_taskname_for_now,Nemo,421.71764373779297,1.5078125
 2023-08-03_12-33-08,random_taskname_for_now,Nemo,477.29992866516113,1.5
@@ -6,3 +6,10 @@ Timestamp,Task,Tool,Execution Time (ms),Memory Info (MB)
 2023-08-03_12-35-37,random_taskname_for_now,Rulewerk,997.492790222168,4.140625
 2023-08-03_12-35-47,random_taskname_for_now,Rulewerk,976.4769077301025,4.14453125
 2023-08-03_12-35-52,random_taskname_for_now,Nemo,480.06486892700195,1.5390625
+08-08-2023 @20:10:26,basic_join,Clingo,4.0,1.85,8
+08-08-2023 @20:11:23,basic_projection,Clingo,4.53,1.85,19
+08-08-2023 @20:11:42,basic_union,Clingo,4.0,1.89,15
+08-08-2023 @20:12:07,load_multiple,Clingo,5.0,1.86,11
+08-08-2023 @20:12:34,repeated_variables,Clingo,4.53,1.85,8
+08-08-2023 @20:12:56,symmetric_transitive_closure,Clingo,4.5,1.89,57
+08-08-2023 @20:13:20,all,Clingo,5.0,1.91,118
