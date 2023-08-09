@@ -1,0 +1,11 @@
+clingo version 5.6.2
+Reading from ...o/load_multiple/load_multiple-facts.lp ...
+Solving...
+Answer: 1
+source(q,b,c) source(b,a,d) source(t,b,c) source(a,b,c) source(x,y,z) source(q,e,d) source(b,c,d) combined(q,b,c) combined(b,a,d) combined(t,b,c) combined(a,b,c) combined(x,y,z) combined(q,e,d) combined(b,c,d) constant(x) constant(q) constant(t) constant(a)
+SATISFIABLE
+
+Models       : 1
+Calls        : 1
+Time         : 0.005s (Solving: 0.00s 1st Model: 0.00s Unsat: 0.00s)
+CPU Time     : 0.000s
