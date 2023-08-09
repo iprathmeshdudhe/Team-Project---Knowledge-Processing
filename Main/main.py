@@ -15,8 +15,25 @@ def get_rls_file_paths(directory):
                 rls_file_paths.append(file_path)
     return rls_file_paths
 
+def write_benchmark_results(timestamp, task, tool, execution_time, memory_info, count):
+    #if not csv file exist create a new one : in which directory?
+    #header: timestamp task, tool, execution_time, memory_info
+    #row: parameters in order
+    #close csv
+    flag=os.path.exists("BenchResults.csv")
+    #print(flag)
+    with open("BenchResults.csv", mode='a', newline='') as csv_file:
+        csv_writer = csv.writer(csv_file)
+        if flag:
+            # TODO add new ruled to the existing file if it exists
+            pass
+        else:
+            dw = csv.DictWriter(csv_file, delimiter=',', fieldnames=["Timestamp (YYYY-MM-DD HH:MM:SS)", "Task", "Tool", "Execution Time (ms)", "Memory Info (MB)", "Count of grounded Rule Predicates"])
+            dw.writeheader()
+        csv_writer.writerow([timestamp, task, tool, execution_time, memory_info, count])
+
 def main():
-    timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    
     #Dictionary to save locaion and rule head Predicates
     sav_loc_and_rule_head_predicates = {}
 
@@ -25,6 +42,7 @@ def main():
 
     #Added the parser to use the code as tool
     parser = argparse.ArgumentParser()
+    parser.add_argument('--task_name', required=True, type=str)
     parser.add_argument('--solver', required=True, type=str, choices=['clingo', 'nemo', 'rulewerk', 'souflle'])
     parser.add_argument('--input_dir', type=str, required=True)
 
@@ -32,6 +50,8 @@ def main():
 
     rule_file_path = args.input_dir
     rls_files = get_rls_file_paths(rule_file_path)
+
+    timestamp = datetime.datetime.now().strftime("%d-%m-%Y @%H:%M:%S")
 
     if args.solver == 'clingo':
 
@@ -46,7 +66,10 @@ def main():
             #Dictionary {"rule_file_location": [list of rule head predicates]........}
             sav_loc_and_rule_head_predicates[saving_location] = rule_head_preds
 
-        c_memory, c_exec_time = cc.run_clingo(sav_loc_and_rule_head_predicates)
+        c_memory, c_exec_time,  c_count_ans = cc.run_clingo(sav_loc_and_rule_head_predicates)
+
+        #call function to write bencmarking results to csv file
+        write_benchmark_results(timestamp, args.task_name, "Clingo", c_exec_time, c_memory, c_count_ans)
 
     elif args.solver == 'nemo':
         rls_file_list = []
@@ -91,24 +114,6 @@ def main():
 
 
     ruleMapper.stop_jvm()
-
-
-def write_benchmark_results(timestamp, task, tool, execution_time, memory_info):
-    #if not csv file exist create a new one : in which directory?
-    #header: timestamp task, tool, execution_time, memory_info
-    #row: parameters in order
-    #close csv
-    flag=os.path.exists("BenchResults.csv")
-    print(flag)
-    with open("BenchResults.csv", mode='a', newline='') as csv_file:
-        csv_writer = csv.writer(csv_file)
-        if flag:
-            # TODO add new ruled to the existing file if it exists
-            pass
-        else:
-            dw = csv.DictWriter(csv_file, delimiter=',', fieldnames=["Timestamp", "Task", "Tool", "Execution Time (ms)", "Memory Info (MB)", "Count of grounded atoms"])
-            dw.writeheader()
-        csv_writer.writerow([timestamp, task, tool, execution_time, memory_info]) # TODO add count of grounded atoms
 
 if __name__ == '__main__':
     main()
