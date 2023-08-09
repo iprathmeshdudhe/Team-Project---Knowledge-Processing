@@ -8,7 +8,7 @@ from csvtofacts import *
 #JAVA_HOME setup not detected without explicitly mentioning in the code itself
 os.environ["JAVA_HOME"] = "C:\Program Files\Java\jdk-20"
 # Replace with the actual path to the lib folder
-rulewerk_lib_path = "C:/Users/kansa/Desktop/Team Project TUD SoSe23/Team-Project---Knowledge-Processing/Main/lib"
+rulewerk_lib_path = "lib"
 
 class DatalogRuleMapper:
 
@@ -16,19 +16,14 @@ class DatalogRuleMapper:
         try:
             # Start the JVM
             jpype.startJVM(jpype.getDefaultJVMPath())
-            print("JVM Started")
-            print("==========================================================================================================================================================")
-            print("JVM Path: ", jpype.getDefaultJVMPath())
 
             #Add the classPath
             jpype.addClassPath(os.path.join(rulewerk_lib_path,"*"))
-            print(rulewerk_lib_path)
-            print("Added the Class Path")
-
+            
             from org.semanticweb.rulewerk.parser import RuleParser as rp
             from org.semanticweb.rulewerk.core.model.api import Rule, Literal
             from org.semanticweb.rulewerk.core.reasoner import Reasoner
-            print("Libraries imported")
+            print("Java Libraries imported")
             print("==========================================================================================================================================================")
         
         except Exception as e:
@@ -40,8 +35,6 @@ class DatalogRuleMapper:
     def stop_jvm(self):
         # Shutdown the JVM when you're done
         jpype.shutdownJVM()
-        print("==========================================================================================================================================================")
-        print("JVM Stopped")
 
 
     def rulewerktoobject(self, rule_file, parser):
@@ -94,19 +87,31 @@ class DatalogRuleMapper:
             head_preds = []
             for head_atom in rules[i].getHead():
                 head_pred = head_atom.getPredicate().getName()
+
+                if all(char.isupper() for char in str(head_pred.toString())):
+                    head_pred = str(head_pred.toString()).lower()
+                else:
+                    head_pred = str(head_pred.toString())[:1].lower() + str(head_pred.toString())[1:]
+
                 head_args = [str(arg.toString()).replace("!", "").lower() if str(arg.toString()).startswith('!') else str(arg.toString()).replace("?", "").capitalize() for arg in head_atom.getArguments()]
-                head_preds.append(str(head_pred.toString())+ "(" + ", ".join(head_args) + ")")
+                head_preds.append(head_pred + "(" + ", ".join(head_args) + ")")
 
                 #It will get used while saving the output in CSV
-                head_atom_pred.append(str(head_pred.toString()))
-                
+                head_atom_pred.append(head_pred)
+
             head = ", ".join(head_preds)
 
             body_preds = []
             for atom in rules[i].getBody():
                 pred_name = atom.getPredicate().getName()
+
+                if all(char.isupper() for char in str(pred_name.toString())):
+                    pred_name = str(pred_name.toString()).lower()
+                else:
+                    pred_name = str(pred_name.toString())[:1].lower() + str(pred_name.toString())[1:]
+
                 pred_args = [str(arg.toString()).replace("?", "").capitalize() if str(arg.toString()).startswith('?') else str(arg.toString()).replace("\"", "").lower() for arg in atom.getArguments()]
-                body_preds.append(str(pred_name.toString()).replace("?", "") + "(" + ", ".join(pred_args) + ")")
+                body_preds.append(pred_name + "(" + ", ".join(pred_args) + ")")
             body = ", ".join(body_preds)
 
             clingo_rule = head + " :- " + body + "."
