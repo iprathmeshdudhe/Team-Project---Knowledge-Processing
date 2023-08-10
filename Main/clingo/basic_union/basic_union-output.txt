@@ -1,0 +1,11 @@
+clingo version 5.6.2
+Reading from clingo/basic_union/basic_union-facts.lp ...
+Solving...
+Answer: 1
+sourceA(a,b,c) sourceA(c,d,d) sourceA(a,e,f) sourceA(b,b,d) abc(q,q,a) abc(z,z,z) abc(c,d,d) abc(a,g,q) abc(b,b,d) abc(a,c,f) abc(a,b,c) abc(a,e,f) sourceB(c,d,d) sourceB(a,g,q) sourceB(q,q,a) sourceB(b,b,d) sourceB(a,c,f) sourceC(q,q,a) sourceC(z,z,z) ab(c,d,d) ab(a,g,q) ab(q,q,a) ab(b,b,d) ab(a,c,f) ab(a,b,c) ab(a,e,f)
+SATISFIABLE
+
+Models       : 1
+Calls        : 1
+Time         : 0.007s (Solving: 0.00s 1st Model: 0.00s Unsat: 0.00s)
+CPU Time     : 0.000s

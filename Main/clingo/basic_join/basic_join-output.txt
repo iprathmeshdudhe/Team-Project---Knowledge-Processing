@@ -1,0 +1,11 @@
+clingo version 5.6.2
+Reading from clingo/basic_join/basic_join-facts.lp ...
+Solving...
+Answer: 1
+sourceB(b,b,d) sourceB(c,d,d) sourceB(a,c,f) sourceB(a,g,q) sourceB(q,q,a) sourceB(b,d,a) sourceA(a,e,f) sourceA(b,b,d) sourceA(a,b,c) sourceA(c,d,d) j1(b,d,b) j1(a,c,b) j1(c,d,d) sourceC(q,q,a) sourceC(d,b,z) sourceC(z,z,z) sourceC(d,b,f) sourceC(f,e,d) sourceC(d,b,q) j2(f,e,a) j2(d,b,b) j3(d,b,z) j3(d,b,f) j3(d,b,q)
+SATISFIABLE
+
+Models       : 1
+Calls        : 1
+Time         : 0.006s (Solving: 0.00s 1st Model: 0.00s Unsat: 0.00s)
+CPU Time     : 0.000s
