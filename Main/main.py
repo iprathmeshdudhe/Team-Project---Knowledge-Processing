@@ -1,11 +1,12 @@
 import os
 import argparse
 from datalogrulemapper import *
-from rulewerk_controller import *
 import datetime
-from clingo_controller import ClingoController
+import sys
+# from clingo_controller import ClingoController
+from rulewerk_controller import RulewerkController
+from nemo_controller import NemoController
 
-#--keep this in main.py (here)
 def get_rls_file_paths(directory):
     rls_file_paths = []
     for root, dirs, files in os.walk(directory):
@@ -25,71 +26,105 @@ def main():
 
     #Added the parser to use the code as tool
     parser = argparse.ArgumentParser()
-    parser.add_argument('--solver', required=True, type=str, choices=['clingo', 'nemo', 'rulewerk', 'souflle'])
+    parser.add_argument('--solver', required=True, type=str, choices=['clingo', 'nemo', 'rulewerk', 'souffle', 'all'])
     parser.add_argument('--input_dir', type=str, required=True)
+    parser.add_argument('--task_name', type=str, required=True)
 
     args = parser.parse_args()
 
     rule_file_path = args.input_dir
-    rls_files = get_rls_file_paths(rule_file_path)
+
+    try:
+        rls_files = get_rls_file_paths(rule_file_path)
+    except:
+        print("Could not find directory!", err)
+        raise
+        sys.exit(1)
+
+    task = args.task_name
 
     if args.solver == 'clingo':
-
-        cc = ClingoController()
-        
-        #Converting Rulewerk Rule file into Clingo rules file
-        for rls in rls_files:
-            rules, facts, data_sources, example_name = ruleMapper.rulewerktoobject(rls, RuleParser)
-            saving_location = cc.get_clingo_location(example_name)
-            rule_head_preds = ruleMapper.rulewerk_to_clingo(rules, facts, data_sources, saving_location)
-
-            #Dictionary {"rule_file_location": [list of rule head predicates]........}
-            sav_loc_and_rule_head_predicates[saving_location] = rule_head_preds
-
-        c_memory, c_exec_time = cc.run_clingo(sav_loc_and_rule_head_predicates)
+        pass
+        # run_clingo(rls_files, RuleParser)
+      
 
     elif args.solver == 'nemo':
-        rls_file_list = []
+        run_nemo(rls_files, timestamp, task)
+
+    elif args.solver == 'rulewerk':
+        run_rulewerk(rls_files, RuleParser, Rule, Literal, rule_file_path, timestamp, task)
+
+    elif args.solver == 'souffle':
+        print("souffle")
+        # run_souffle(rule_file_path, RuleParser)
+        
+    elif args.solver == 'all':
+        print("all")
+        # run_clingo(rls_files, RuleParser)
+        run_nemo(rls_files, timestamp, task)
+        run_rulewerk(rls_files, RuleParser, Rule, Literal, rule_file_path, timestamp, task)
+        # run_souffle(rule_file_path, RuleParser)
+
+    ruleMapper.stop_jvm()
+
+def run_rulewerk(rls_files, RuleParser, Rule, Literal, rule_file_path, timestamp, task):
+    rc = RulewerkController()
+    query_dict={}
+    try:
+        for rls in rls_files:
+            file_name = os.path.basename(rls)
+            query, head_pred = rc.rulefileElements(RuleParser, Rule, Literal, rls)
+            query_dict[rls]=[query, head_pred]
+        execution_time, memory_info = rc.runRulewerk(rule_file_path, query_dict)
+        #call function to write bencmarking results to csv file
+        write_benchmark_results(timestamp, task, "Rulewerk", execution_time, memory_info)
+    except Exception as err:
+        print("An exception occurred: ", err)
+
+def run_clingo(rls_files, RuleParser):
+    cc = ClingoController()
+        
+    #Converting Rulewerk Rule file into Clingo rules file
+    for rls in rls_files:
+        rules, facts, data_sources, example_name = ruleMapper.rulewerktoobject(rls, RuleParser)
+        saving_location = cc.get_clingo_location(example_name)
+        rule_head_preds = ruleMapper.rulewerk_to_clingo(rules, facts, data_sources, saving_location)
+
+        #Dictionary {"rule_file_location": [list of rule head predicates]........}
+        sav_loc_and_rule_head_predicates[saving_location] = rule_head_preds
+
+    c_memory, c_exec_time = cc.run_clingo(sav_loc_and_rule_head_predicates)
+
+def run_nemo(rls_files, timestamp, task):
+    nc = NemoController()
+    rls_file_list = []
+    try:
         for rls in rls_files:
             rule_file_name = os.path.basename(rls)
             rule_file_path = os.path.dirname(rls)
             rls_file_list.append([rule_file_name, rule_file_path])
-        execution_time, memory_info = runNemo(rls_file_list)
+        execution_time, memory_info = nc.runNemo(rls_file_list) 
 
         #call function to write bencmarking results to csv file
-        write_benchmark_results(timestamp, "random_taskname_for_now", "Nemo", execution_time, memory_info)
+        write_benchmark_results(timestamp, task, "Nemo", execution_time, memory_info)
+    except Exception as err:
+        print("An exception occurred: ", err)
 
-    elif args.solver == 'rulewerk':
-        query_dict={}
-        for rls in rls_files:
-            file_name = os.path.basename(rls)
-            query, head_pred = rulefileElements(RuleParser, Rule, Literal, rls)
-            query_dict[rls]=[query, head_pred]
-        execution_time, memory_info = runRulewerk(rule_file_path, query_dict)
-        #call function to write bencmarking results to csv file
-        write_benchmark_results(timestamp, "random_taskname_for_now", "Rulewerk", execution_time, memory_info)
-
-    elif args.solver == 'souflle':
-        print("souflle")
-        type_declarations, facts_list, rules_list, query = ruleMapper.rulewerk_to_souffle(rule_file_path, RuleParser)
-        with open('souffle-example.dl', 'w') as output_file:
-             output_file.write('// Declarations\n')
-             output_file.writelines('\n'.join(type_declarations))
-             output_file.write('\n\n')
-             output_file.write('// Facts\n')
-             output_file.writelines('\n'.join(facts_list))
-             output_file.write('\n\n')
-             output_file.write('// Rules\n')
-             output_file.writelines('\n'.join(rules_list))
-             output_file.write('\n\n')
-             output_file.write('// Query\n')
-             output_file.writelines('\n'.join(query))
-             output_file.write('\n\n')
-
-
-
-    ruleMapper.stop_jvm()
-
+def run_souffle(rule_file_path, RuleParser):
+    type_declarations, facts_list, rules_list, query = ruleMapper.rulewerk_to_souffle(rule_file_path, RuleParser)
+    with open('souffle-example.dl', 'w') as output_file:
+        output_file.write('// Declarations\n')
+        output_file.writelines('\n'.join(type_declarations))
+        output_file.write('\n\n')
+        output_file.write('// Facts\n')
+        output_file.writelines('\n'.join(facts_list))
+        output_file.write('\n\n')
+        output_file.write('// Rules\n')
+        output_file.writelines('\n'.join(rules_list))
+        output_file.write('\n\n')
+        output_file.write('// Query\n')
+        output_file.writelines('\n'.join(query))
+        output_file.write('\n\n')
 
 def write_benchmark_results(timestamp, task, tool, execution_time, memory_info):
     #if not csv file exist create a new one : in which directory?
