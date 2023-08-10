@@ -16,8 +16,10 @@ def get_rls_file_paths(directory):
                 rls_file_paths.append(file_path)
     return rls_file_paths
 
+
+
 def main():
-    timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    
     #Dictionary to save locaion and rule head Predicates
     sav_loc_and_rule_head_predicates = {}
 
@@ -41,13 +43,14 @@ def main():
         raise
         sys.exit(1)
 
+    timestamp = datetime.datetime.now().strftime("%d-%m-%Y @%H:%M:%S")
+
     task = args.task_name
 
     if args.solver == 'clingo':
         pass
         # run_clingo(rls_files, RuleParser)
       
-
     elif args.solver == 'nemo':
         run_nemo(rls_files, timestamp, task)
 
@@ -77,7 +80,7 @@ def run_rulewerk(rls_files, RuleParser, Rule, Literal, rule_file_path, timestamp
             query_dict[rls]=[query, head_pred]
         execution_time, memory_info = rc.runRulewerk(rule_file_path, query_dict)
         #call function to write bencmarking results to csv file
-        write_benchmark_results(timestamp, task, "Rulewerk", execution_time, memory_info)
+        write_benchmark_results(timestamp, task, "Rulewerk", execution_time, memory_info, 10)
     except Exception as err:
         print("An exception occurred: ", err)
 
@@ -93,7 +96,8 @@ def run_clingo(rls_files, RuleParser):
         #Dictionary {"rule_file_location": [list of rule head predicates]........}
         sav_loc_and_rule_head_predicates[saving_location] = rule_head_preds
 
-    c_memory, c_exec_time = cc.run_clingo(sav_loc_and_rule_head_predicates)
+    c_memory, c_exec_time,  c_count_ans = cc.run_clingo(sav_loc_and_rule_head_predicates)
+    write_benchmark_results(timestamp, task, "Nemo", c_exec_time, c_memory, c_count_ans)
 
 def run_nemo(rls_files, timestamp, task):
     nc = NemoController()
@@ -106,7 +110,7 @@ def run_nemo(rls_files, timestamp, task):
         execution_time, memory_info = nc.runNemo(rls_file_list) 
 
         #call function to write bencmarking results to csv file
-        write_benchmark_results(timestamp, task, "Nemo", execution_time, memory_info)
+        write_benchmark_results(timestamp, task, "Nemo", execution_time, memory_info, 10)
     except Exception as err:
         print("An exception occurred: ", err)
 
@@ -126,20 +130,21 @@ def run_souffle(rule_file_path, RuleParser):
         output_file.writelines('\n'.join(query))
         output_file.write('\n\n')
 
-def write_benchmark_results(timestamp, task, tool, execution_time, memory_info):
+def write_benchmark_results(timestamp, task, tool, execution_time, memory_info, count):
     #if not csv file exist create a new one : in which directory?
     #header: timestamp task, tool, execution_time, memory_info
     #row: parameters in order
     #close csv
     flag=os.path.exists("BenchResults.csv")
-    print(flag)
+    #print(flag)
     with open("BenchResults.csv", mode='a', newline='') as csv_file:
         csv_writer = csv.writer(csv_file)
-        
-        if flag==False:
-            dw = csv.DictWriter(csv_file, delimiter=',', fieldnames=["Timestamp", "Task", "Tool", "Execution Time (ms)", "Memory Info (MB)"])
+        if flag:
+            pass
+        else:
+            dw = csv.DictWriter(csv_file, delimiter=',', fieldnames=["Timestamp (YYYY-MM-DD HH:MM:SS)", "Task", "Tool", "Execution Time (ms)", "Memory Info (MB)", "Count of grounded Rule Predicates"])
             dw.writeheader()
-        csv_writer.writerow([timestamp, task, tool, execution_time, memory_info])
+        csv_writer.writerow([timestamp, task, tool, execution_time, memory_info, count])
 
 if __name__ == '__main__':
     main()

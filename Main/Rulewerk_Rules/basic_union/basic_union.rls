@@ -1,0 +1,9 @@
+@source sourceA[3]: load-csv("Rulewerk_Rules/basic_union/sources/dataA.csv").
+@source sourceB[3]: load-csv("Rulewerk_Rules/basic_union/sources/dataB.csv").
+@source sourceC[3]: load-csv("Rulewerk_Rules/basic_union/sources/dataC.csv").
+
+ABC(?X, ?Y, ?Z) :- sourceA(?X, ?Y, ?Z) .
+ABC(?X, ?Y, ?Z) :- sourceB(?X, ?Y, ?Z) .
+ABC(?X, ?Y, ?Z) :- sourceC(?X, ?Y, ?Z) .
+AB(?X, ?Y, ?Z) :- sourceA(?X, ?Y, ?Z) .
+AB(?X, ?Y, ?Z) :- sourceB(?X, ?Y, ?Z) .
