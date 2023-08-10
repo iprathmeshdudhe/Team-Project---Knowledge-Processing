@@ -5,6 +5,7 @@ import jpype.imports
 from jpype.types import *
 from csvtofacts import *
 
+
 #JAVA_HOME setup not detected without explicitly mentioning in the code itself
 os.environ["JAVA_HOME"] = "C:\Program Files\Java\jdk-20"
 # Replace with the actual path to the lib folder
@@ -16,6 +17,9 @@ class DatalogRuleMapper:
         try:
             # Start the JVM
             jpype.startJVM(jpype.getDefaultJVMPath())
+            # print("JVM Started")
+            # print("==========================================================================================================================================================")
+            # print("JVM Path: ", jpype.getDefaultJVMPath())
 
             #Add the classPath
             jpype.addClassPath(os.path.join(rulewerk_lib_path,"*"))
@@ -23,13 +27,14 @@ class DatalogRuleMapper:
             from org.semanticweb.rulewerk.parser import RuleParser as rp
             from org.semanticweb.rulewerk.core.model.api import Rule, Literal
             from org.semanticweb.rulewerk.core.reasoner import Reasoner
-            print("Java Libraries imported")
-            print("==========================================================================================================================================================")
-        
+            # print("Java Libraries imported")
+            # print("==========================================================================================================================================================")
+            return rp, Rule, Literal
+
         except Exception as e:
             print("An exception occurred: ", e)
         
-        return rp, Rule, Literal
+        
 
 
     def stop_jvm(self):
