@@ -20,8 +20,8 @@ class NemoController:
 
         memory_usage = psutil.Process(process_id).memory_info().rss /1024/1024
         stdout, stderr = process.communicate()
-        # print(stdout.decode())
-        # print(stderr.decode())
+        print(stdout.decode())
+        print(stderr.decode())
         execution_time = (time.time() - start_time)*1000
     
         print("<-------------------- Process Completed! ----------------------->")

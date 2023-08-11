@@ -3,7 +3,7 @@ import argparse
 from datalogrulemapper import *
 import datetime
 import sys
-# from clingo_controller import ClingoController
+from clingo_controller import ClingoController
 from rulewerk_controller import RulewerkController
 from nemo_controller import NemoController
 
@@ -48,8 +48,7 @@ def main():
     task = args.task_name
 
     if args.solver == 'clingo':
-        pass
-        # run_clingo(rls_files, RuleParser)
+        run_clingo(rls_files, task, timestamp, RuleParser)
       
     elif args.solver == 'nemo':
         run_nemo(rls_files, timestamp, task)
@@ -78,20 +77,27 @@ def run_rulewerk(rls_files, RuleParser, Rule, Literal, rule_file_path, timestamp
             file_name = os.path.basename(rls)
             query, head_pred = rc.rulefileElements(RuleParser, Rule, Literal, rls)
             query_dict[rls]=[query, head_pred]
+        print(query_dict)
         execution_time, memory_info = rc.runRulewerk(rule_file_path, query_dict)
         #call function to write bencmarking results to csv file
         write_benchmark_results(timestamp, task, "Rulewerk", execution_time, memory_info, 10)
     except Exception as err:
         print("An exception occurred: ", err)
 
-def run_clingo(rls_files, RuleParser):
+def run_clingo(rls_files, task, timestamp, RuleParser):
+    print(rls_files)
     cc = ClingoController()
-        
+    ruleMapper = DatalogRuleMapper()
+    sav_loc_and_rule_head_predicates = {}
     #Converting Rulewerk Rule file into Clingo rules file
-    for rls in rls_files:
-        rules, facts, data_sources, example_name = ruleMapper.rulewerktoobject(rls, RuleParser)
+    for rls_file in rls_files:        
+        file_name = os.path.basename(rls_file)
+        file_path = os.path.dirname(rls_file)
+        rules, facts, data_sources, example_name = ruleMapper.rulewerktoobject(rls_file, RuleParser)
+  
+        
         saving_location = cc.get_clingo_location(example_name)
-        rule_head_preds = ruleMapper.rulewerk_to_clingo(rules, facts, data_sources, saving_location)
+        rule_head_preds = ruleMapper.rulewerk_to_clingo(file_path, rules, facts, data_sources, saving_location)
 
         #Dictionary {"rule_file_location": [list of rule head predicates]........}
         sav_loc_and_rule_head_predicates[saving_location] = rule_head_preds
