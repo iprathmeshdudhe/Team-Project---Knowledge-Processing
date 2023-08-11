@@ -10,9 +10,7 @@ import sys
 
 class RulewerkController:
     def rulefileElements(self, parser, Rule, Literal, rlsFilePath):
-        with open(rlsFilePath, 'r') as rule_file: 
-    
-            
+        with open(rlsFilePath, 'r') as rule_file:           
             rls_file = rule_file.read()
             kb = parser.parse(rls_file)                    
             rules = kb.getRules()
@@ -37,6 +35,7 @@ class RulewerkController:
         owd = os.getcwd()
         # go to the user input rls file directory which contains the rulewerk-client.jar to run rulewerk
         os.chdir(os.path.join(owd, rule_file_path))
+        print(os.getcwd())
         command = "java -jar rulewerk-client.jar"
 
         cmd_process = subprocess.Popen(['cmd'], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False)
@@ -68,6 +67,7 @@ class RulewerkController:
         #measure usage of the process
         memory_usage = psutil.Process(process_id).memory_info().rss /1024/1024
         stdout, stderr = cmd_process.communicate()
+        print(stdout.decode())
 
         execution_time = (time.time() - start_time)*1000
     

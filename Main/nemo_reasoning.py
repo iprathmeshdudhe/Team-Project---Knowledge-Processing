@@ -17,13 +17,17 @@ def nemo_reasoning(owd, rls_file_list):
         currPath = os.getcwd()        
     
         # using the python nemo bings nmo_python to load the rule file
-        rls_file = nmo_python.load_file("{}\{}".format(currPath, rule_file_name))
+        try:
+            rls_file = nmo_python.load_file("{}\{}".format(currPath, rule_file_name))
+            nemo_rule = nmo_python.NemoEngine(rls_file)
+            print("Running the reasoner...")
+            nemo_rule.reason()
+
+        except Exception as err:
+            print("Error:", err)
 
         # passing the loaded rls file to the nemo engine and running the nemo reasoner
-        nemo_rule = nmo_python.NemoEngine(rls_file)
-        print("Running the reasoner...")
-        nemo_rule.reason()
-
+        
         # the write_result function accepts parmaters: predicate of the query to  be executed, outfile_manager that takes the NemoOutputManager structure with parameters file dir as string, bool overrite?, bool gzip? 
         # write_result writes the query results of the specified query to the specified output dir
         # for every output predicate in the rulefile, run the query and store results in a file
