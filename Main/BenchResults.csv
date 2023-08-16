@@ -1,0 +1,15 @@
+Timestamp (YYYY-MM-DD HH:MM:SS),Task,Tool,Execution Time (ms),Memory Info (MB),Count of grounded Rule Predicates
+16-08-2023 @11:42:18,basic_join,Nemo,1288.98,1.53,8
+16-08-2023 @11:42:18,basic_join,Rulewerk,1853.48,1.71,8
+16-08-2023 @11:42:53,basic_projection,Nemo,1205.42,1.52,19
+16-08-2023 @11:42:53,basic_projection,Rulewerk,1442.42,1.71,19
+16-08-2023 @11:43:13,basic_union,Nemo,1266.33,1.51,15
+16-08-2023 @11:43:13,basic_union,Rulewerk,1808.87,1.71,15
+16-08-2023 @11:43:39,load_multiple,Nemo,1306.03,1.51,11
+16-08-2023 @11:43:39,load_multiple,Rulewerk,1401.56,1.71,11
+16-08-2023 @11:43:56,repeated_variables,Nemo,1438.26,1.52,8
+16-08-2023 @11:43:56,repeated_variables,Rulewerk,1687.07,1.71,8
+16-08-2023 @11:44:15,symmetric_transitive_closure,Nemo,1183.7,1.52,57
+16-08-2023 @11:44:15,symmetric_transitive_closure,Rulewerk,1796.13,1.71,57
+16-08-2023 @11:44:28,all_basics,Nemo,1462.79,1.53,118
+16-08-2023 @11:44:28,all_basics,Rulewerk,2626.98,2.05,118

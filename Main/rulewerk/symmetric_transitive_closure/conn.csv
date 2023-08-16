@@ -1,0 +1,16 @@
+Vienna,Berlin
+Vienna,Rome
+Vienna,Zurich
+Berlin,Paris
+Tokyo,Kobe
+Kobe,Fukuoka
+Fukuoka,Okayama
+Niigata,Tokyo
+Berlin,Vienna
+Paris,Berlin
+Rome,Vienna
+Tokyo,Niigata
+Kobe,Tokyo
+Fukuoka,Kobe
+Okayama,Fukuoka
+Zurich,Vienna

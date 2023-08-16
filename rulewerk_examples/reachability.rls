@@ -1,6 +1,0 @@
-triple(n1, eg1, n2).
-triple(n1, eg2, n2).
-
-%parallel reachability query
-Reach(?X, ?Y) :- triple(?X, eg1, ?Y), triple(?X, eg2, ?Y).
-Reach(?X, ?Z) :- Reach(?X, ?Y), Reach(?Y, ?Z).

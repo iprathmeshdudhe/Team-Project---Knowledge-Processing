@@ -1,5 +1,5 @@
-@source city[1]: load-csv("Rulewerk_Rules/symmetric_transitive_closure/sources/city.csv").
-@source conn[2]: load-csv("Rulewerk_Rules/symmetric_transitive_closure/sources/conn.csv").
+@source city[1]: load-csv("sources/city.csv").
+@source conn[2]: load-csv("sources/conn.csv").
 
 connected(?X,?Y) :- city(?X), city(?Y), conn(?X,?Y).
 conn(?X,?Y) :- conn(?Y,?X).
