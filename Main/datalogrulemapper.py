@@ -85,7 +85,7 @@ class DatalogRuleMapper:
             rel_path = data_source.relative_to(base_dir)
             # print("Rel path:-", relative_path)
             source = Path(str(os.path.join(os.getcwd(), rule_file_path, rel_path)))
-            print("Source:-", source)
+            #print("Source:-", source)
 
             if predicate.getName() not in dataSource_dict.keys():
                 dataSource_dict[predicate.getName()] = [predicate.getArity(), str(source)]
@@ -156,7 +156,7 @@ class DatalogRuleMapper:
         rules_list, head_predicates  = self.process_clingo_rules(rules)
         facts_list = self.process_clingo_facts(facts)
         data_sources_dict = self.processDataSources(rule_file_dir, data_sources)
-        print("Data Sources Dict:--", data_sources_dict)
+        #print("Data Sources Dict:--", data_sources_dict)
         
 
         if len(facts_list) == 0 and len(rules_list) == 0 and len(data_sources_dict) == 0:

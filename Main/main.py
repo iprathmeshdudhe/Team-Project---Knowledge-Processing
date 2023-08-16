@@ -1,5 +1,6 @@
 import os
 import argparse
+import csv
 from datalogrulemapper import *
 import datetime
 import sys
@@ -33,59 +34,6 @@ def write_benchmark_results(timestamp, task, tool, execution_time, memory_info, 
             dw.writeheader()
         csv_writer.writerow([timestamp, task, tool, execution_time, memory_info, count])
 
-
-
-def main():
-    
-    #Dictionary to save locaion and rule head Predicates
-    sav_loc_and_rule_head_predicates = {}
-
-    ruleMapper = DatalogRuleMapper()
-    RuleParser, Rule, Literal = ruleMapper.start_jvm()
-
-    #Added the parser to use the code as tool
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--solver', required=True, type=str, choices=['clingo', 'nemo', 'rulewerk', 'souffle', 'all'])
-    parser.add_argument('--input_dir', type=str, required=True)
-    parser.add_argument('--task_name', type=str, required=True)
-
-    args = parser.parse_args()
-
-    rule_file_path = args.input_dir
-
-    try:
-        rls_files = get_rls_file_paths(rule_file_path)
-    except:
-        print("Could not find directory!", err)
-        raise
-        sys.exit(1)
-
-    timestamp = datetime.datetime.now().strftime("%d-%m-%Y @%H:%M:%S")
-
-    task = args.task_name
-
-    if args.solver == 'clingo':
-        run_clingo(rls_files, task, timestamp, RuleParser)
-      
-    elif args.solver == 'nemo':
-        run_nemo(rls_files, timestamp, task)
-
-    elif args.solver == 'rulewerk':
-        run_rulewerk(rls_files, RuleParser, Rule, Literal, rule_file_path, timestamp, task)
-
-    elif args.solver == 'souffle':
-        print("souffle")
-        # run_souffle(rule_file_path, RuleParser)
-        
-    elif args.solver == 'all':
-        print("all")
-        # run_clingo(rls_files, RuleParser)
-        run_nemo(rls_files, timestamp, task)
-        run_rulewerk(rls_files, RuleParser, Rule, Literal, rule_file_path, timestamp, task)
-        # run_souffle(rule_file_path, RuleParser)
-
-    ruleMapper.stop_jvm()
-
 def run_rulewerk(rls_files, RuleParser, Rule, Literal, rule_file_path, timestamp, task):
     rc = RulewerkController()
     query_dict={}
@@ -102,26 +50,27 @@ def run_rulewerk(rls_files, RuleParser, Rule, Literal, rule_file_path, timestamp
         print("An exception occurred: ", err)
         traceback.print_exc()
 
-def run_clingo(rls_files, task, timestamp, RuleParser):
-    print(rls_files)
-    cc = ClingoController()
-    ruleMapper = DatalogRuleMapper()
+def clingo(rls_files, task, timestamp, RuleParser, ruleMapper):
+    #Dictionary to save locaion and rule head Predicates
     sav_loc_and_rule_head_predicates = {}
-    #Converting Rulewerk Rule file into Clingo rules file
-    for rls_file in rls_files:        
-        file_name = os.path.basename(rls_file)
-        file_path = os.path.dirname(rls_file)
-        rules, facts, data_sources, example_name = ruleMapper.rulewerktoobject(rls_file, RuleParser)
-  
+    
+    cc = ClingoController()
         
+    #Converting Rulewerk Rule file into Clingo rules file
+    for rls in rls_files:
+        #file_name = os.path.basename(rls)
+        file_path = os.path.dirname(rls)
+        
+        rules, facts, data_sources, example_name = ruleMapper.rulewerktoobject(rls, RuleParser)
         saving_location = cc.get_clingo_location(example_name)
         rule_head_preds = ruleMapper.rulewerk_to_clingo(file_path, rules, facts, data_sources, saving_location)
-
         #Dictionary {"rule_file_location": [list of rule head predicates]........}
         sav_loc_and_rule_head_predicates[saving_location] = rule_head_preds
 
-    c_memory, c_exec_time,  c_count_ans = cc.run_clingo(sav_loc_and_rule_head_predicates)
-    write_benchmark_results(timestamp, task, "Clingo", c_exec_time, c_memory, c_count_ans)
+    c_memory, c_exec_time, c_count_ans = cc.run_clingo(sav_loc_and_rule_head_predicates)
+
+    #call function to write bencmarking results to csv file
+    write_benchmark_results(timestamp, task, "Clingo", c_exec_time, c_memory, c_count_ans)  # add count of grounded atoms
 
 def run_nemo(rls_files, timestamp, task):
     nc = NemoController()
@@ -154,7 +103,52 @@ def run_souffle(rule_file_path, RuleParser):
         output_file.writelines('\n'.join(query))
         output_file.write('\n\n')
 
+def main():
+    
+    ruleMapper = DatalogRuleMapper()
+    RuleParser, Rule, Literal = ruleMapper.start_jvm()
 
+    #Added the parser to use the code as tool
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--solver', required=True, type=str, choices=['clingo', 'nemo', 'rulewerk', 'souffle', 'all'])
+    parser.add_argument('--input_dir', type=str, required=True)
+    parser.add_argument('--task_name', type=str, required=True)
+
+    args = parser.parse_args()
+
+    rule_file_path = args.input_dir
+
+    try:
+        rls_files = get_rls_file_paths(rule_file_path)
+    except:
+        print("Could not find directory!", err)
+        raise
+        sys.exit(1)
+
+    timestamp = datetime.datetime.now().strftime("%d-%m-%Y @%H:%M:%S")
+
+    if args.solver == 'clingo':
+        clingo(rls_files, args.task_name, timestamp, RuleParser, ruleMapper)
+      
+    elif args.solver == 'nemo':
+        run_nemo(rls_files, timestamp, args.task_name)
+
+    elif args.solver == 'rulewerk':
+        run_rulewerk(rls_files, RuleParser, Rule, Literal, rule_file_path, timestamp, args.task_name)
+
+    elif args.solver == 'souffle':
+        print("souffle")
+        # run_souffle(rule_file_path, RuleParser)
+        
+    elif args.solver == 'all':
+        print("All Solvers are selected.")
+        clingo(rls_files, args.task_name, timestamp, RuleParser, ruleMapper)
+        run_nemo(rls_files, timestamp, args.task_name)
+        run_rulewerk(rls_files, RuleParser, Rule, Literal, rule_file_path, timestamp, args.task_name)
+        # run_souffle(rule_file_path, RuleParser)
+
+    ruleMapper.stop_jvm()
+    
 if __name__ == '__main__':
     main()
 
