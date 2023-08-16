@@ -1,6 +1,6 @@
-@source source[3]: load-csv("Rulewerk_Rules/load_multiple/sources/dataA.csv").
-@source source[3]: load-csv("Rulewerk_Rules/load_multiple/sources/dataB.csv").
-@source source[3]: load-csv("Rulewerk_Rules/load_multiple/sources/dataC.csv").
+@source source[3]: load-csv("sources/dataA.csv").
+@source source[3]: load-csv("sources/dataB.csv").
+@source source[3]: load-csv("sources/dataC.csv").
 
 
 source("A", "B", "C") .

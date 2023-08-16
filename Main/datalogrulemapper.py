@@ -4,7 +4,8 @@ import jpype
 import jpype.imports
 from jpype.types import *
 from csvtofacts import *
-
+from pathlib import Path
+from tqdm import tqdm
 
 #JAVA_HOME setup not detected without explicitly mentioning in the code itself
 os.environ["JAVA_HOME"] = "C:\Program Files\Java\jdk-20"
@@ -42,20 +43,20 @@ class DatalogRuleMapper:
         jpype.shutdownJVM()
 
 
-    def rulewerktoobject(self, rule_file, parser):
+    def rulewerktoobject(self, rule_file_name, parser):
+             
 
         # Parse the Rulewerk rule file into an object model
-        with open(rule_file, 'r') as rule_file:
+        with open(rule_file_name, 'r') as rule_file:
             kb = parser.parse(rule_file.read())
+
 
         #Getting Datasources, Facts and Rules from the Rule File
         facts = kb.getFacts()
         rules = kb.getRules()
         data_sources = kb.getDataSourceDeclarations()
 
-
-        file_path = str(rule_file)
-        file_name = os.path.basename(file_path)
+        file_name = os.path.basename(rule_file_name)
         file_name_without_extension = os.path.splitext(file_name)[0]
               
         return rules, facts, data_sources, file_name_without_extension
@@ -66,7 +67,7 @@ class DatalogRuleMapper:
 
         return facts_list
     
-    def processDataSources(self, data_Sources):
+    def processDataSources(self, rule_file_path, data_Sources):
 
         dataSource_dict = {}
         
@@ -74,12 +75,22 @@ class DatalogRuleMapper:
         #{Table1_Name: [Num_of_variables used in it, Path of the csv zipped file], ......}
         for datasource in data_Sources:
             predicate = datasource.getPredicate()
-            source = datasource.getDataSource().getDeclarationFact().getArguments()[0].getName()
+            data_source = Path(str(datasource.getDataSource().getDeclarationFact().getArguments()[0].getName()).strip('"'))
+            cwd = str(os.getcwd())
+            base_dir = Path(cwd)
+            # print(f"{data_source}:{type(data_source)}")
+            # print(f"{base_dir}:{type(base_dir)}")
+            # print("data-source:-", data_source)
+            # print("Base dir:-", base_dir)
+            rel_path = data_source.relative_to(base_dir)
+            # print("Rel path:-", relative_path)
+            source = Path(str(os.path.join(os.getcwd(), rule_file_path, rel_path)))
+            print("Source:-", source)
 
             if predicate.getName() not in dataSource_dict.keys():
-                dataSource_dict[predicate.getName()] = [predicate.getArity(), str(source.toString())]
+                dataSource_dict[predicate.getName()] = [predicate.getArity(), str(source)]
             else:
-                dataSource_dict[predicate.getName()].append(str(source.toString()))   
+                dataSource_dict[predicate.getName()].append(str(source))   
 
         return dataSource_dict
 
@@ -134,17 +145,18 @@ class DatalogRuleMapper:
 
         unique_facts = list(set(facts_list))
         
-        with open(location_to_save + "-facts.lp", 'a') as file:
-            for fact in tqdm.tqdm(unique_facts, desc='Writing Facts to file: ', colour='blue'):
+        with open(location_to_save + "-facts.lp", 'w') as file:
+            for fact in tqdm(unique_facts, desc='Writing Facts to file: ', colour='blue'):
                 file.write(fact + '\n')
 
         print(f'Facts File saved at location: {location_to_save}-facts.lp')
 
-    def rulewerk_to_clingo(self, rules, facts, data_sources, saving_location):
+    def rulewerk_to_clingo(self, rule_file_dir, rules, facts, data_sources, saving_location):
 
         rules_list, head_predicates  = self.process_clingo_rules(rules)
         facts_list = self.process_clingo_facts(facts)
-        data_sources_dict = self.processDataSources(data_sources)
+        data_sources_dict = self.processDataSources(rule_file_dir, data_sources)
+        print("Data Sources Dict:--", data_sources_dict)
         
 
         if len(facts_list) == 0 and len(rules_list) == 0 and len(data_sources_dict) == 0:
