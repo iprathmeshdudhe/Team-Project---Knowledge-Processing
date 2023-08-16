@@ -13,3 +13,12 @@ Timestamp (YYYY-MM-DD HH:MM:SS),Task,Tool,Execution Time (ms),Memory Info (MB),C
 16-08-2023 @11:44:15,symmetric_transitive_closure,Rulewerk,1796.13,1.71,57
 16-08-2023 @11:44:28,all_basics,Nemo,1462.79,1.53,118
 16-08-2023 @11:44:28,all_basics,Rulewerk,2626.98,2.05,118
+16-08-2023 @18:55:38,basic_join,Clingo,4.0,1.86,8
+16-08-2023 @18:55:56,basic_projection,Clingo,4.53,1.84,19
+16-08-2023 @18:56:12,basic_union,Clingo,4.0,1.86,15
+16-08-2023 @18:56:34,load_multiple,Clingo,4.52,1.86,11
+16-08-2023 @18:56:54,repeated_variables,Clingo,4.01,1.86,8
+16-08-2023 @18:57:12,symmetric_transitive_closure,Clingo,4.29,1.86,57
+16-08-2023 @18:57:32,all_basics,Clingo,5.02,1.94,118
+16-08-2023 @19:15:19,all_basics,Clingo,4.01,1.92,118
+16-08-2023 @19:17:40,all_basics,Clingo,4.0,2.01,118
