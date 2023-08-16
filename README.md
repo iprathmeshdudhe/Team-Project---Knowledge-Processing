@@ -59,7 +59,7 @@ Respectively, our benchmarking tool only translate the ruleverk exampless that a
 To Run the tool, we just need to the run main.py script using the command:
 
 ```bash
-python -m main --solver clingo --input_dir /path/to/rule/files
+python3 -m main --solver clingo --input_dir /path/to/rule/files
 ```
 For other solvers, you may simply modify the arguments `--solver` accordingly with the options: `clingo`, `nemo`, `souflle`.
 

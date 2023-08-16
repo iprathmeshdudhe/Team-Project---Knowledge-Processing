@@ -8,7 +8,7 @@ from csvtofacts import *
 #JAVA_HOME setup not detected without explicitly mentioning in the code itself
 os.environ["JAVA_HOME"] = "C:\Program Files\Java\jdk-20"
 # Replace with the actual path to the lib folder
-rulewerk_lib_path = "C:/Users/kansa/Desktop/Team Project TUD SoSe23/Team-Project---Knowledge-Processing/Main/lib"
+rulewerk_lib_path = "lib"
 
 class DatalogRuleMapper:
 
