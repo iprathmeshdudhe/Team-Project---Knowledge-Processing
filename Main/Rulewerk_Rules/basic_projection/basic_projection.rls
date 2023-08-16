@@ -1,7 +1,0 @@
-@source data[3]: load-csv("Rulewerk_Rules/basic_projection/sources/data.csv").
-
-A(?X, ?Z) :- data(?X, ?Y, ?Z) .
-B(?Y, ?X) :- A(?X, ?Y) .
-C(?Y) :- B(?VariableThatIsNotNeeded, ?Y) .
-D(?Y, ?Z) :- data(?X, ?Y, ?Z) .
-E(?F, ?E) :- D(?E, ?F) .
