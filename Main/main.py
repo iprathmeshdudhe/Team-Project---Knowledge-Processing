@@ -141,14 +141,14 @@ def main():
 
     elif args.solver == 'souffle':
         print("souffle")
-        # run_souffle(rule_file_path, RuleParser)
+        run_souffle(rule_file_path, RuleParser)
         
     elif args.solver == 'all':
         print("all")
-        # run_clingo(rls_files, RuleParser)
+        run_clingo(rls_files, RuleParser)
         run_nemo(rls_files, timestamp, task)
         run_rulewerk(rls_files, RuleParser, Rule, Literal, rule_file_path, timestamp, task)
-        # run_souffle(rule_file_path, RuleParser)
+        run_souffle(rule_file_path, RuleParser)
 
     ruleMapper.stop_jvm()
 
