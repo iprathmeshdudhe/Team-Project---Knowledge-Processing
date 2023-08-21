@@ -1,15 +1,13 @@
-import os
 import argparse
-import csv
 from datalogrulemapper import *
 import datetime
-import sys
+from loguru import logger
 from clingo_controller import ClingoController
 from rulewerk_controller import RulewerkController
 from nemo_controller import NemoController
 import traceback
 
-import errors
+from src.errors import NoRlsFilesFound, DirectoryNotFound
 
 
 def get_rls_file_paths(directory):
@@ -20,7 +18,6 @@ def get_rls_file_paths(directory):
                 file_path = os.path.join(root, file)
                 rls_file_paths.append(file_path)
     return rls_file_paths
-
 
 def write_benchmark_results(timestamp, task, tool, execution_time, memory_info, count):
     # if not csv file exist create a new one : in which directory?
@@ -69,7 +66,7 @@ def run_rulewerk(rls_files, RuleParser, Rule, Literal, rule_file_path, timestamp
         traceback.print_exc()
 
 
-def clingo(rls_files, task, timestamp, RuleParser, ruleMapper):
+def run_clingo(rls_files, task, timestamp, RuleParser, ruleMapper):
     # Dictionary to save locaion and rule head Predicates
     sav_loc_and_rule_head_predicates = {}
 
@@ -137,21 +134,26 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--solver", required=True, type=str, choices=["clingo", "nemo", "rulewerk", "souffle", "all"])
     parser.add_argument("--input_dir", type=str, required=True)
-    parser.add_argument("--task_name", type=str, required=True)
+    parser.add_argument("--task_name", type=str, required=False)
 
     args = parser.parse_args()
 
     rule_file_path = args.input_dir
+    if not os.path.exists(rule_file_path):
+        raise DirectoryNotFound("The given directory does not exist")
 
-    try:
-        rls_files = get_rls_file_paths(rule_file_path)
-    except Exception as e:
-        raise errors.DirectoryNotFound(e)
+    rls_files = get_rls_file_paths(rule_file_path)
+    if not rls_files:
+        raise NoRlsFilesFound("No .rls files found in the given directory")
+
+    if not args.task_name:
+        normalized_path = os.path.normpath(rule_file_path)
+        args.task_name = normalized_path.split(os.sep)[-1]
 
     timestamp = datetime.datetime.now().strftime("%d-%m-%Y @%H:%M:%S")
 
     if args.solver == "clingo":
-        clingo(rls_files, args.task_name, timestamp, RuleParser, ruleMapper)
+        run_clingo(rls_files, args.task_name, timestamp, RuleParser, ruleMapper)
 
     elif args.solver == "nemo":
         run_nemo(rls_files, timestamp, args.task_name)
@@ -160,15 +162,14 @@ def main():
         run_rulewerk(rls_files, RuleParser, Rule, Literal, rule_file_path, timestamp, args.task_name)
 
     elif args.solver == "souffle":
-        print("souffle")
         run_souffle(rule_file_path, RuleParser)
 
     elif args.solver == "all":
         print("All Solvers are selected.")
-        clingo(rls_files, args.task_name, timestamp, RuleParser, ruleMapper)
+        run_clingo(rls_files, args.task_name, timestamp, RuleParser, ruleMapper)
         run_nemo(rls_files, timestamp, args.task_name)
         run_rulewerk(rls_files, RuleParser, Rule, Literal, rule_file_path, timestamp, args.task_name)
-        # run_souffle(rule_file_path, RuleParser)
+        run_souffle(rule_file_path, RuleParser)
 
     ruleMapper.stop_jvm()
 
