@@ -3,14 +3,17 @@ import ast
 import jpype
 import jpype.imports
 from jpype.types import *
-from csvtofacts import *
+from loguru import logger
+
 from pathlib import Path
 from tqdm import tqdm
 
-# JAVA_HOME setup not detected without explicitly mentioning in the code itself
-os.environ["JAVA_HOME"] = "C:\Program Files\Java\jdk-20"
-# Replace with the actual path to the lib folder
-rulewerk_lib_path = "lib"
+from csvtofacts import *
+from src.errors import CouldNotStartJVM
+from src.config import Settings
+
+
+os.environ["JAVA_HOME"] = Settings.java_home_path
 
 
 class DatalogRuleMapper:
@@ -23,22 +26,22 @@ class DatalogRuleMapper:
             # print("JVM Path: ", jpype.getDefaultJVMPath())
 
             # Add the classPath
-            jpype.addClassPath(os.path.join(rulewerk_lib_path, "*"))
+            jpype.addClassPath(os.path.join(Settings.rulewerk_lib_path, "*"))
 
             from org.semanticweb.rulewerk.parser import RuleParser
             from org.semanticweb.rulewerk.core.model.api import Rule, Literal
             from org.semanticweb.rulewerk.core.reasoner import Reasoner
 
-            # print("Java Libraries imported")
-            # print("==========================================================================================================================================================")
+            logger.success("JVM started")
             return RuleParser, Rule, Literal
 
         except Exception as e:
-            print("An exception occurred: ", e)
+            raise CouldNotStartJVM(e)
 
     def stop_jvm(self):
         # Shutdown the JVM when you're done
         jpype.shutdownJVM()
+        logger.success("JVM stopped")
 
     def rulewerktoobject(self, rule_file_name, parser):
         # Parse the Rulewerk rule file into an object model

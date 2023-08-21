@@ -56,15 +56,27 @@ Respectively, our benchmarking tool only translate the rulewerk examples that ar
 [Documentation](https://souffle-lang.github.io/index.html)
 
 ## Tool usage
+Before using the tool, go to Main/src/config.py and set the environment variables for your computer
 
-To Run the tool, we just need to the run main.py script using the command:
+To Run the tool, run the main.py script using the command:
 
 ```bash
-python -m main --solver clingo --input_dir /path/to/rule/files --task_name name_of_the_task
+cd Main
+python3 -m main.py --solver solver_name --input_dir /path/to/rule/files --task_name name_of_the_task
 ```
-For other solvers, you may simply modify the arguments `--solver` accordingly with the options: `clingo`, `nemo`, `souflle`, `all`.
+For `--solver`(required) you can use the options: `clingo`, `nemo`, `souflle`, `all`.
 
-Replace /path/to/rule/files with the directory containing the Rulewerk rule files which we use as starting point.
+For `--input_dir`(required), provide the directory containing the Rulewerk task file and data sources in a subdirectory "sources".
 
+For `--task_name`(optional), provide the custom name of the example which will be written to the results file. 
+
+Examples of command usage:
+```bash
+python3 -m main --solver souffle --input_dir Rulewerk_Rules\basic_join --task_name basic_join
+python3 -m main --solver souffle --input_dir Rulewerk_Rules --task_name all_basics
+```
+The first command will run only the basic_join example, the second will run all the examples in the Rulewerk_Rules directory.
+
+## Tool flow
 <img src="./Tool flow.png"> 
 
