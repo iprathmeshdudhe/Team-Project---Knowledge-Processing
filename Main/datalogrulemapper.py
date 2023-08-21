@@ -196,28 +196,22 @@ class DatalogRuleMapper:
 
         return head_predicates
 
-    def rulewerk_to_souffle(self, rule_file, parser):
-        with open(rule_file, "r") as rule_file:
-            kb = parser.parse(rule_file.read())
-
-        facts = kb.getFacts()
-        rules = kb.getRules()
-
+    def rulewerk_to_souffle(self, rules, facts):
+        alphabet_letters = [chr(ord('A') + i) for i in range(26)]
         type_declarations = []
         rules_list = []
-        query = []
         facts_list = []
 
         # facts and type declarations
         for i, fact in enumerate(facts):
             # print(f'-----------------------fact # {i}, fact {fact}-----------------------')
-            souffle_arguments = [f'"{argument}"' for argument in fact.getArguments()]
+            souffle_arguments = [f'{argument}' for argument in fact.getArguments()]
             souffle_declaration_arguments = []
             for j, argument in enumerate(fact.getArguments()):
                 # type declarations
                 # type = ': number' if str(argument).isdigit() else ': symbol' # it is possible also to treat numbers
                 data_type = ": symbol"
-                souffle_declaration_argument = self.list_of_variable_names[j] + data_type
+                souffle_declaration_argument = alphabet_letters[j] + data_type
                 souffle_declaration_arguments.append(souffle_declaration_argument)
 
             souffle_fact = str(fact.getPredicate().getName()) + "(" + ", ".join(souffle_arguments) + ")."
@@ -233,63 +227,24 @@ class DatalogRuleMapper:
             # first, check if there is a question mark in each argument. If not, treat it as a query
             body_literals = rule.getBody().getLiterals()
             body_arguments = [str(argument) for literal in body_literals for argument in literal.getArguments()]
-            is_fact = min([argument.startswith("?") for argument in body_arguments])
-            if is_fact:
-                # souffle facts
-                souffle_rule = str(rule).replace("?", "").replace(" .", ".").replace("~", "!")
-                rules_list.append(souffle_rule)
+            souffle_rule = str(rule).replace("?", "").replace(" .", ".").replace("~", "!")
+            rules_list.append(souffle_rule)
 
-                # type declarations
-                souffle_declaration_arguments = []
-                for j, argument in enumerate(rule.getHead().getLiterals()[0].getArguments()):
-                    data_type = ": symbol"
-                    souffle_declaration_argument = self.list_of_variable_names[j] + data_type
-                    souffle_declaration_arguments.append(souffle_declaration_argument)
+            # type declarations
+            souffle_declaration_arguments = []
+            for j, argument in enumerate(rule.getHead().getLiterals()[0].getArguments()):
+                data_type = ": symbol"
+                souffle_declaration_argument = alphabet_letters[j] + data_type
+                souffle_declaration_arguments.append(souffle_declaration_argument)
 
-                souffle_declaration = (
-                    ".decl "
-                    + str(rule.getHead().getLiterals()[0].getPredicate().getName())
-                    + "("
-                    + ", ".join(souffle_declaration_arguments)
-                    + ")"
-                )
-                type_declarations.append(souffle_declaration)
-
-            else:
-                # treat this "KB fact" as a query
-                # type declaration
-                query_head_name = str(rule.getHead().getLiterals()[0].getPredicate().getName())
-                print(f"rls query is {rule}")
-                souffle_declaration_arguments = []
-                for j, argument in enumerate(rule.getHead().getLiterals()[0].getArguments()):
-                    data_type = ": symbol"
-                    souffle_declaration_argument = self.list_of_variable_names[j] + data_type
-                    souffle_declaration_arguments.append(souffle_declaration_argument)
-
-                souffle_declaration = ".decl " + query_head_name + "(" + ", ".join(souffle_declaration_arguments) + ")"
-                type_declarations.append(souffle_declaration)
-                output_statement = ".output " + query_head_name
-                query.append(output_statement)
-                query_statement = str(rule.getHead().getLiterals()[0]).replace("?", "") + " :- "
-                for k, literal in enumerate(body_literals):
-                    if k > 0:
-                        query_statement = query_statement + ", "
-
-                    query_statement = query_statement + str(literal.getPredicate().getName()) + "("
-                    for m, argument in enumerate(literal.getArguments()):
-                        if m > 0:
-                            query_statement = query_statement + ", "
-                        str_argument = str(argument)
-                        if str_argument.startswith("?"):
-                            query_statement = query_statement + str_argument.replace("?", "")
-                        else:
-                            query_statement = query_statement + '"' + str_argument + '"'
-                    query_statement = query_statement + ")"
-
-                    print(literal)
-
-                query_statement = query_statement + "."
-                query.append(query_statement)
+            souffle_declaration = (
+                ".decl "
+                + str(rule.getHead().getLiterals()[0].getPredicate().getName())
+                + "("
+                + ", ".join(souffle_declaration_arguments)
+                + ")"
+            )
+            type_declarations.append(souffle_declaration)
 
         type_declarations = list(set(type_declarations))
-        return type_declarations, facts_list, rules_list, query
+        return type_declarations, facts_list, rules_list

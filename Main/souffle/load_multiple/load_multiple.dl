@@ -1,0 +1,15 @@
+// Declarations
+.decl combined(A: symbol, B: symbol, C: symbol)
+.decl source(A: symbol, B: symbol, C: symbol)
+.decl constant(A: symbol)
+
+// Facts
+source("A", "B", "C").
+source("B", "C", "D").
+source("Q", "B", "C").
+
+// Rules
+combined(X, Y, Z) :- source(X, Y, Z).
+constant(X) :- combined(X, "B", "C").
+constant(X) :- combined(X, "Y", Z).
+

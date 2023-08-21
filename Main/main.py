@@ -1,13 +1,16 @@
 import argparse
+import os.path
+
 from datalogrulemapper import *
 import datetime
 from loguru import logger
-from clingo_controller import ClingoController
-from rulewerk_controller import RulewerkController
-from nemo_controller import NemoController
 import traceback
 
 from src.errors import NoRlsFilesFound, DirectoryNotFound
+from clingo_controller import ClingoController
+from rulewerk_controller import RulewerkController
+from nemo_controller import NemoController
+from souffle_controller import SouffleController
 
 
 def get_rls_file_paths(directory):
@@ -18,6 +21,7 @@ def get_rls_file_paths(directory):
                 file_path = os.path.join(root, file)
                 rls_file_paths.append(file_path)
     return rls_file_paths
+
 
 def write_benchmark_results(timestamp, task, tool, execution_time, memory_info, count):
     # if not csv file exist create a new one : in which directory?
@@ -109,21 +113,35 @@ def run_nemo(rls_files, timestamp, task):
         print("An exception occurred: ", err)
 
 
-def run_souffle(rule_file_path, RuleParser):
-    type_declarations, facts_list, rules_list, query = ruleMapper.rulewerk_to_souffle(rule_file_path, RuleParser)
-    with open("souffle-example.dl", "w") as output_file:
-        output_file.write("// Declarations\n")
-        output_file.writelines("\n".join(type_declarations))
-        output_file.write("\n\n")
-        output_file.write("// Facts\n")
-        output_file.writelines("\n".join(facts_list))
-        output_file.write("\n\n")
-        output_file.write("// Rules\n")
-        output_file.writelines("\n".join(rules_list))
-        output_file.write("\n\n")
-        output_file.write("// Query\n")
-        output_file.writelines("\n".join(query))
-        output_file.write("\n\n")
+def run_souffle(rls_files, RuleParser, ruleMapper):
+    sc = SouffleController()
+
+    for rls in rls_files:
+        rls_basename = os.path.basename(rls)
+        print(f"rls={rls}")
+        dir_fullname = os.path.dirname(rls)
+        dir_basename = os.path.basename(dir_fullname)
+        folder_to_create = os.path.join("souffle", dir_basename)
+        os.makedirs(folder_to_create, exist_ok=True)
+
+        rules, facts, data_sources, _ = ruleMapper.rulewerktoobject(rls, RuleParser)
+
+        souffle_type_declarations, souffle_facts_list, souffle_rules_list = ruleMapper.rulewerk_to_souffle(rules, facts)
+
+        if rls=="Rulewerk_Rules/load_multiple/load_multiple.rls":
+            print("rules=", rules)
+            print("facts=", facts)
+            print("data_sources=", data_sources)
+            print("souffle_type_declarations=", souffle_type_declarations)
+            print("souffle_facts_list=", souffle_facts_list)
+            print("souffle_rules_list=", souffle_rules_list)
+
+        rulefile_save_location = os.path.join(folder_to_create, rls_basename)
+        rulefile_save_location = os.path.splitext(rulefile_save_location)[0] + ".dl"
+        sc.write_souffle_rule_file(rulefile_save_location, souffle_type_declarations, souffle_facts_list, souffle_rules_list)
+
+
+
 
 
 def main():
@@ -140,7 +158,7 @@ def main():
 
     rule_file_path = args.input_dir
     if not os.path.exists(rule_file_path):
-        raise DirectoryNotFound("The given directory does not exist")
+        raise DirectoryNotFound(f"The given directory {rule_file_path} does not exist")
 
     rls_files = get_rls_file_paths(rule_file_path)
     if not rls_files:
@@ -162,7 +180,7 @@ def main():
         run_rulewerk(rls_files, RuleParser, Rule, Literal, rule_file_path, timestamp, args.task_name)
 
     elif args.solver == "souffle":
-        run_souffle(rule_file_path, RuleParser)
+        run_souffle(rls_files, RuleParser, ruleMapper)
 
     elif args.solver == "all":
         print("All Solvers are selected.")
