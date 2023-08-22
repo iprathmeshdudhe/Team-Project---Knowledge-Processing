@@ -8,7 +8,22 @@
 .decl sourceC(A: symbol, B: symbol, C: symbol)
 
 // Facts
-
+dataA("A" ,"B" ,"C").
+dataA("B" ,"B" ,"D").
+dataA("A" ,"E" ,"F").
+dataA("C" ,"D" ,"D").
+dataB("B" ,"B" ,"D").
+dataB("B" ,"D" ,"A").
+dataB("A" ,"C" ,"F").
+dataB("A" ,"G" ,"Q").
+dataB("A" ,"Q" ,"Q").
+dataB("C" ,"D" ,"D").
+dataC("Q" ,"Q" ,"A").
+dataC("Z" ,"Z" ,"Z").
+dataC("F" ,"E" ,"D").
+dataC("D" ,"B" ,"Q").
+dataC("D" ,"B" ,"Z").
+dataC("D" ,"B" ,"F").
 
 // Rules
 RepeatBody(R, S) :- sourceA(X, X, R), sourceB(S, Y, Y).
@@ -16,3 +31,11 @@ RepeatHead(X, Y, X, Y, Z, Z, X) :- sourceA(X, Z, Y), sourceB(X, Y, T).
 RepeatAll(X, X, X, X) :- sourceC(X, X, X).
 RepeatAlternative(R, S) :- sourceA(R, X, X), sourceB(S, Y, Y).
 
+// Query list
+.output RepeatAll
+.output RepeatAlternative
+.output RepeatBody
+.output RepeatHead
+.output sourceA
+.output sourceB
+.output sourceC

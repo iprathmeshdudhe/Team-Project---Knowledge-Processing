@@ -7,9 +7,19 @@
 source("A", "B", "C").
 source("B", "C", "D").
 source("Q", "B", "C").
+dataA("Q" ,"E" ,"D").
+dataA("T" ,"B" ,"C").
+dataB("X" ,"Y" ,"Z").
+dataB("A" ,"B" ,"C").
+dataC("B" ,"C" ,"D").
+dataC("B" ,"A" ,"D").
 
 // Rules
 combined(X, Y, Z) :- source(X, Y, Z).
 constant(X) :- combined(X, "B", "C").
 constant(X) :- combined(X, "Y", Z).
 
+// Query list
+.output combined
+.output constant
+.output source

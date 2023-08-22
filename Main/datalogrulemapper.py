@@ -206,6 +206,7 @@ class DatalogRuleMapper:
         type_declarations = []
         rules_list = []
         facts_list = []
+        query_list = []
 
         # facts and type declarations
         for i, fact in enumerate(facts):
@@ -226,14 +227,14 @@ class DatalogRuleMapper:
         # rules and type declarations
         for i, rule in enumerate(rules):
             body_literals = rule.getBody().getLiterals()
-            body_arguments = [str(argument) for literal in body_literals for argument in literal.getArguments()]
             souffle_rule = str(rule).replace("?", "").replace(" .", ".").replace("~", "!")
             rules_list.append(souffle_rule)
+
+            query_list.append(".output " + str(rule.getHead().getLiterals()[0].getPredicate().getName()))
 
             # type declarations for head
             souffle_declaration_arguments = []
             for j, argument in enumerate(rule.getHead().getLiterals()[0].getArguments()):
-                print(f"head argument: {argument}")
                 data_type = ": symbol"
                 souffle_declaration_argument = alphabet_letters[j] + data_type
                 souffle_declaration_arguments.append(souffle_declaration_argument)
@@ -249,10 +250,11 @@ class DatalogRuleMapper:
 
             # type declarations for body
             for j, body_literal in enumerate(body_literals):
+                query_list.append(".output " + str(body_literal.getPredicate().getName()))
+
                 souffle_declaration_arguments = []
-                print(f"body_literal: {body_literal}")
                 for k, argument in enumerate(body_literal.getArguments()):
-                    print(f"body argument: {argument}")
+
                     data_type = ": symbol"
                     souffle_declaration_argument = alphabet_letters[k] + data_type
                     souffle_declaration_arguments.append(souffle_declaration_argument)
@@ -264,7 +266,8 @@ class DatalogRuleMapper:
                         + ")"
                 )
                 type_declarations.append(souffle_declaration)
-                print(f"souffle_declaration: {souffle_declaration}")
 
         type_declarations = sorted(list(set(type_declarations)))
-        return type_declarations, facts_list, rules_list
+        query_list = sorted(list(set(query_list)))
+        print(f"query_list: {query_list}")
+        return type_declarations, facts_list, rules_list, query_list
