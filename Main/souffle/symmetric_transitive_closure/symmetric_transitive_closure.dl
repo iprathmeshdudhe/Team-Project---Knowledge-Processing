@@ -4,10 +4,31 @@
 .decl connected(A: symbol, B: symbol)
 
 // Facts
-
+city("Vienna").
+city("Berlin").
+city("Paris").
+city("Basel").
+city("Rome").
+city("Tokyo").
+city("Kobe").
+city("Fukuoka").
+city("Okayama").
+city("Niigata").
+conn("Vienna" ,"Berlin").
+conn("Vienna" ,"Rome").
+conn("Vienna" ,"Zurich").
+conn("Berlin" ,"Paris").
+conn("Tokyo" ,"Kobe").
+conn("Kobe" ,"Fukuoka").
+conn("Fukuoka" ,"Okayama").
+conn("Niigata" ,"Tokyo").
 
 // Rules
 connected(X, Y) :- city(X), city(Y), conn(X, Y).
 conn(X, Y) :- conn(Y, X).
 connected(X, Y) :- city(X), city(XY), city(Y), connected(X, XY), conn(XY, Y).
 
+// Query list
+.output city
+.output conn
+.output connected

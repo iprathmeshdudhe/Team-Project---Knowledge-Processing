@@ -7,7 +7,10 @@
 .decl data(A: symbol, B: symbol, C: symbol)
 
 // Facts
-
+data("A" ,"B" ,"C").
+data("B" ,"B" ,"D").
+data("A" ,"E" ,"F").
+data("C" ,"D" ,"D").
 
 // Rules
 A(X, Z) :- data(X, Y, Z).
@@ -16,3 +19,10 @@ C(Y) :- B(VariableThatIsNotNeeded, Y).
 D(Y, Z) :- data(X, Y, Z).
 E(F, E) :- D(E, F).
 
+// Query list
+.output A
+.output B
+.output C
+.output D
+.output E
+.output data

@@ -7,10 +7,32 @@
 .decl sourceC(A: symbol, B: symbol, C: symbol)
 
 // Facts
-
+dataA("A" ,"B" ,"C").
+dataA("B" ,"B" ,"D").
+dataA("A" ,"E" ,"F").
+dataA("C" ,"D" ,"D").
+dataB("B" ,"B" ,"D").
+dataB("B" ,"D" ,"A").
+dataB("A" ,"C" ,"F").
+dataB("A" ,"G" ,"Q").
+dataB("Q" ,"Q" ,"A").
+dataB("C" ,"D" ,"D").
+dataC("Q" ,"Q" ,"A").
+dataC("Z" ,"Z" ,"Z").
+dataC("F" ,"E" ,"D").
+dataC("D" ,"B" ,"Q").
+dataC("D" ,"B" ,"Z").
+dataC("D" ,"B" ,"F").
 
 // Rules
 J1(X, Y, Z) :- sourceA(X, Z, Y), sourceB(X, Y, T).
 J2(X, Y, Z) :- sourceA(Z, Y, X), sourceC(X, Y, T).
 J3(X, Y, W) :- sourceA(T, Y, X), sourceB(T, Y, X), sourceC(X, Y, W).
 
+// Query list
+.output J1
+.output J2
+.output J3
+.output sourceA
+.output sourceB
+.output sourceC

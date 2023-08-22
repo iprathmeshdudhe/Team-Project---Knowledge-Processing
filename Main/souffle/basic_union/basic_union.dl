@@ -6,3 +6,28 @@
 .decl sourceC(A: symbol, B: symbol, C: symbol)
 
 // Facts
+dataA("A" ,"B" ,"C").
+dataA("B" ,"B" ,"D").
+dataA("A" ,"E" ,"F").
+dataA("C" ,"D" ,"D").
+dataB("B" ,"B" ,"D").
+dataB("A" ,"C" ,"F").
+dataB("A" ,"G" ,"Q").
+dataB("Q" ,"Q" ,"A").
+dataB("C" ,"D" ,"D").
+dataC("Q" ,"Q" ,"A").
+dataC("Z" ,"Z" ,"Z").
+
+// Rules
+ABC(X, Y, Z) :- sourceA(X, Y, Z).
+ABC(X, Y, Z) :- sourceB(X, Y, Z).
+ABC(X, Y, Z) :- sourceC(X, Y, Z).
+AB(X, Y, Z) :- sourceA(X, Y, Z).
+AB(X, Y, Z) :- sourceB(X, Y, Z).
+
+// Query list
+.output AB
+.output ABC
+.output sourceA
+.output sourceB
+.output sourceC

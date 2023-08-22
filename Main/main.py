@@ -129,7 +129,7 @@ def run_souffle(rls_files, timestamp, task, RuleParser, ruleMapper):
         os.makedirs(folder_to_create, exist_ok=True)
 
         rules, facts, data_sources, _ = ruleMapper.rulewerktoobject(rls, RuleParser)
-        souffle_type_declarations, souffle_facts_list, souffle_rules_list = ruleMapper.rulewerk_to_souffle(rules, facts)
+        souffle_type_declarations, souffle_facts_list, souffle_rules_list, query_list = ruleMapper.rulewerk_to_souffle(rules, facts)
 
         saving_location = os.path.join(folder_to_create, rls_basename)
         saving_location = os.path.splitext(saving_location)[0] + ".dl"
@@ -142,14 +142,15 @@ def run_souffle(rls_files, timestamp, task, RuleParser, ruleMapper):
                 with open(csv_fullpath, "r") as csv_file:
                     csv_reader = csv.reader(csv_file)
                     for row in csv_reader:
-                        souffle_facts_list.append(row)
+                        args_with_quotes = [f'"{arg}"' for arg in row]  # Wrap each argument with double quotes
+                        fact = csv_filename.replace(".csv", "") + "(" + " ,".join(args_with_quotes) + ")."
+                        souffle_facts_list.append(fact)
 
-
-        sc.write_souffle_rule_file(saving_location, souffle_type_declarations, souffle_facts_list, souffle_rules_list)
+        sc.write_souffle_rule_file(saving_location, souffle_type_declarations, souffle_facts_list, souffle_rules_list, query_list)
 
         command = f"{Settings.souffle_master_path}  -D {folder_to_create} {folder_to_create}/{dl_rulefile}"
         print(f"command={command}")
-        # process = subprocess.Popen(command.split(), stdout=subprocess.PIPE)
+        process = subprocess.Popen(command.split(), stdout=subprocess.PIPE)
 
 
         c_count_ans=0 # TODO count

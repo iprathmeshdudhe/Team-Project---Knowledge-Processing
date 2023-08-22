@@ -2,7 +2,7 @@ import csv
 
 class SouffleController:
     def write_souffle_rule_file(
-        self, rulefile_save_location, souffle_type_declarations, souffle_facts_list, souffle_rules_list
+        self, rulefile_save_location, souffle_type_declarations, souffle_facts_list, souffle_rules_list, query_list
     ):
         with open(rulefile_save_location, "w") as output_file:
             output_file.write("// Declarations\n")
@@ -14,6 +14,8 @@ class SouffleController:
             output_file.write("// Rules\n")
             output_file.writelines("\n".join(souffle_rules_list))
             output_file.write("\n\n")
+            output_file.write("// Query list\n")
+            output_file.writelines("\n".join(query_list))
 
     def csv_to_tsv(self, csv_path, tsv_path):
         with open(csv_path, 'r', newline='', encoding='utf-8-sig') as csv_file, \
