@@ -1,5 +1,6 @@
 import argparse
 import os.path
+import shutil
 
 from datalogrulemapper import *
 import datetime
@@ -125,24 +126,28 @@ def run_souffle(rls_files, RuleParser, ruleMapper):
         os.makedirs(folder_to_create, exist_ok=True)
 
         rules, facts, data_sources, _ = ruleMapper.rulewerktoobject(rls, RuleParser)
+        for data_source in data_sources:
+            print(f"data_source={data_source}")
 
         souffle_type_declarations, souffle_facts_list, souffle_rules_list = ruleMapper.rulewerk_to_souffle(rules, facts)
-
-        if rls == "Rulewerk_Rules/load_multiple/load_multiple.rls":
-            print("rules=", rules)
-            print("facts=", facts)
-            print("data_sources=", data_sources)
-            print("souffle_type_declarations=", souffle_type_declarations)
-            print("souffle_facts_list=", souffle_facts_list)
-            print("souffle_rules_list=", souffle_rules_list)
 
         saving_location = os.path.join(folder_to_create, rls_basename)
         saving_location = os.path.splitext(saving_location)[0] + ".dl"
         sc.write_souffle_rule_file(saving_location, souffle_type_declarations, souffle_facts_list, souffle_rules_list)
         if data_sources:
-            paths_to_data_sources = ruleMapper.get_paths_to_data_sources(data_sources)
-            for path_to_data_source in paths_to_data_sources:
-                print(f"path_to_data_source={path_to_data_source}")
+            csv_filenames = ruleMapper.get_csv_filenames(data_sources)
+            for csv_filename in csv_filenames:
+                print(f"path_to_data_source={csv_filename}")
+                csv_fullpath = os.path.join(dir_fullname, "sources", csv_filename)
+                print(f"csv_fullpath={csv_fullpath}")
+                tsv_fullpath = os.path.join(folder_to_create, csv_filename.replace('.csv', '.tsv'))
+                print(f"tsv_fullpath={tsv_fullpath}")
+                sc.csv_to_tsv(csv_fullpath, tsv_fullpath)
+                facts_fullpath = tsv_fullpath.replace('.tsv', '.facts')
+                shutil.copy(tsv_fullpath, facts_fullpath)
+                os.remove(tsv_fullpath)
+
+
 
 
 

@@ -1,7 +1,7 @@
 // Declarations
-.decl constant(A: symbol)
 .decl source(A: symbol, B: symbol, C: symbol)
 .decl combined(A: symbol, B: symbol, C: symbol)
+.decl constant(A: symbol)
 
 // Facts
 source("A", "B", "C").

@@ -1,6 +1,6 @@
 // Declarations
-.decl connected(A: symbol, B: symbol)
 .decl conn(A: symbol, B: symbol)
+.decl connected(A: symbol, B: symbol)
 
 // Facts
 

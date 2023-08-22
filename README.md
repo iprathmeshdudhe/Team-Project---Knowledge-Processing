@@ -27,7 +27,7 @@ logic programs into the  formats  used by different Datalog systems. It is possi
 git clone https://github.com/iprathmeshdudhe/Team-Project---Knowledge-Processing/tree/main
 ```
 
-### Dependencies
+## Dependencies
 
 * Python 3.9 or higher   
 * Python packages listed in `requirements.txt`. To install, run:
@@ -50,6 +50,7 @@ Different tools support more or less features, data types, and  have different n
     | Support for exstentially quantified varibables  |          Yes (in rule head), with `!`: `type(!New,?Class)`          |          yes, Same as Rulewerk          |                                               No                                                |                                   No                                   |
 |             Support for comparison              |                                 No                                  |          Yes, <=, <, >=, > for integer type          |                                               Yes                                               |                                  Yes                                   |
 |                CSV input support                |                                 Yes                                 |          Yes          |                             No (need transformation into .csv file)                             |      No (need transformation into a list of facts in a rule file)      |
+|                RDF input support                |                                 No                                  |          Yes          |                                               No                                                |      No |
 |     Support of diferent varibale data types     |                                 No                                  |           Yes: 3 Datatypes (`integer`, `float64`, `any` - default)           | Yes: 4 primitive data types (`symbol`, `number`, `unsigned`, and `float`) and custom data types |                                   ?                                    |
 
 Respectively, our benchmarking is aimed mostly on translating the rulewerk examples that are supported among all respective tools. 
@@ -59,7 +60,7 @@ Respectively, our benchmarking is aimed mostly on translating the rulewerk examp
 
 ## Tool usage
 Before using the tool, go to Main/src/config.py and setup the environment variables for your computer.
-
+Input examples must be 
 To Run the tool, run the main.py script using the command:
 
 ```bash
