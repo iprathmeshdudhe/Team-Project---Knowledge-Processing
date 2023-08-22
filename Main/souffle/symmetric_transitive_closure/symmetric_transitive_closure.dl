@@ -1,12 +1,11 @@
 // Declarations
-.decl conn(A: symbol, B: symbol)
 .decl connected(A: symbol, B: symbol)
+.decl conn(A: symbol, B: symbol)
+.decl city(A: symbol)
 
-// Facts
 
 
 // Rules
 connected(X, Y) :- city(X), city(Y), conn(X, Y).
 conn(X, Y) :- conn(Y, X).
 connected(X, Y) :- city(X), city(XY), city(Y), connected(X, XY), conn(XY, Y).
-

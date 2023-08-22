@@ -1,6 +1,7 @@
 import argparse
 import os.path
 import shutil
+import subprocess
 
 from datalogrulemapper import *
 import datetime
@@ -8,6 +9,7 @@ from loguru import logger
 import traceback
 
 from src.errors import NoRlsFilesFound, DirectoryNotFound
+from src.config import Settings
 from clingo_controller import ClingoController
 from rulewerk_controller import RulewerkController
 from nemo_controller import NemoController
@@ -119,33 +121,34 @@ def run_souffle(rls_files, RuleParser, ruleMapper):
 
     for rls in rls_files:
         rls_basename = os.path.basename(rls)
-        print(f"rls={rls}")
         dir_fullname = os.path.dirname(rls)
         dir_basename = os.path.basename(dir_fullname)
+        print()
+        print(f" ----------- EXAMPLE ={dir_basename} -----------")
         folder_to_create = os.path.join("souffle", dir_basename)
         os.makedirs(folder_to_create, exist_ok=True)
 
         rules, facts, data_sources, _ = ruleMapper.rulewerktoobject(rls, RuleParser)
-        for data_source in data_sources:
-            print(f"data_source={data_source}")
-
         souffle_type_declarations, souffle_facts_list, souffle_rules_list = ruleMapper.rulewerk_to_souffle(rules, facts)
 
         saving_location = os.path.join(folder_to_create, rls_basename)
         saving_location = os.path.splitext(saving_location)[0] + ".dl"
+        dl_rulefile = rls_basename.replace('.rls', '.dl')
         sc.write_souffle_rule_file(saving_location, souffle_type_declarations, souffle_facts_list, souffle_rules_list)
         if data_sources:
             csv_filenames = ruleMapper.get_csv_filenames(data_sources)
             for csv_filename in csv_filenames:
-                print(f"path_to_data_source={csv_filename}")
                 csv_fullpath = os.path.join(dir_fullname, "sources", csv_filename)
-                print(f"csv_fullpath={csv_fullpath}")
                 tsv_fullpath = os.path.join(folder_to_create, csv_filename.replace('.csv', '.tsv'))
-                print(f"tsv_fullpath={tsv_fullpath}")
                 sc.csv_to_tsv(csv_fullpath, tsv_fullpath)
                 facts_fullpath = tsv_fullpath.replace('.tsv', '.facts')
                 shutil.copy(tsv_fullpath, facts_fullpath)
                 os.remove(tsv_fullpath)
+
+        command = f"{Settings.souffle_master_path} -F {folder_to_create}  -D {folder_to_create} {folder_to_create}/{dl_rulefile}"
+        print(f"command={command}")
+        # command = "../souffle-master/build/src/souffle -F../souffle/input  -D../souffle/output ../souffle/input/souffle-example.dl"
+        process = subprocess.Popen(command.split(), stdout=subprocess.PIPE)
 
 
 
