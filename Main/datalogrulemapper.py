@@ -230,9 +230,10 @@ class DatalogRuleMapper:
             souffle_rule = str(rule).replace("?", "").replace(" .", ".").replace("~", "!")
             rules_list.append(souffle_rule)
 
-            # type declarations
+            # type declarations for head
             souffle_declaration_arguments = []
             for j, argument in enumerate(rule.getHead().getLiterals()[0].getArguments()):
+                print(f"head argument: {argument}")
                 data_type = ": symbol"
                 souffle_declaration_argument = alphabet_letters[j] + data_type
                 souffle_declaration_arguments.append(souffle_declaration_argument)
@@ -246,5 +247,24 @@ class DatalogRuleMapper:
             )
             type_declarations.append(souffle_declaration)
 
-        type_declarations = list(set(type_declarations))
+            # type declarations for body
+            for j, body_literal in enumerate(body_literals):
+                souffle_declaration_arguments = []
+                print(f"body_literal: {body_literal}")
+                for k, argument in enumerate(body_literal.getArguments()):
+                    print(f"body argument: {argument}")
+                    data_type = ": symbol"
+                    souffle_declaration_argument = alphabet_letters[k] + data_type
+                    souffle_declaration_arguments.append(souffle_declaration_argument)
+                souffle_declaration = (
+                        ".decl "
+                        + str(body_literal.getPredicate().getName())
+                        + "("
+                        + ", ".join(souffle_declaration_arguments)
+                        + ")"
+                )
+                type_declarations.append(souffle_declaration)
+                print(f"souffle_declaration: {souffle_declaration}")
+
+        type_declarations = sorted(list(set(type_declarations)))
         return type_declarations, facts_list, rules_list

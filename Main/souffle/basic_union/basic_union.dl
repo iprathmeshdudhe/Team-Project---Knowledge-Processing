@@ -1,14 +1,8 @@
 // Declarations
 .decl AB(A: symbol, B: symbol, C: symbol)
 .decl ABC(A: symbol, B: symbol, C: symbol)
+.decl sourceA(A: symbol, B: symbol, C: symbol)
+.decl sourceB(A: symbol, B: symbol, C: symbol)
+.decl sourceC(A: symbol, B: symbol, C: symbol)
 
 // Facts
-
-
-// Rules
-ABC(X, Y, Z) :- sourceA(X, Y, Z).
-ABC(X, Y, Z) :- sourceB(X, Y, Z).
-ABC(X, Y, Z) :- sourceC(X, Y, Z).
-AB(X, Y, Z) :- sourceA(X, Y, Z).
-AB(X, Y, Z) :- sourceB(X, Y, Z).
-

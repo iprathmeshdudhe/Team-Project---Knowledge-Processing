@@ -116,7 +116,7 @@ def run_nemo(rls_files, timestamp, task):
         print("An exception occurred: ", err)
 
 
-def run_souffle(rls_files, RuleParser, ruleMapper):
+def run_souffle(rls_files, timestamp, task, RuleParser, ruleMapper):
     sc = SouffleController()
 
     for rls in rls_files:
@@ -134,21 +134,26 @@ def run_souffle(rls_files, RuleParser, ruleMapper):
         saving_location = os.path.join(folder_to_create, rls_basename)
         saving_location = os.path.splitext(saving_location)[0] + ".dl"
         dl_rulefile = rls_basename.replace('.rls', '.dl')
-        sc.write_souffle_rule_file(saving_location, souffle_type_declarations, souffle_facts_list, souffle_rules_list)
+
         if data_sources:
             csv_filenames = ruleMapper.get_csv_filenames(data_sources)
             for csv_filename in csv_filenames:
                 csv_fullpath = os.path.join(dir_fullname, "sources", csv_filename)
-                tsv_fullpath = os.path.join(folder_to_create, csv_filename.replace('.csv', '.tsv'))
-                sc.csv_to_tsv(csv_fullpath, tsv_fullpath)
-                facts_fullpath = tsv_fullpath.replace('.tsv', '.facts')
-                shutil.copy(tsv_fullpath, facts_fullpath)
-                os.remove(tsv_fullpath)
+                with open(csv_fullpath, "r") as csv_file:
+                    csv_reader = csv.reader(csv_file)
+                    for row in csv_reader:
+                        souffle_facts_list.append(row)
 
-        command = f"{Settings.souffle_master_path} -F {folder_to_create}  -D {folder_to_create} {folder_to_create}/{dl_rulefile}"
+
+        sc.write_souffle_rule_file(saving_location, souffle_type_declarations, souffle_facts_list, souffle_rules_list)
+
+        command = f"{Settings.souffle_master_path}  -D {folder_to_create} {folder_to_create}/{dl_rulefile}"
         print(f"command={command}")
-        # command = "../souffle-master/build/src/souffle -F../souffle/input  -D../souffle/output ../souffle/input/souffle-example.dl"
-        process = subprocess.Popen(command.split(), stdout=subprocess.PIPE)
+        # process = subprocess.Popen(command.split(), stdout=subprocess.PIPE)
+
+
+        c_count_ans=0 # TODO count
+    # write_benchmark_results(timestamp, task, "Clingo", c_exec_time, c_memory, c_count_ans)
 
 
 
@@ -191,14 +196,14 @@ def main():
         run_rulewerk(rls_files, RuleParser, Rule, Literal, rule_file_path, timestamp, args.task_name)
 
     elif args.solver == "souffle":
-        run_souffle(rls_files, RuleParser, ruleMapper)
+        run_souffle(rls_files, timestamp, args.task_name, RuleParser, ruleMapper)
 
     elif args.solver == "all":
         print("All Solvers are selected.")
         run_clingo(rls_files, args.task_name, timestamp, RuleParser, ruleMapper)
         run_nemo(rls_files, timestamp, args.task_name)
         run_rulewerk(rls_files, RuleParser, Rule, Literal, rule_file_path, timestamp, args.task_name)
-        run_souffle(rule_file_path, RuleParser)
+        run_souffle(rls_files, timestamp, args.task_name, RuleParser, ruleMapper)
 
     ruleMapper.stop_jvm()
 

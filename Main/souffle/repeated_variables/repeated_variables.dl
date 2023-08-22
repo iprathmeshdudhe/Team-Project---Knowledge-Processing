@@ -3,6 +3,9 @@
 .decl RepeatAlternative(A: symbol, B: symbol)
 .decl RepeatBody(A: symbol, B: symbol)
 .decl RepeatHead(A: symbol, B: symbol, C: symbol, D: symbol, E: symbol, F: symbol, G: symbol)
+.decl sourceA(A: symbol, B: symbol, C: symbol)
+.decl sourceB(A: symbol, B: symbol, C: symbol)
+.decl sourceC(A: symbol, B: symbol, C: symbol)
 
 // Facts
 
