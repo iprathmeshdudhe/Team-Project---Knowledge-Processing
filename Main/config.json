@@ -1,0 +1,7 @@
+{
+    "tasks": [
+        {"name": "basic_join", "path": "Rulewerk_Rules/basic_joins"},
+        {"name": "basic_projection", "path": "Rulewerk_Rules/basic_projection"}
+    ] ,
+    "solvers": ["rulewerk", "clingo"] 
+}
