@@ -1,0 +1,41 @@
+// Declarations
+.decl RepeatAll(A: symbol, B: symbol, C: symbol, D: symbol)
+.decl RepeatAlternative(A: symbol, B: symbol)
+.decl RepeatBody(A: symbol, B: symbol)
+.decl RepeatHead(A: symbol, B: symbol, C: symbol, D: symbol, E: symbol, F: symbol, G: symbol)
+.decl sourceA(A: symbol, B: symbol, C: symbol)
+.decl sourceB(A: symbol, B: symbol, C: symbol)
+.decl sourceC(A: symbol, B: symbol, C: symbol)
+
+// Facts
+sourceA("A", "B", "C").
+sourceA("B", "B", "D").
+sourceA("A", "E", "F").
+sourceA("C", "D", "D").
+sourceB("B", "B", "D").
+sourceB("B", "D", "A").
+sourceB("A", "C", "F").
+sourceB("A", "G", "Q").
+sourceB("A", "Q", "Q").
+sourceB("C", "D", "D").
+sourceC("Q", "Q", "A").
+sourceC("Z", "Z", "Z").
+sourceC("F", "E", "D").
+sourceC("D", "B", "Q").
+sourceC("D", "B", "Z").
+sourceC("D", "B", "F").
+
+// Rules
+RepeatBody(R, S) :- sourceA(X, X, R), sourceB(S, Y, Y).
+RepeatHead(X, Y, X, Y, Z, Z, X) :- sourceA(X, Z, Y), sourceB(X, Y, T).
+RepeatAll(X, X, X, X) :- sourceC(X, X, X).
+RepeatAlternative(R, S) :- sourceA(R, X, X), sourceB(S, Y, Y).
+
+// Query list
+.output RepeatAll
+.output RepeatAlternative
+.output RepeatBody
+.output RepeatHead
+.output sourceA
+.output sourceB
+.output sourceC
