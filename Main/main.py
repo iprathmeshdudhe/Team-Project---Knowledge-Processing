@@ -21,7 +21,7 @@ def get_rls_file_paths(directory):
             if file.endswith(".rls"):
                 file_path = os.path.join(root, file)
                 rls_file_paths.append(file_path)
-    return rls_file_paths\
+    return rls_file_paths
 
 def write_benchmark_results(timestamp, task, tool, execution_time, memory_info, count):
     #if not csv file exist create a new one : in which directory?
