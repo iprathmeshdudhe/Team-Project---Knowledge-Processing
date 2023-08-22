@@ -1,8 +1,0 @@
-.decl edge(x:symbol, y:symbol)
-.input edge
-
-.decl path(x:symbol, y:symbol)
-.output path
-
-path(x, y) :- edge(x, y).
-path(x, y) :- path(x, z), edge(z, y).

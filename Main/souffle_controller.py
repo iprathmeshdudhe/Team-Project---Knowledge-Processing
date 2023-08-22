@@ -1,4 +1,6 @@
 import csv
+import os
+
 
 class SouffleController:
     def write_souffle_rule_file(
@@ -18,21 +20,29 @@ class SouffleController:
             output_file.writelines("\n".join(query_list))
 
     def csv_to_tsv(self, csv_path, tsv_path):
-        with open(csv_path, 'r', newline='', encoding='utf-8-sig') as csv_file, \
-                open(tsv_path, 'w', newline='', encoding='utf-8-sig') as tsv_file:
+        with open(csv_path, "r", newline="", encoding="utf-8-sig") as csv_file, open(
+            tsv_path, "w", newline="", encoding="utf-8-sig"
+        ) as tsv_file:
             csv_reader = csv.reader(csv_file)
-            tsv_writer = csv.writer(tsv_file, delimiter='\t', lineterminator='\n')
+            tsv_writer = csv.writer(tsv_file, delimiter="\t", lineterminator="\n")
             for row in csv_reader:
                 tsv_writer.writerow(row)
 
         # The following is needed to remove the BOM from the tsv file.
-        with open(tsv_path, 'rb') as input_file:
+        with open(tsv_path, "rb") as input_file:
             file_content = input_file.read()
-        file_content = file_content.decode('utf-8-sig').encode('utf-8')
-        with open(tsv_path, 'wb') as output_file:
+        file_content = file_content.decode("utf-8-sig").encode("utf-8")
+        with open(tsv_path, "wb") as output_file:
             output_file.write(file_content)
 
+    def count_answers(self, dir):
+        count = 0
+        csv_files = [file for file in os.listdir(dir) if file.endswith(".csv")]
+        for csv_file in csv_files:
+            csv_fullpath = os.path.join(dir, csv_file)
+            with open(csv_fullpath, "r") as f:
+                csv_reader = csv.reader(f)
+                row_count = sum(1 for _ in csv_reader)
+            count += row_count
 
-
-    def get_souffle_location(self):
-        pass
+        return count

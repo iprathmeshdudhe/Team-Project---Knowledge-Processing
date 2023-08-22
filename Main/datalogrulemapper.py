@@ -64,15 +64,17 @@ class DatalogRuleMapper:
 
         return facts_list
 
-    def get_csv_filenames(self, data_sources_objects):
-        csv_filenames = []
+    def get_data_sources_and_filenames(self, data_sources_objects):
+        pairs = []
         for data_source_object in data_sources_objects:
+            pair = []
+            source_name = str(data_source_object.getPredicate().getName())
+            pair.append(source_name)
             full_path = data_source_object.getDataSource().getDeclarationFact().getArguments()[0].getName()
             csv_filename = os.path.basename(str(full_path).strip('"'))
-            csv_filenames.append(csv_filename)
-        return csv_filenames
-
-
+            pair.append(csv_filename)
+            pairs.append(pair)
+        return pairs
 
     def processDataSources(self, rule_file_path, data_Sources):
         dataSource_dict = {}
@@ -254,20 +256,18 @@ class DatalogRuleMapper:
 
                 souffle_declaration_arguments = []
                 for k, argument in enumerate(body_literal.getArguments()):
-
                     data_type = ": symbol"
                     souffle_declaration_argument = alphabet_letters[k] + data_type
                     souffle_declaration_arguments.append(souffle_declaration_argument)
                 souffle_declaration = (
-                        ".decl "
-                        + str(body_literal.getPredicate().getName())
-                        + "("
-                        + ", ".join(souffle_declaration_arguments)
-                        + ")"
+                    ".decl "
+                    + str(body_literal.getPredicate().getName())
+                    + "("
+                    + ", ".join(souffle_declaration_arguments)
+                    + ")"
                 )
                 type_declarations.append(souffle_declaration)
 
         type_declarations = sorted(list(set(type_declarations)))
         query_list = sorted(list(set(query_list)))
-        print(f"query_list: {query_list}")
         return type_declarations, facts_list, rules_list, query_list

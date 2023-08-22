@@ -6,17 +6,17 @@
 .decl sourceC(A: symbol, B: symbol, C: symbol)
 
 // Facts
-dataA("A" ,"B" ,"C").
-dataA("B" ,"B" ,"D").
-dataA("A" ,"E" ,"F").
-dataA("C" ,"D" ,"D").
-dataB("B" ,"B" ,"D").
-dataB("A" ,"C" ,"F").
-dataB("A" ,"G" ,"Q").
-dataB("Q" ,"Q" ,"A").
-dataB("C" ,"D" ,"D").
-dataC("Q" ,"Q" ,"A").
-dataC("Z" ,"Z" ,"Z").
+sourceA("A", "B", "C").
+sourceA("B", "B", "D").
+sourceA("A", "E", "F").
+sourceA("C", "D", "D").
+sourceB("B", "B", "D").
+sourceB("A", "C", "F").
+sourceB("A", "G", "Q").
+sourceB("Q", "Q", "A").
+sourceB("C", "D", "D").
+sourceC("Q", "Q", "A").
+sourceC("Z", "Z", "Z").
 
 // Rules
 ABC(X, Y, Z) :- sourceA(X, Y, Z).

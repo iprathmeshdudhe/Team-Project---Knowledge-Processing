@@ -14,14 +14,14 @@ city("Kobe").
 city("Fukuoka").
 city("Okayama").
 city("Niigata").
-conn("Vienna" ,"Berlin").
-conn("Vienna" ,"Rome").
-conn("Vienna" ,"Zurich").
-conn("Berlin" ,"Paris").
-conn("Tokyo" ,"Kobe").
-conn("Kobe" ,"Fukuoka").
-conn("Fukuoka" ,"Okayama").
-conn("Niigata" ,"Tokyo").
+conn("Vienna", "Berlin").
+conn("Vienna", "Rome").
+conn("Vienna", "Zurich").
+conn("Berlin", "Paris").
+conn("Tokyo", "Kobe").
+conn("Kobe", "Fukuoka").
+conn("Fukuoka", "Okayama").
+conn("Niigata", "Tokyo").
 
 // Rules
 connected(X, Y) :- city(X), city(Y), conn(X, Y).

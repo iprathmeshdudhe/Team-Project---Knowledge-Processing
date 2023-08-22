@@ -7,22 +7,22 @@
 .decl sourceC(A: symbol, B: symbol, C: symbol)
 
 // Facts
-dataA("A" ,"B" ,"C").
-dataA("B" ,"B" ,"D").
-dataA("A" ,"E" ,"F").
-dataA("C" ,"D" ,"D").
-dataB("B" ,"B" ,"D").
-dataB("B" ,"D" ,"A").
-dataB("A" ,"C" ,"F").
-dataB("A" ,"G" ,"Q").
-dataB("Q" ,"Q" ,"A").
-dataB("C" ,"D" ,"D").
-dataC("Q" ,"Q" ,"A").
-dataC("Z" ,"Z" ,"Z").
-dataC("F" ,"E" ,"D").
-dataC("D" ,"B" ,"Q").
-dataC("D" ,"B" ,"Z").
-dataC("D" ,"B" ,"F").
+sourceA("A", "B", "C").
+sourceA("B", "B", "D").
+sourceA("A", "E", "F").
+sourceA("C", "D", "D").
+sourceB("B", "B", "D").
+sourceB("B", "D", "A").
+sourceB("A", "C", "F").
+sourceB("A", "G", "Q").
+sourceB("Q", "Q", "A").
+sourceB("C", "D", "D").
+sourceC("Q", "Q", "A").
+sourceC("Z", "Z", "Z").
+sourceC("F", "E", "D").
+sourceC("D", "B", "Q").
+sourceC("D", "B", "Z").
+sourceC("D", "B", "F").
 
 // Rules
 J1(X, Y, Z) :- sourceA(X, Z, Y), sourceB(X, Y, T).

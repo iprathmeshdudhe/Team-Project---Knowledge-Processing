@@ -21,13 +21,19 @@ class DirectoryNotFound(CustomError):
     pass
 
 
-class NoRlsFilesFound(Exception):
+class NoRlsFilesFound(CustomError):
     """Raised when no .rls files are found in the provided directory"""
 
     pass
 
 
-class CouldNotStartJVM(Exception):
+class CouldNotStartJVM(CustomError):
     """Raised when JVM failed to start"""
+
+    pass
+
+
+class SystemNotSupported(CustomError):
+    """Raised when Rulewerk feature is not supported in the current tool"""
 
     pass

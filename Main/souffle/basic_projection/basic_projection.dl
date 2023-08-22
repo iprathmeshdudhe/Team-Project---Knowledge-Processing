@@ -7,10 +7,10 @@
 .decl data(A: symbol, B: symbol, C: symbol)
 
 // Facts
-data("A" ,"B" ,"C").
-data("B" ,"B" ,"D").
-data("A" ,"E" ,"F").
-data("C" ,"D" ,"D").
+data("A", "B", "C").
+data("B", "B", "D").
+data("A", "E", "F").
+data("C", "D", "D").
 
 // Rules
 A(X, Z) :- data(X, Y, Z).
