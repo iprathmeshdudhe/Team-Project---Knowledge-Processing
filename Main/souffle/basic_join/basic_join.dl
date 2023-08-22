@@ -1,7 +1,7 @@
 // Declarations
-.decl J3(A: symbol, B: symbol, C: symbol)
-.decl J1(A: symbol, B: symbol, C: symbol)
 .decl J2(A: symbol, B: symbol, C: symbol)
+.decl J1(A: symbol, B: symbol, C: symbol)
+.decl J3(A: symbol, B: symbol, C: symbol)
 
 // Facts
 

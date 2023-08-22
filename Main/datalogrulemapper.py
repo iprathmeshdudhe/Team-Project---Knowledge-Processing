@@ -64,6 +64,16 @@ class DatalogRuleMapper:
 
         return facts_list
 
+    def get_paths_to_data_sources(self, data_sources_objects):
+        paths_to_data_sources = []
+        for data_source_object in data_sources_objects:
+            data_source = Path(
+                str(data_source_object.getDataSource().getDeclarationFact().getArguments()[0].getName()).strip('"')
+            )
+        return paths_to_data_sources
+
+
+
     def processDataSources(self, rule_file_path, data_Sources):
         dataSource_dict = {}
 
@@ -76,14 +86,8 @@ class DatalogRuleMapper:
             )
             cwd = str(os.getcwd())
             base_dir = Path(cwd)
-            # print(f"{data_source}:{type(data_source)}")
-            # print(f"{base_dir}:{type(base_dir)}")
-            # print("data-source:-", data_source)
-            # print("Base dir:-", base_dir)
             rel_path = data_source.relative_to(base_dir)
-            # print("Rel path:-", relative_path)
             source = Path(str(os.path.join(os.getcwd(), rule_file_path, rel_path)))
-            # print("Source:-", source)
 
             if predicate.getName() not in dataSource_dict.keys():
                 dataSource_dict[predicate.getName()] = [predicate.getArity(), str(source)]
@@ -197,19 +201,17 @@ class DatalogRuleMapper:
         return head_predicates
 
     def rulewerk_to_souffle(self, rules, facts):
-        alphabet_letters = [chr(ord('A') + i) for i in range(26)]
+        """Transform Rulewerk Rules and Facts objects into Souffle type declarations, facts and rules"""
+        alphabet_letters = [chr(ord("A") + i) for i in range(26)]
         type_declarations = []
         rules_list = []
         facts_list = []
 
         # facts and type declarations
         for i, fact in enumerate(facts):
-            # print(f'-----------------------fact # {i}, fact {fact}-----------------------')
-            souffle_arguments = [f'{argument}' for argument in fact.getArguments()]
+            souffle_arguments = [f"{argument}" for argument in fact.getArguments()]
             souffle_declaration_arguments = []
             for j, argument in enumerate(fact.getArguments()):
-                # type declarations
-                # type = ': number' if str(argument).isdigit() else ': symbol' # it is possible also to treat numbers
                 data_type = ": symbol"
                 souffle_declaration_argument = alphabet_letters[j] + data_type
                 souffle_declaration_arguments.append(souffle_declaration_argument)
@@ -223,8 +225,6 @@ class DatalogRuleMapper:
 
         # rules and type declarations
         for i, rule in enumerate(rules):
-            # print(f'-----------------------rule # {i}, rule {rule}-----------------------')
-            # first, check if there is a question mark in each argument. If not, treat it as a query
             body_literals = rule.getBody().getLiterals()
             body_arguments = [str(argument) for literal in body_literals for argument in literal.getArguments()]
             souffle_rule = str(rule).replace("?", "").replace(" .", ".").replace("~", "!")

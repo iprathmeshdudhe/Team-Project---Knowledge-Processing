@@ -1,6 +1,6 @@
 // Declarations
-.decl AB(A: symbol, B: symbol, C: symbol)
 .decl ABC(A: symbol, B: symbol, C: symbol)
+.decl AB(A: symbol, B: symbol, C: symbol)
 
 // Facts
 

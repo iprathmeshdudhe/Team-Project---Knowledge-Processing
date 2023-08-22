@@ -89,7 +89,7 @@ def run_clingo(rls_files, task, timestamp, RuleParser, ruleMapper):
 
     c_memory, c_exec_time, c_count_ans = cc.run_clingo(sav_loc_and_rule_head_predicates)
 
-    # call function to write bencmarking results to csv file
+    # call function to write benchmarking results to csv file
     write_benchmark_results(
         timestamp, task, "Clingo", c_exec_time, c_memory, c_count_ans
     )  # add count of grounded atoms
@@ -128,7 +128,7 @@ def run_souffle(rls_files, RuleParser, ruleMapper):
 
         souffle_type_declarations, souffle_facts_list, souffle_rules_list = ruleMapper.rulewerk_to_souffle(rules, facts)
 
-        if rls=="Rulewerk_Rules/load_multiple/load_multiple.rls":
+        if rls == "Rulewerk_Rules/load_multiple/load_multiple.rls":
             print("rules=", rules)
             print("facts=", facts)
             print("data_sources=", data_sources)
@@ -136,10 +136,13 @@ def run_souffle(rls_files, RuleParser, ruleMapper):
             print("souffle_facts_list=", souffle_facts_list)
             print("souffle_rules_list=", souffle_rules_list)
 
-        rulefile_save_location = os.path.join(folder_to_create, rls_basename)
-        rulefile_save_location = os.path.splitext(rulefile_save_location)[0] + ".dl"
-        sc.write_souffle_rule_file(rulefile_save_location, souffle_type_declarations, souffle_facts_list, souffle_rules_list)
-
+        saving_location = os.path.join(folder_to_create, rls_basename)
+        saving_location = os.path.splitext(saving_location)[0] + ".dl"
+        sc.write_souffle_rule_file(saving_location, souffle_type_declarations, souffle_facts_list, souffle_rules_list)
+        if data_sources:
+            paths_to_data_sources = ruleMapper.get_paths_to_data_sources(data_sources)
+            for path_to_data_source in paths_to_data_sources:
+                print(f"path_to_data_source={path_to_data_source}")
 
 
 
