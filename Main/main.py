@@ -1,5 +1,6 @@
 import os
 import argparse
+import csv
 from datalogrulemapper import *
 import datetime
 import sys
@@ -49,6 +50,75 @@ def get_config(config_file_path):
     solvers = configs['solvers']
     return solvers, tasks
 
+
+def run_rulewerk(rls_files, RuleParser, Rule, Literal, rule_file_path, timestamp, task):
+    rc = RulewerkController()
+    query_dict={}
+    result_count = 0
+    try:
+        for rls in rls_files:
+            file_name = os.path.basename(rls)
+            query, head_pred = rc.rulefileElements(RuleParser, Rule, Literal, rls)
+            query_dict[rls]=[query, head_pred]
+        execution_time, memory_info, result_count = rc.runRulewerk(rule_file_path, query_dict)
+        #call function to write bencmarking results to csv file
+        write_benchmark_results(timestamp, task, "Rulewerk", round(execution_time, 2), round(memory_info, 2), round(int(result_count), 2))
+    except Exception as err:
+        print("An exception occurred: ", err)
+
+def clingo(rls_files, task, timestamp, RuleParser, ruleMapper):
+    #Dictionary to save locaion and rule head Predicates
+    sav_loc_and_rule_head_predicates = {}
+    
+    cc = ClingoController()
+        
+    #Converting Rulewerk Rule file into Clingo rules file
+    for rls in rls_files:
+        #file_name = os.path.basename(rls)
+        file_path = os.path.dirname(rls)
+        
+        rules, facts, data_sources, example_name = ruleMapper.rulewerktoobject(rls, RuleParser)
+        saving_location = cc.get_clingo_location(example_name)
+        rule_head_preds = ruleMapper.rulewerk_to_clingo(file_path, rules, facts, data_sources, saving_location)
+        #Dictionary {"rule_file_location": [list of rule head predicates]........}
+        sav_loc_and_rule_head_predicates[saving_location] = rule_head_preds
+
+    c_memory, c_exec_time, c_count_ans = cc.run_clingo(sav_loc_and_rule_head_predicates)
+
+    #call function to write bencmarking results to csv file
+    write_benchmark_results(timestamp, task, "Clingo", c_exec_time, c_memory, c_count_ans)  # add count of grounded atoms
+
+def run_nemo(rls_files, timestamp, task):
+    nc = NemoController()
+    rls_file_list = []
+    try:
+        for rls in rls_files:
+            rule_file_name = os.path.basename(rls)
+            rule_file_path = os.path.dirname(rls)
+            rls_file_list.append([rule_file_name, rule_file_path])
+        execution_time, memory_info, result_count = nc.runNemo(rls_file_list) 
+
+        #call function to write bencmarking results to csv file
+        write_benchmark_results(timestamp, task, "Nemo", round(execution_time, 2), round(memory_info, 2), round(int(result_count), 2))
+    except Exception as err:
+        print("An exception occurred: ", err)
+
+def run_souffle(rule_file_path, RuleParser):
+    type_declarations, facts_list, rules_list, query = ruleMapper.rulewerk_to_souffle(rule_file_path, RuleParser)
+    with open('souffle-example.dl', 'w') as output_file:
+        output_file.write('// Declarations\n')
+        output_file.writelines('\n'.join(type_declarations))
+        output_file.write('\n\n')
+        output_file.write('// Facts\n')
+        output_file.writelines('\n'.join(facts_list))
+        output_file.write('\n\n')
+        output_file.write('// Rules\n')
+        output_file.writelines('\n'.join(rules_list))
+        output_file.write('\n\n')
+        output_file.write('// Query\n')
+        output_file.writelines('\n'.join(query))
+        output_file.write('\n\n')
+
 def main():
     
     #Dictionary to save locaion and rule head Predicates
@@ -83,7 +153,7 @@ def main():
 
         for solver in solvers:
             if solver.lower() == 'clingo':
-                run_clingo(rls_files, task_name, timestamp, RuleParser)
+                clingo(rls_files, task_name, timestamp, RuleParser, ruleMapper)
             elif solver.lower() == 'nemo':
                 run_nemo(rls_files, timestamp, task_name)
             elif solver.lower() == 'rulewerk':
@@ -100,75 +170,7 @@ def main():
                 sys.exit(Exception(f'"{solver}"-Solver not recognized! Please check your config file.'))
             
     ruleMapper.stop_jvm()
-
-def run_rulewerk(rls_files, RuleParser, Rule, Literal, rule_file_path, timestamp, task):
-    rc = RulewerkController()
-    query_dict={}
-    result_count = 0
-    try:
-        for rls in rls_files:
-            file_name = os.path.basename(rls)
-            query, head_pred = rc.rulefileElements(RuleParser, Rule, Literal, rls)
-            query_dict[rls]=[query, head_pred]
-        execution_time, memory_info, result_count = rc.runRulewerk(rule_file_path, query_dict)
-        #call function to write bencmarking results to csv file
-        write_benchmark_results(timestamp, task, "Rulewerk", round(execution_time, 2), round(memory_info, 2), round(int(result_count), 2))
-    except Exception as err:
-        print("An exception occurred: ", err)
-
-def run_clingo(rls_files, task, timestamp, RuleParser):
-    print(rls_files)
-    cc = ClingoController()
-    ruleMapper = DatalogRuleMapper()
-    sav_loc_and_rule_head_predicates = {}
-    #Converting Rulewerk Rule file into Clingo rules file
-    for rls_file in rls_files:        
-        file_name = os.path.basename(rls_file)
-        file_path = os.path.dirname(rls_file)
-        rules, facts, data_sources, example_name = ruleMapper.rulewerktoobject(rls_file, RuleParser)
-  
-        
-        saving_location = cc.get_clingo_location(example_name)
-        rule_head_preds = ruleMapper.rulewerk_to_clingo(file_path, rules, facts, data_sources, saving_location)
-
-        #Dictionary {"rule_file_location": [list of rule head predicates]........}
-        sav_loc_and_rule_head_predicates[saving_location] = rule_head_preds
-
-    c_memory, c_exec_time,  c_count_ans = cc.run_clingo(sav_loc_and_rule_head_predicates)
-    write_benchmark_results(timestamp, task, "Clingo", c_exec_time, c_memory, c_count_ans)
-
-def run_nemo(rls_files, timestamp, task):
-    nc = NemoController()
-    rls_file_list = []
-    try:
-        for rls in rls_files:
-            rule_file_name = os.path.basename(rls)
-            rule_file_path = os.path.dirname(rls)
-            rls_file_list.append([rule_file_name, rule_file_path])
-        execution_time, memory_info, result_count = nc.runNemo(rls_file_list) 
-
-        #call function to write bencmarking results to csv file
-        write_benchmark_results(timestamp, task, "Nemo", round(execution_time, 2), round(memory_info, 2), round(int(result_count), 2))
-    except Exception as err:
-        print("An exception occurred: ", err)
-
-def run_souffle(rule_file_path, RuleParser):
-    type_declarations, facts_list, rules_list, query = ruleMapper.rulewerk_to_souffle(rule_file_path, RuleParser)
-    with open('souffle-example.dl', 'w') as output_file:
-        output_file.write('// Declarations\n')
-        output_file.writelines('\n'.join(type_declarations))
-        output_file.write('\n\n')
-        output_file.write('// Facts\n')
-        output_file.writelines('\n'.join(facts_list))
-        output_file.write('\n\n')
-        output_file.write('// Rules\n')
-        output_file.writelines('\n'.join(rules_list))
-        output_file.write('\n\n')
-        output_file.write('// Query\n')
-        output_file.writelines('\n'.join(query))
-        output_file.write('\n\n')
-
-
+    
 if __name__ == '__main__':
     main()
 
