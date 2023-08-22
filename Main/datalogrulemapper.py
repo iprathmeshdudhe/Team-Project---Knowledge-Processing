@@ -156,7 +156,7 @@ class DatalogRuleMapper:
         rules_list, head_predicates  = self.process_clingo_rules(rules)
         facts_list = self.process_clingo_facts(facts)
         data_sources_dict = self.processDataSources(rule_file_dir, data_sources)
-        print("Data Sources Dict:--", data_sources_dict)
+        #print("Data Sources Dict:--", data_sources_dict)
         
 
         if len(facts_list) == 0 and len(rules_list) == 0 and len(data_sources_dict) == 0:
