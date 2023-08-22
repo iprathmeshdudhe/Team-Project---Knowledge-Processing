@@ -1,0 +1,33 @@
+// Declarations
+.decl AB(A: symbol, B: symbol, C: symbol)
+.decl ABC(A: symbol, B: symbol, C: symbol)
+.decl sourceA(A: symbol, B: symbol, C: symbol)
+.decl sourceB(A: symbol, B: symbol, C: symbol)
+.decl sourceC(A: symbol, B: symbol, C: symbol)
+
+// Facts
+sourceA("A", "B", "C").
+sourceA("B", "B", "D").
+sourceA("A", "E", "F").
+sourceA("C", "D", "D").
+sourceB("B", "B", "D").
+sourceB("A", "C", "F").
+sourceB("A", "G", "Q").
+sourceB("Q", "Q", "A").
+sourceB("C", "D", "D").
+sourceC("Q", "Q", "A").
+sourceC("Z", "Z", "Z").
+
+// Rules
+ABC(X, Y, Z) :- sourceA(X, Y, Z).
+ABC(X, Y, Z) :- sourceB(X, Y, Z).
+ABC(X, Y, Z) :- sourceC(X, Y, Z).
+AB(X, Y, Z) :- sourceA(X, Y, Z).
+AB(X, Y, Z) :- sourceB(X, Y, Z).
+
+// Query list
+.output AB
+.output ABC
+.output sourceA
+.output sourceB
+.output sourceC

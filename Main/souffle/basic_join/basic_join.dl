@@ -1,0 +1,38 @@
+// Declarations
+.decl J1(A: symbol, B: symbol, C: symbol)
+.decl J2(A: symbol, B: symbol, C: symbol)
+.decl J3(A: symbol, B: symbol, C: symbol)
+.decl sourceA(A: symbol, B: symbol, C: symbol)
+.decl sourceB(A: symbol, B: symbol, C: symbol)
+.decl sourceC(A: symbol, B: symbol, C: symbol)
+
+// Facts
+sourceA("A", "B", "C").
+sourceA("B", "B", "D").
+sourceA("A", "E", "F").
+sourceA("C", "D", "D").
+sourceB("B", "B", "D").
+sourceB("B", "D", "A").
+sourceB("A", "C", "F").
+sourceB("A", "G", "Q").
+sourceB("Q", "Q", "A").
+sourceB("C", "D", "D").
+sourceC("Q", "Q", "A").
+sourceC("Z", "Z", "Z").
+sourceC("F", "E", "D").
+sourceC("D", "B", "Q").
+sourceC("D", "B", "Z").
+sourceC("D", "B", "F").
+
+// Rules
+J1(X, Y, Z) :- sourceA(X, Z, Y), sourceB(X, Y, T).
+J2(X, Y, Z) :- sourceA(Z, Y, X), sourceC(X, Y, T).
+J3(X, Y, W) :- sourceA(T, Y, X), sourceB(T, Y, X), sourceC(X, Y, W).
+
+// Query list
+.output J1
+.output J2
+.output J3
+.output sourceA
+.output sourceB
+.output sourceC
