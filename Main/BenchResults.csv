@@ -13,3 +13,5 @@ Timestamp (YYYY-MM-DD HH:MM:SS),Task,Tool,Execution Time (ms),Memory Info (MB),C
 16-08-2023 @11:44:15,symmetric_transitive_closure,Rulewerk,1796.13,1.71,57
 16-08-2023 @11:44:28,all_basics,Nemo,1462.79,1.53,118
 16-08-2023 @11:44:28,all_basics,Rulewerk,2626.98,2.05,118
+16-08-2023 @18:45:42,basic_join,Clingo,20.3,1.79,
+16-08-2023 @18:47:54,basic_join,Clingo,14.39,1.68

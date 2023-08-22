@@ -1,4 +1,4 @@
-data(b, b, d) .
 data(c, d, d) .
-data(a, b, c) .
+data(b, b, d) .
 data(a, e, f) .
+data(a, b, c) .

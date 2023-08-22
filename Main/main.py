@@ -7,15 +7,20 @@ from clingo_controller import ClingoController
 from rulewerk_controller import RulewerkController
 from nemo_controller import NemoController
 import traceback
+import json
+
+def input_path_error(exc):
+    #if given rls file path does not exist then raise error
+    raise exc
 
 def get_rls_file_paths(directory):
     rls_file_paths = []
-    for root, dirs, files in os.walk(directory):
+    for root, dirs, files in os.walk(directory, onerror= input_path_error):
         for file in files:
             if file.endswith(".rls"):
                 file_path = os.path.join(root, file)
                 rls_file_paths.append(file_path)
-    return rls_file_paths
+    return rls_file_paths\
 
 def write_benchmark_results(timestamp, task, tool, execution_time, memory_info, count):
     #if not csv file exist create a new one : in which directory?
@@ -33,7 +38,16 @@ def write_benchmark_results(timestamp, task, tool, execution_time, memory_info, 
             dw.writeheader()
         csv_writer.writerow([timestamp, task, tool, execution_time, memory_info, count])
 
-
+def get_config(config_file_path):
+    try:
+        config_file = open(config_file_path)
+    except Exception as exc:
+        sys.exit(exc)
+        
+    configs = json.load(config_file)
+    tasks = configs['tasks']
+    solvers = configs['solvers']
+    return solvers, tasks
 
 def main():
     
@@ -45,45 +59,46 @@ def main():
 
     #Added the parser to use the code as tool
     parser = argparse.ArgumentParser()
-    parser.add_argument('--solver', required=True, type=str, choices=['clingo', 'nemo', 'rulewerk', 'souffle', 'all'])
-    parser.add_argument('--input_dir', type=str, required=True)
-    parser.add_argument('--task_name', type=str, required=True)
+
+    parser.add_argument('--config_file', type=str, required=True)
+    # parser.add_argument('--solver', required=True, type=str, choices=['clingo', 'nemo', 'rulewerk', 'souffle', 'all'])
+    # parser.add_argument('--input_dir', type=str, required=True)
+    # parser.add_argument('--task_name', type=str, required=True)
 
     args = parser.parse_args()
+    print(args.config_file)
 
-    rule_file_path = args.input_dir
+    solvers, tasks = get_config(args.config_file)
 
-    try:
-        rls_files = get_rls_file_paths(rule_file_path)
-    except:
-        print("Could not find directory!", err)
-        raise
-        sys.exit(1)
+    for task in tasks:
+        rule_file_path = task['path']
+        task_name = task['name']
 
-    timestamp = datetime.datetime.now().strftime("%d-%m-%Y @%H:%M:%S")
+        try:
+            rls_files = get_rls_file_paths(rule_file_path)
+        except Exception as exc:
+            sys.exit(exc)
 
-    task = args.task_name
+        timestamp = datetime.datetime.now().strftime("%d-%m-%Y @%H:%M:%S")
 
-    if args.solver == 'clingo':
-        run_clingo(rls_files, task, timestamp, RuleParser)
-      
-    elif args.solver == 'nemo':
-        run_nemo(rls_files, timestamp, task)
-
-    elif args.solver == 'rulewerk':
-        run_rulewerk(rls_files, RuleParser, Rule, Literal, rule_file_path, timestamp, task)
-
-    elif args.solver == 'souffle':
-        print("souffle")
-        # run_souffle(rule_file_path, RuleParser)
-        
-    elif args.solver == 'all':
-        print("all")
-        # run_clingo(rls_files, RuleParser)
-        run_nemo(rls_files, timestamp, task)
-        run_rulewerk(rls_files, RuleParser, Rule, Literal, rule_file_path, timestamp, task)
-        # run_souffle(rule_file_path, RuleParser)
-
+        for solver in solvers:
+            if solver.lower() == 'clingo':
+                run_clingo(rls_files, task_name, timestamp, RuleParser)
+            elif solver.lower() == 'nemo':
+                run_nemo(rls_files, timestamp, task_name)
+            elif solver.lower() == 'rulewerk':
+                run_rulewerk(rls_files, RuleParser, Rule, Literal, rule_file_path, timestamp, task_name)
+            elif solver.lower() == 'souffle':
+                print("souffle")
+                # run_souffle(rule_file_path, RuleParser)
+            elif solver.lower() == 'all':
+                run_clingo(rls_files, task_name, timestamp, RuleParser)
+                run_nemo(rls_files, timestamp, task_name)
+                run_rulewerk(rls_files, RuleParser, Rule, Literal, rule_file_path, timestamp, task_name)
+                # run_souffle(rule_file_path, RuleParser)  
+            else:
+                sys.exit(Exception(f'"{solver}"-Solver not recognized! Please check your config file.'))
+            
     ruleMapper.stop_jvm()
 
 def run_rulewerk(rls_files, RuleParser, Rule, Literal, rule_file_path, timestamp, task):
@@ -100,7 +115,6 @@ def run_rulewerk(rls_files, RuleParser, Rule, Literal, rule_file_path, timestamp
         write_benchmark_results(timestamp, task, "Rulewerk", round(execution_time, 2), round(memory_info, 2), round(int(result_count), 2))
     except Exception as err:
         print("An exception occurred: ", err)
-        traceback.print_exc()
 
 def run_clingo(rls_files, task, timestamp, RuleParser):
     print(rls_files)
