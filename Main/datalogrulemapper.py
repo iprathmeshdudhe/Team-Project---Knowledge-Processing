@@ -64,13 +64,13 @@ class DatalogRuleMapper:
 
         return facts_list
 
-    def get_paths_to_data_sources(self, data_sources_objects):
-        paths_to_data_sources = []
+    def get_csv_filenames(self, data_sources_objects):
+        csv_filenames = []
         for data_source_object in data_sources_objects:
-            data_source = Path(
-                str(data_source_object.getDataSource().getDeclarationFact().getArguments()[0].getName()).strip('"')
-            )
-        return paths_to_data_sources
+            full_path = data_source_object.getDataSource().getDeclarationFact().getArguments()[0].getName()
+            csv_filename = os.path.basename(str(full_path).strip('"'))
+            csv_filenames.append(csv_filename)
+        return csv_filenames
 
 
 

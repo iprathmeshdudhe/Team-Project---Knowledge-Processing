@@ -1,9 +1,9 @@
 // Declarations
+.decl A(A: symbol, B: symbol)
 .decl C(A: symbol)
+.decl E(A: symbol, B: symbol)
 .decl D(A: symbol, B: symbol)
 .decl B(A: symbol, B: symbol)
-.decl A(A: symbol, B: symbol)
-.decl E(A: symbol, B: symbol)
 
 // Facts
 
