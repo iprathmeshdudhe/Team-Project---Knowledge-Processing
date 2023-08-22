@@ -85,7 +85,7 @@ class DatalogRuleMapper:
             rel_path = data_source.relative_to(base_dir)
             # print("Rel path:-", relative_path)
             source = Path(str(os.path.join(os.getcwd(), rule_file_path, rel_path)))
-            print("Source:-", source)
+            # print("-----Source------", source)
 
             if predicate.getName() not in dataSource_dict.keys():
                 dataSource_dict[predicate.getName()] = [predicate.getArity(), str(source)]
