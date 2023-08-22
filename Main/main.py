@@ -1,19 +1,51 @@
 import argparse
 import os.path
-import shutil
+import psutil
 import subprocess
+import time
+import platform
 
 from datalogrulemapper import *
 import datetime
-from loguru import logger
 import traceback
 
-from src.errors import NoRlsFilesFound, DirectoryNotFound
+from src.errors import NoRlsFilesFound, DirectoryNotFound, SystemNotSupported
 from src.config import Settings
 from clingo_controller import ClingoController
 from rulewerk_controller import RulewerkController
 from nemo_controller import NemoController
 from souffle_controller import SouffleController
+
+
+def measure_memory_usage_and_time(commands):
+    start_time = time.time()
+    system = platform.system()
+    if system == "Windows":
+        args = ["cmd"]
+    elif system == "Darwin":  # Mac OS
+        args = ["ls", "-l"]
+    else:
+        raise SystemNotSupported(f"The system {system} is not supported")
+
+    cmd_process = subprocess.Popen(args, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False
+    )
+    for command in commands:
+        print("\nExecuting Command: ", command)
+        # Send the command to the command prompt process
+        cmd_process.stdin.write(command.encode("utf-8") + b"\n")
+        cmd_process.stdin.flush()
+    # Measure the Memory Usage
+    memory_usage = psutil.Process(cmd_process.pid).memory_info().rss / 1024 / 1024
+
+    # Close the command prompt process
+    cmd_process.stdin.close()
+
+    # Calculate the execution time
+    execution_time = (time.time() - start_time) * 1000
+
+    cmd_process.stdout.read()
+    cmd_process.stdout.close()
+    return round(memory_usage, 2), round(execution_time, 2)
 
 
 def get_rls_file_paths(directory):
@@ -69,7 +101,7 @@ def run_rulewerk(rls_files, RuleParser, Rule, Literal, rule_file_path, timestamp
             timestamp, task, "Rulewerk", round(execution_time, 2), round(memory_info, 2), round(int(result_count), 2)
         )
     except Exception as err:
-        print("An exception occurred: ", err)
+        print("An exception occurred while running Rulewerk: ", err)
         traceback.print_exc()
 
 
@@ -118,6 +150,8 @@ def run_nemo(rls_files, timestamp, task):
 
 def run_souffle(rls_files, timestamp, task, RuleParser, ruleMapper):
     sc = SouffleController()
+    commands = []
+    c_count_ans = 0
 
     for rls in rls_files:
         rls_basename = os.path.basename(rls)
@@ -129,36 +163,38 @@ def run_souffle(rls_files, timestamp, task, RuleParser, ruleMapper):
         os.makedirs(folder_to_create, exist_ok=True)
 
         rules, facts, data_sources, _ = ruleMapper.rulewerktoobject(rls, RuleParser)
-        souffle_type_declarations, souffle_facts_list, souffle_rules_list, query_list = ruleMapper.rulewerk_to_souffle(rules, facts)
+        souffle_type_declarations, souffle_facts_list, souffle_rules_list, query_list = ruleMapper.rulewerk_to_souffle(
+            rules, facts
+        )
 
         saving_location = os.path.join(folder_to_create, rls_basename)
         saving_location = os.path.splitext(saving_location)[0] + ".dl"
-        dl_rulefile = rls_basename.replace('.rls', '.dl')
+        dl_rulefile = rls_basename.replace(".rls", ".dl")
 
         if data_sources:
-            csv_filenames = ruleMapper.get_csv_filenames(data_sources)
-            for csv_filename in csv_filenames:
-                csv_fullpath = os.path.join(dir_fullname, "sources", csv_filename)
+            data_sources_and_filenames = ruleMapper.get_data_sources_and_filenames(data_sources)
+            for pair in data_sources_and_filenames:
+                source_name = pair[0]
+                csv_fullpath = os.path.join(dir_fullname, "sources", pair[1])
                 with open(csv_fullpath, "r") as csv_file:
                     csv_reader = csv.reader(csv_file)
                     for row in csv_reader:
                         args_with_quotes = [f'"{arg}"' for arg in row]  # Wrap each argument with double quotes
-                        fact = csv_filename.replace(".csv", "") + "(" + " ,".join(args_with_quotes) + ")."
+                        fact = source_name + "(" + ", ".join(args_with_quotes) + ")."
                         souffle_facts_list.append(fact)
 
-        sc.write_souffle_rule_file(saving_location, souffle_type_declarations, souffle_facts_list, souffle_rules_list, query_list)
+        sc.write_souffle_rule_file(
+            saving_location, souffle_type_declarations, souffle_facts_list, souffle_rules_list, query_list
+        )
 
-        command = f"{Settings.souffle_master_path}  -D {folder_to_create} {folder_to_create}/{dl_rulefile}"
-        print(f"command={command}")
+        command = f"{Settings.souffle_master_path} -D {folder_to_create} {folder_to_create}/{dl_rulefile}"
+        commands.append(command)
         process = subprocess.Popen(command.split(), stdout=subprocess.PIPE)
 
+        c_count_ans += sc.count_answers(folder_to_create)
 
-        c_count_ans=0 # TODO count
-    # write_benchmark_results(timestamp, task, "Clingo", c_exec_time, c_memory, c_count_ans)
-
-
-
-
+    c_memory, c_exec_time = measure_memory_usage_and_time(commands)
+    write_benchmark_results(timestamp, task, "Souffle", c_exec_time, c_memory, c_count_ans)
 
 
 def main():

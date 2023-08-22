@@ -7,12 +7,12 @@
 source("A", "B", "C").
 source("B", "C", "D").
 source("Q", "B", "C").
-dataA("Q" ,"E" ,"D").
-dataA("T" ,"B" ,"C").
-dataB("X" ,"Y" ,"Z").
-dataB("A" ,"B" ,"C").
-dataC("B" ,"C" ,"D").
-dataC("B" ,"A" ,"D").
+source("Q", "E", "D").
+source("T", "B", "C").
+source("X", "Y", "Z").
+source("A", "B", "C").
+source("B", "C", "D").
+source("B", "A", "D").
 
 // Rules
 combined(X, Y, Z) :- source(X, Y, Z).
