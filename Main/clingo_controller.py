@@ -8,53 +8,14 @@ import pandas as pd
 
 class ClingoController:
     # Passing a dictionary as parameter whose keys contains the File Location and the value contains rule_head_predicates
-    def run_clingo(self, loc_and_rule_head_predicates):
+    def get_clingo_commands(self, loc_and_rule_head_predicates):
         commands = []
 
         for file in loc_and_rule_head_predicates.keys():
             commands.append(f"clingo {file}-facts.lp {file}.lp > {file}-output.txt")
 
-        # Start measuring
-        start_time = time.time()
-        cmd_process = subprocess.Popen(
-            ["cmd"], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False
-        )
-
-        try:
-            # Execute each command in the command prompt
-            for command in commands:
-                print("\nExecuting Command: ", command)
-                # Send the command to the command prompt process
-                cmd_process.stdin.write(command.encode("utf-8") + b"\n")
-                cmd_process.stdin.flush()
-
-            # Measure the Memory Usage
-            memory_usage = psutil.Process(cmd_process.pid).memory_info().rss / 1024 / 1024
-
-            # Close the command prompt process
-            cmd_process.stdin.close()
-
-            # Calculate the execution time
-            execution_time = (time.time() - start_time) * 1000
-
-            cmd_process.stdout.read()
-            cmd_process.stdout.close()
-
-        except:
-            print("ERROR: Problem with Running Clingo.")
-            print(
-                "Check the converted clingo input files. Also check whether clingo is installed using the command in the Readme file."
-            )
-
-        else:
-            count_ans = self.save_clingo_output(loc_and_rule_head_predicates)
-
-            print("Clingo Measures:")
-            print(f"Execution Time: {execution_time} ms")
-            print(f"Memory Usage: {memory_usage} MB")
-
-            return round(memory_usage, 2), round(execution_time, 2), count_ans
-
+        return commands
+        
     def save_clingo_output(self, loc_rule_head_predicate):
         try:
             count_ans = 0
