@@ -54,8 +54,9 @@ class ClingoController:
                     output_df.to_csv(f"{output_sav_loc}/{pred}.csv", index=False, header=False)
 
         except Exception as ex:
-            print("Problem While saving clingo output. Cannot convert the output into CSV.")
+            print("Problem While saving clingo output.")
             print("ERROR ", ex)
+            print("Possible Solution: Check whether clingo is installed in the system properly.")
 
         else:
             return count_ans
