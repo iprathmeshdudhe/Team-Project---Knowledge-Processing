@@ -24,3 +24,5 @@ Timestamp (YYYY-MM-DD HH:MM:SS),Task,Tool,Execution Time (ms),Memory Info (MB),C
 16-08-2023 @19:17:40,all_basics,Clingo,4.0,2.01,118
 22-08-2023 @19:17:24,Rulewerk_Rules,Souffle,42.95,0.36,182
 22-08-2023 @19:21:23,Rulewerk_Rules,Souffle,46.95,0.09,182
+15-09-2023 @17:46:52,basic_join,Souffle,37.01,0.08,24
+15-09-2023 @17:46:53,basic_projection,Souffle,38.66,0.09,23
