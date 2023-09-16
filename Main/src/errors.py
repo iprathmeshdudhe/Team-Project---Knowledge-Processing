@@ -6,7 +6,7 @@ class CustomError(Exception):
 
     def __init__(self, message):
         self.message = message
-        logger.error(message)
+        logger.exception(message)
 
 
 class FeatureNotSupported(CustomError):
