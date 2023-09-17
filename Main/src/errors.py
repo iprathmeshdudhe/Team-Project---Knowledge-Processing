@@ -37,3 +37,8 @@ class SystemNotSupported(CustomError):
     """Raised when Rulewerk feature is not supported in the current tool"""
 
     pass
+
+
+def input_path_error(exc):
+    # if given rls file path does not exist then raise error
+    raise exc

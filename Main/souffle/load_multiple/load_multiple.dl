@@ -22,4 +22,3 @@ constant(X) :- combined(X, "Y", Z).
 // Query list
 .output combined
 .output constant
-.output source
