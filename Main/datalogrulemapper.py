@@ -246,8 +246,6 @@ class DatalogRuleMapper:
 
             # type declarations for body
             for j, body_literal in enumerate(body_literals):
-                query_list.append(".output " + str(body_literal.getPredicate().getName()))
-
                 souffle_declaration_arguments = []
                 for k, argument in enumerate(body_literal.getArguments()):
                     data_type = ": symbol"

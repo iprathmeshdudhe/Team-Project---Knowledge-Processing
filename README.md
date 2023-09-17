@@ -71,18 +71,6 @@ To Run the tool, run the main.py script using the command:
 cd Main
 python3 main.py --config_file config.json
 ```
-For `--solver`(required) you can use the options: `clingo`, `nemo`, `souflle`, `rulewerk`, `all`.
-
-For `--input_dir`(required), provide the relative path to the directory containing the Rulewerk task file and data sources in a subdirectory "sources".
-
-For `--task_name`(optional), provide the custom name of the example which will be written to the results file. 
-
-Examples of command usage:
-```bash
-python3 main.py --solver souffle --input_dir Rulewerk_Rules/basic_join --task_name basic_join
-python3 main.py --solver souffle --input_dir Rulewerk_Rules --task_name all_basics
-```
-The first command will run only the basic_join example, the second will run all the examples in the Rulewerk_Rules directory.
 
 ## Tool flow
 <img src="./Tool flow.png"> 
