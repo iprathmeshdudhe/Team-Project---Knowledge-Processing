@@ -144,7 +144,9 @@ def run_clingo(rls_files, task, timestamp, RuleParser, ruleMapper):
         # Dictionary {"rule_file_location": [list of rule head predicates]........}
         sav_loc_and_rule_head_predicates[saving_location] = rule_head_preds
 
-    c_memory, c_exec_time, c_count_ans = cc.run_clingo(sav_loc_and_rule_head_predicates)
+    clingo_commands = cc.get_clingo_commands(sav_loc_and_rule_head_predicates)
+    c_memory, c_exec_time = measure_memory_usage_and_time(clingo_commands)
+    c_count_ans = cc.save_clingo_output(sav_loc_and_rule_head_predicates)
 
     # call function to write benchmarking results to csv file
     write_benchmark_results(
