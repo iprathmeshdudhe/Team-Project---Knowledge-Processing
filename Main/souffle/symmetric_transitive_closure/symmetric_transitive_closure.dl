@@ -29,6 +29,5 @@ conn(X, Y) :- conn(Y, X).
 connected(X, Y) :- city(X), city(XY), city(Y), connected(X, XY), conn(XY, Y).
 
 // Query list
-.output city
 .output conn
 .output connected

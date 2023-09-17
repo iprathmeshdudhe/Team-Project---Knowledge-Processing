@@ -16,7 +16,7 @@ class ClingoController:
             commands.append(f"clingo {file}-facts.lp {file}.lp > {file}-output.txt")
 
         return commands
-        
+
     def save_clingo_output(self, loc_rule_head_predicate):
         try:
             count_ans = 0
@@ -55,9 +55,9 @@ class ClingoController:
                     output_df.to_csv(f"{output_sav_loc}/{pred}.csv", index=False, header=False)
 
         except Exception as ex:
-            logger.message("Problem While saving clingo output.")
+            logger.info("Problem While saving clingo output.")
             logger.exception("ERROR ", ex)
-            logger.message("Possible Solution: Check whether clingo is installed in the system properly.")
+            logger.info("Possible Solution: Check whether clingo is installed in the system properly.")
 
         else:
             return count_ans
