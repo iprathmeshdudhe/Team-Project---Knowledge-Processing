@@ -8,22 +8,15 @@ import subprocess
 import time
 import platform
 import datetime
+import json
 
 from datalogrulemapper import *
 
-from src.errors import NoRlsFilesFound, DirectoryNotFound, SystemNotSupported
+from src.errors import NoRlsFilesFound, DirectoryNotFound, SystemNotSupported, input_path_error
 from src.config import Settings
 from clingo_controller import ClingoController
 from rulewerk_controller import RulewerkController
 from nemo_controller import NemoController
-import json
-
-
-def input_path_error(exc):
-    # if given rls file path does not exist then raise error
-    raise exc
-
-
 from souffle_controller import SouffleController
 
 
@@ -101,7 +94,8 @@ def get_config(config_file_path):
     try:
         config_file = open(config_file_path)
     except Exception as exc:
-        sys.exit(exc)
+        logger.exception(exc)
+        sys.exit(1)
 
     configs = json.load(config_file)
     tasks = configs["tasks"]
@@ -121,7 +115,7 @@ def run_rulewerk(rls_files, RuleParser, Rule, Literal, rule_file_path, timestamp
         execution_time, memory_info, result_count = rc.runRulewerk(rule_file_path, query_dict)
         # call function to write bencmarking results to csv file
         write_benchmark_results(
-            timestamp, task, "Rulewerk", round(execution_time, 2), round(memory_info, 2), round(int(result_count), 2)
+            timestamp, task, "Rulewerk", round(execution_time, 2), round(memory_info, 2), result_count
         )
     except Exception as err:
         print("An exception occurred while running Rulewerk: ", err)
@@ -165,9 +159,7 @@ def run_nemo(rls_files, timestamp, task):
         execution_time, memory_info, result_count = nc.runNemo(rls_file_list)
 
         # call function to write bencmarking results to csv file
-        write_benchmark_results(
-            timestamp, task, "Nemo", round(execution_time, 2), round(memory_info, 2), round(int(result_count), 2)
-        )
+        write_benchmark_results(timestamp, task, "Nemo", round(execution_time, 2), round(memory_info, 2), result_count)
     except Exception as err:
         print("An exception occurred: ", err)
 
@@ -176,14 +168,14 @@ def run_souffle(rls_files, timestamp, task, RuleParser, ruleMapper):
     sc = SouffleController()
     commands = []
     c_count_ans = 0
+    folders_to_create = []
 
     for rls in rls_files:
         rls_basename = os.path.basename(rls)
         dir_fullname = os.path.dirname(rls)
         dir_basename = os.path.basename(dir_fullname)
-        print()
-        print(f" ----------- EXAMPLE ={dir_basename} -----------")
         folder_to_create = os.path.join("souffle", dir_basename)
+        folders_to_create.append(folder_to_create)
         os.makedirs(folder_to_create, exist_ok=True)
 
         rules, facts, data_sources, _ = ruleMapper.rulewerktoobject(rls, RuleParser)
@@ -215,9 +207,11 @@ def run_souffle(rls_files, timestamp, task, RuleParser, ruleMapper):
         commands.append(command)
         process = subprocess.Popen(command.split(), stdout=subprocess.PIPE)
 
+    c_memory, c_exec_time = measure_memory_usage_and_time(commands)
+    time.sleep(1)
+    for folder_to_create in folders_to_create:
         c_count_ans += sc.count_answers(folder_to_create)
 
-    c_memory, c_exec_time = measure_memory_usage_and_time(commands)
     write_benchmark_results(timestamp, task, "Souffle", c_exec_time, c_memory, c_count_ans)
 
 
@@ -225,14 +219,10 @@ def main():
     ruleMapper = DatalogRuleMapper()
     RuleParser, Rule, Literal = ruleMapper.start_jvm()
 
-    # Added the parser to use the code as tool
     parser = argparse.ArgumentParser()
 
     parser.add_argument("--config_file", type=str, required=True)
-
     args = parser.parse_args()
-    print(args.config_file)
-
     solvers, tasks = get_config(args.config_file)
 
     for task in tasks:
@@ -257,7 +247,7 @@ def main():
             elif solver.lower() == "souffle":
                 run_souffle(rls_files, timestamp, task_name, RuleParser, ruleMapper)
             elif solver.lower() == "all":
-                run_clingo(rls_files, task_name, timestamp, RuleParser)
+                run_clingo(rls_files, task_name, timestamp, RuleParser, ruleMapper)
                 run_nemo(rls_files, timestamp, task_name)
                 run_rulewerk(rls_files, RuleParser, Rule, Literal, rule_file_path, timestamp, task_name)
                 run_souffle(rls_files, timestamp, task_name, RuleParser, ruleMapper)
