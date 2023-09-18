@@ -16,6 +16,10 @@ from rulewerk_controller import RulewerkController
 from nemo_controller import NemoController
 import traceback
 import json
+import sys
+from loguru import logger
+
+sys.tracebacklimit = 0
 
 def input_path_error(exc):
     #if given rls file path does not exist then raise error
@@ -70,7 +74,6 @@ def write_benchmark_results(timestamp, task, tool, execution_time, memory_info, 
     # row: parameters in order
     # close csv
     flag = os.path.exists("BenchResults.csv")
-    # print(flag)
     with open("BenchResults.csv", mode="a", newline="") as csv_file:
         csv_writer = csv.writer(csv_file)
         if flag:
@@ -118,7 +121,8 @@ def run_rulewerk(rls_files, RuleParser, Rule, Literal, rule_file_path, timestamp
             timestamp, task, "Rulewerk", round(execution_time, 2), round(memory_info, 2), round(int(result_count), 2)
         )
     except Exception as err:
-        print("An exception occurred while running Rulewerk: ", err)
+
+        logger.error(err)
 
 
 def run_clingo(rls_files, task, timestamp, RuleParser, ruleMapper):
@@ -161,7 +165,7 @@ def run_nemo(rls_files, timestamp, task):
             timestamp, task, "Nemo", round(execution_time, 2), round(memory_info, 2), round(int(result_count), 2)
         )
     except Exception as err:
-        print("An exception occurred: ", err)
+        logger.error(err)
 
 
 def run_souffle(rls_files, timestamp, task, RuleParser, ruleMapper):
@@ -173,8 +177,6 @@ def run_souffle(rls_files, timestamp, task, RuleParser, ruleMapper):
         rls_basename = os.path.basename(rls)
         dir_fullname = os.path.dirname(rls)
         dir_basename = os.path.basename(dir_fullname)
-        print()
-        print(f" ----------- EXAMPLE ={dir_basename} -----------")
         folder_to_create = os.path.join("souffle", dir_basename)
         os.makedirs(folder_to_create, exist_ok=True)
 
@@ -221,13 +223,8 @@ def main():
     parser = argparse.ArgumentParser()
 
     parser.add_argument('--config_file', type=str, required=True)
-    # parser.add_argument('--solver', required=True, type=str, choices=['clingo', 'nemo', 'rulewerk', 'souffle', 'all'])
-    # parser.add_argument('--input_dir', type=str, required=True)
-    # parser.add_argument('--task_name', type=str, required=True)
 
     args = parser.parse_args()
-    print(args.config_file)
-
     solvers, tasks = get_config(args.config_file)
 
     for task in tasks:
@@ -237,13 +234,14 @@ def main():
         try:
             rls_files = get_rls_file_paths(rule_file_path)
         except Exception as exc:
-            sys.exit(exc)
+            logger.error(exc)
+            sys.exit()
 
         timestamp = datetime.datetime.now().strftime("%d-%m-%Y @%H:%M:%S")
 
         for solver in solvers:
             if solver.lower() == 'clingo':
-                clingo(rls_files, task_name, timestamp, RuleParser, ruleMapper)
+                run_clingo(rls_files, task_name, timestamp, RuleParser, ruleMapper)
             elif solver.lower() == 'nemo':
                 run_nemo(rls_files, timestamp, task_name)
             elif solver.lower() == 'rulewerk':
@@ -256,7 +254,8 @@ def main():
                 run_rulewerk(rls_files, RuleParser, Rule, Literal, rule_file_path, timestamp, task_name)
                 run_souffle(rls_files, timestamp, args.task_name, RuleParser, ruleMapper)
             else:
-                sys.exit(Exception(f'"{solver}"-Solver not recognized! Please check your config file.'))
+                logger.error(f"{solver}:- Solver not recognized!")
+                sys.exit()
             
     ruleMapper.stop_jvm()
 

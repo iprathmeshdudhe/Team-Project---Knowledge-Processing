@@ -4,11 +4,12 @@ import psutil
 import nmo_python
 import json
 import subprocess
+from loguru import logger
 
 
 class NemoController:
     def runNemo(self, rls_file_list):
-        print("----------------Starting Nemo---------------")
+        logger.info("Running Nemo")
 
         start_time = time.time()
 
@@ -24,12 +25,11 @@ class NemoController:
             result_count = stdout.decode()
 
         if stderr:
-            # print(stderr.decode())
             raise RuntimeError(stderr.decode())
 
         execution_time = (time.time() - start_time) * 1000
 
-        print("<-------------------- Process Completed! ----------------------->")
+        logger.info("Nemo processing complete")
         print(f"Execution Time: {execution_time} ms")
         print(f"Memory usage: {memory_usage} MB")
 
