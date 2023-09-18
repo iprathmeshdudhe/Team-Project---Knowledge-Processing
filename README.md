@@ -30,12 +30,13 @@ git clone https://github.com/iprathmeshdudhe/Team-Project---Knowledge-Processing
 ## Dependencies
 
 * Python 3.9 or higher   
+* Java 
+* Rulewerk reasoner 0.9.0 or higher -- see [installation instruction](https://github.com/knowsys/rulewerk).
 * Python packages listed in `requirements.txt`. To install, run:
 ```bash
 cd Main
 make install-requirements
 ````
-
 * Soufflé tool  -- see  [Build Soufflé](https://souffle-lang.github.io/index.html). As a result of installation, you must have a  "souffle-master" folder installed on your computer  
 
 ## Comparison of Datalog Tools
@@ -59,26 +60,17 @@ Respectively, our benchmarking is aimed mostly on translating the rulewerk examp
 [Documentation](https://souffle-lang.github.io/index.html)
 
 ## Tool usage
-Before using the tool, go to Main/src/config.py and setup the environment variables for your computer.
-Input examples must be 
+Before using the tool:
+* Go to Main/src/config.py and set up the environment variables for your computer.
+* Place Rulewerk examples you want to run into Rulewerk_Rules directory. Please follow the same directory structure and the one on the given examples already.
+* Configure the tasks and the solvers you want to run in the config.json file. In "solvers", write a list of tools you want to run or write ["all"] to run all available tools
+
 To Run the tool, run the main.py script using the command:
 
 ```bash
 cd Main
-python3 main.py --solver solver_name --input_dir /path/to/rule/files --task_name name_of_the_task
+python main.py --config_file config.json
 ```
-For `--solver`(required) you can use the options: `clingo`, `nemo`, `souflle`, `rulewerk`, `all`.
-
-For `--input_dir`(required), provide the relative path to the directory containing the Rulewerk task file and data sources in a subdirectory "sources".
-
-For `--task_name`(optional), provide the custom name of the example which will be written to the results file. 
-
-Examples of command usage:
-```bash
-python3 main.py --solver souffle --input_dir Rulewerk_Rules/basic_join --task_name basic_join
-python3 main.py --solver souffle --input_dir Rulewerk_Rules --task_name all_basics
-```
-The first command will run only the basic_join example, the second will run all the examples in the Rulewerk_Rules directory.
 
 ## Tool flow
 <img src="./Tool flow.png"> 

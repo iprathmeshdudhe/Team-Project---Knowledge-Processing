@@ -28,6 +28,3 @@ AB(X, Y, Z) :- sourceB(X, Y, Z).
 // Query list
 .output AB
 .output ABC
-.output sourceA
-.output sourceB
-.output sourceC

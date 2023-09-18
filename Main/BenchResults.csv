@@ -11,16 +11,20 @@ Timestamp (YYYY-MM-DD HH:MM:SS),Task,Tool,Execution Time (ms),Memory Info (MB),C
 16-08-2023 @11:43:56,repeated_variables,Rulewerk,1687.07,1.71,8
 16-08-2023 @11:44:15,symmetric_transitive_closure,Nemo,1183.7,1.52,57
 16-08-2023 @11:44:15,symmetric_transitive_closure,Rulewerk,1796.13,1.71,57
-16-08-2023 @11:44:28,all_basics,Nemo,1462.79,1.53,118
-16-08-2023 @11:44:28,all_basics,Rulewerk,2626.98,2.05,118
 16-08-2023 @18:55:38,basic_join,Clingo,4.0,1.86,8
 16-08-2023 @18:55:56,basic_projection,Clingo,4.53,1.84,19
 16-08-2023 @18:56:12,basic_union,Clingo,4.0,1.86,15
 16-08-2023 @18:56:34,load_multiple,Clingo,4.52,1.86,11
 16-08-2023 @18:56:54,repeated_variables,Clingo,4.01,1.86,8
 16-08-2023 @18:57:12,symmetric_transitive_closure,Clingo,4.29,1.86,57
+18-09-2023 @00:07:02,basic_join,Souffle,33.08,0.14,8
+18-09-2023 @00:07:04,basic_projection,Souffle,30.01,0.09,19
+18-09-2023 @00:07:05,basic_union,Souffle,34.18,0.09,15
+18-09-2023 @00:07:06,load_multiple,Souffle,95.61,0.73,11
+18-09-2023 @00:07:07,repeated_variables,Souffle,37.59,0.09,8
+18-09-2023 @00:07:08,symmetric_transitive_closure,Souffle,36.08,0.09,57
 16-08-2023 @18:57:32,all_basics,Clingo,5.02,1.94,118
 16-08-2023 @19:15:19,all_basics,Clingo,4.01,1.92,118
 16-08-2023 @19:17:40,all_basics,Clingo,4.0,2.01,118
 22-08-2023 @19:17:24,Rulewerk_Rules,Souffle,42.95,0.36,182
-22-08-2023 @19:21:23,Rulewerk_Rules,Souffle,46.95,0.09,18218-09-2023 @14:44:26,basic_join,Rulewerk,1309.27,1.74,8
+22-08-2023 @19:21:23,Rulewerk_Rules,Souffle,46.95,0.09,182

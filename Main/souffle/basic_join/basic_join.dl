@@ -33,6 +33,3 @@ J3(X, Y, W) :- sourceA(T, Y, X), sourceB(T, Y, X), sourceC(X, Y, W).
 .output J1
 .output J2
 .output J3
-.output sourceA
-.output sourceB
-.output sourceC
