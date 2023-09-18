@@ -7,5 +7,5 @@
         {"name": "repeated_variables", "path": "Rulewerk_Rules/repeated_variables"},
         {"name": "symmetric_transitive_closure", "path": "Rulewerk_Rules/symmetric_transitive_closure"}
     ] ,
-    "solvers": ["souffle"]
+    "solvers": ["souffle", "nemo", "rulewerk", "clingo"]
 }
