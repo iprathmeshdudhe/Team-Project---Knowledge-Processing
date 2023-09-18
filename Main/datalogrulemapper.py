@@ -19,13 +19,7 @@ os.environ["JAVA_HOME"] = Settings.java_home_path
 class DatalogRuleMapper:
     def start_jvm(self):
         try:
-            # Start the JVM
             jpype.startJVM(jpype.getDefaultJVMPath())
-            # print("JVM Started")
-            # print("==========================================================================================================================================================")
-            # print("JVM Path: ", jpype.getDefaultJVMPath())
-
-            # Add the classPath
             jpype.addClassPath(os.path.join(Settings.rulewerk_lib_path, "*"))
 
             from org.semanticweb.rulewerk.parser import RuleParser
@@ -252,8 +246,6 @@ class DatalogRuleMapper:
 
             # type declarations for body
             for j, body_literal in enumerate(body_literals):
-                query_list.append(".output " + str(body_literal.getPredicate().getName()))
-
                 souffle_declaration_arguments = []
                 for k, argument in enumerate(body_literal.getArguments()):
                     data_type = ": symbol"

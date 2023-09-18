@@ -6,7 +6,7 @@ class CustomError(Exception):
 
     def __init__(self, message):
         self.message = message
-        logger.error(message)
+        logger.exception(message)
 
 
 class FeatureNotSupported(CustomError):
@@ -37,3 +37,8 @@ class SystemNotSupported(CustomError):
     """Raised when Rulewerk feature is not supported in the current tool"""
 
     pass
+
+
+def input_path_error(exc):
+    # if given rls file path does not exist then raise error
+    raise exc

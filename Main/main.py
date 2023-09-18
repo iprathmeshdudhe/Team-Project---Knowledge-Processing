@@ -1,15 +1,18 @@
 import argparse
+import sys
 import os.path
+
+import logger
 import psutil
 import subprocess
 import time
 import platform
+import datetime
+import json
 
 from datalogrulemapper import *
-import datetime
-import traceback
 
-from src.errors import NoRlsFilesFound, DirectoryNotFound, SystemNotSupported
+from src.errors import NoRlsFilesFound, DirectoryNotFound, SystemNotSupported, input_path_error
 from src.config import Settings
 from clingo_controller import ClingoController
 from rulewerk_controller import RulewerkController
@@ -37,7 +40,8 @@ def measure_memory_usage_and_time(commands):
     else:
         raise SystemNotSupported(f"The system {system} is not supported")
 
-    cmd_process = subprocess.Popen(args, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False
+    cmd_process = subprocess.Popen(
+        args, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False
     )
     for command in commands:
         print("\nExecuting Command: ", command)
@@ -60,7 +64,7 @@ def measure_memory_usage_and_time(commands):
 
 def get_rls_file_paths(directory):
     rls_file_paths = []
-    for root, dirs, files in os.walk(directory, onerror= input_path_error):
+    for root, dirs, files in os.walk(directory, onerror=input_path_error):
         for file in files:
             if file.endswith(".rls"):
                 file_path = os.path.join(root, file)
@@ -94,15 +98,17 @@ def write_benchmark_results(timestamp, task, tool, execution_time, memory_info, 
             dw.writeheader()
         csv_writer.writerow([timestamp, task, tool, execution_time, memory_info, count])
 
+
 def get_config(config_file_path):
     try:
         config_file = open(config_file_path)
     except Exception as exc:
-        sys.exit(exc)
-        
+        logger.exception(exc)
+        sys.exit(1)
+
     configs = json.load(config_file)
-    tasks = configs['tasks']
-    solvers = configs['solvers']
+    tasks = configs["tasks"]
+    solvers = configs["solvers"]
     return solvers, tasks
 
 
@@ -118,7 +124,7 @@ def run_rulewerk(rls_files, RuleParser, Rule, Literal, rule_file_path, timestamp
         execution_time, memory_info, result_count = rc.runRulewerk(rule_file_path, query_dict)
         # call function to write bencmarking results to csv file
         write_benchmark_results(
-            timestamp, task, "Rulewerk", round(execution_time, 2), round(memory_info, 2), round(int(result_count), 2)
+            timestamp, task, "Rulewerk", round(execution_time, 2), round(memory_info, 2), result_count
         )
     except Exception as err:
 
@@ -142,7 +148,9 @@ def run_clingo(rls_files, task, timestamp, RuleParser, ruleMapper):
         # Dictionary {"rule_file_location": [list of rule head predicates]........}
         sav_loc_and_rule_head_predicates[saving_location] = rule_head_preds
 
-    c_memory, c_exec_time, c_count_ans = cc.run_clingo(sav_loc_and_rule_head_predicates)
+    clingo_commands = cc.get_clingo_commands(sav_loc_and_rule_head_predicates)
+    c_memory, c_exec_time = measure_memory_usage_and_time(clingo_commands)
+    c_count_ans = cc.save_clingo_output(sav_loc_and_rule_head_predicates)
 
     # call function to write benchmarking results to csv file
     write_benchmark_results(
@@ -161,9 +169,7 @@ def run_nemo(rls_files, timestamp, task):
         execution_time, memory_info, result_count = nc.runNemo(rls_file_list)
 
         # call function to write bencmarking results to csv file
-        write_benchmark_results(
-            timestamp, task, "Nemo", round(execution_time, 2), round(memory_info, 2), round(int(result_count), 2)
-        )
+        write_benchmark_results(timestamp, task, "Nemo", round(execution_time, 2), round(memory_info, 2), result_count)
     except Exception as err:
         logger.error(err)
 
@@ -172,12 +178,14 @@ def run_souffle(rls_files, timestamp, task, RuleParser, ruleMapper):
     sc = SouffleController()
     commands = []
     c_count_ans = 0
+    folders_to_create = []
 
     for rls in rls_files:
         rls_basename = os.path.basename(rls)
         dir_fullname = os.path.dirname(rls)
         dir_basename = os.path.basename(dir_fullname)
         folder_to_create = os.path.join("souffle", dir_basename)
+        folders_to_create.append(folder_to_create)
         os.makedirs(folder_to_create, exist_ok=True)
 
         rules, facts, data_sources, _ = ruleMapper.rulewerktoobject(rls, RuleParser)
@@ -209,9 +217,11 @@ def run_souffle(rls_files, timestamp, task, RuleParser, ruleMapper):
         commands.append(command)
         process = subprocess.Popen(command.split(), stdout=subprocess.PIPE)
 
+    c_memory, c_exec_time = measure_memory_usage_and_time(commands)
+    time.sleep(1)
+    for folder_to_create in folders_to_create:
         c_count_ans += sc.count_answers(folder_to_create)
 
-    c_memory, c_exec_time = measure_memory_usage_and_time(commands)
     write_benchmark_results(timestamp, task, "Souffle", c_exec_time, c_memory, c_count_ans)
 
 
@@ -219,23 +229,21 @@ def main():
     ruleMapper = DatalogRuleMapper()
     RuleParser, Rule, Literal = ruleMapper.start_jvm()
 
-    # Added the parser to use the code as tool
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('--config_file', type=str, required=True)
-
+    parser.add_argument("--config_file", type=str, required=True)
     args = parser.parse_args()
     solvers, tasks = get_config(args.config_file)
 
     for task in tasks:
-        rule_file_path = task['path']
-        task_name = task['name']
+        rule_file_path = task["path"]
+        task_name = task["name"]
 
         try:
             rls_files = get_rls_file_paths(rule_file_path)
         except Exception as exc:
-            logger.error(exc)
-            sys.exit()
+            logger.exception(exc)
+            sys.exit(1)
 
         timestamp = datetime.datetime.now().strftime("%d-%m-%Y @%H:%M:%S")
 
@@ -244,19 +252,19 @@ def main():
                 run_clingo(rls_files, task_name, timestamp, RuleParser, ruleMapper)
             elif solver.lower() == 'nemo':
                 run_nemo(rls_files, timestamp, task_name)
-            elif solver.lower() == 'rulewerk':
+            elif solver.lower() == "rulewerk":
                 run_rulewerk(rls_files, RuleParser, Rule, Literal, rule_file_path, timestamp, task_name)
-            elif solver.lower() == 'souffle':
-                run_souffle(rls_files, timestamp, args.task_name, RuleParser, ruleMapper)
-            elif solver.lower() == 'all':
-                run_clingo(rls_files, task_name, timestamp, RuleParser)
+            elif solver.lower() == "souffle":
+                run_souffle(rls_files, timestamp, task_name, RuleParser, ruleMapper)
+            elif solver.lower() == "all":
+                run_clingo(rls_files, task_name, timestamp, RuleParser, ruleMapper)
                 run_nemo(rls_files, timestamp, task_name)
                 run_rulewerk(rls_files, RuleParser, Rule, Literal, rule_file_path, timestamp, task_name)
-                run_souffle(rls_files, timestamp, args.task_name, RuleParser, ruleMapper)
+                run_souffle(rls_files, timestamp, task_name, RuleParser, ruleMapper)
             else:
-                logger.error(f"{solver}:- Solver not recognized!")
-                sys.exit()
-            
+                logger.exception(f"{solver} Solver not recognized! Please check your config.json file.")
+                sys.exit(1)
+
     ruleMapper.stop_jvm()
 
 

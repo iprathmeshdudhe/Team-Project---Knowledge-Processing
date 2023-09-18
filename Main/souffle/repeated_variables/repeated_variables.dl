@@ -36,6 +36,3 @@ RepeatAlternative(R, S) :- sourceA(R, X, X), sourceB(S, Y, Y).
 .output RepeatAlternative
 .output RepeatBody
 .output RepeatHead
-.output sourceA
-.output sourceB
-.output sourceC
