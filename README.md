@@ -69,7 +69,7 @@ To Run the tool, run the main.py script using the command:
 
 ```bash
 cd Main
-python3 main.py --config_file config.json
+python main.py --config_file config.json
 ```
 
 ## Tool flow
