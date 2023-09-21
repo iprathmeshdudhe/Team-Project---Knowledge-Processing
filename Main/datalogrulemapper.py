@@ -12,7 +12,7 @@ from csvtofacts import *
 from src.errors import CouldNotStartJVM
 from src.config import Settings
 
-
+print(Settings.java_home_path)
 os.environ["JAVA_HOME"] = Settings.java_home_path
 
 
