@@ -17,6 +17,16 @@ from src.config import Settings
 from clingo_controller import ClingoController
 from rulewerk_controller import RulewerkController
 from nemo_controller import NemoController
+import traceback
+import json
+import sys
+from loguru import logger
+
+sys.tracebacklimit = 0
+
+def input_path_error(exc):
+    #if given rls file path does not exist then raise error
+    raise exc
 from souffle_controller import SouffleController
 
 
@@ -68,7 +78,6 @@ def write_benchmark_results(timestamp, task, tool, execution_time, memory_info, 
     # row: parameters in order
     # close csv
     flag = os.path.exists("BenchResults.csv")
-    # print(flag)
     with open("BenchResults.csv", mode="a", newline="") as csv_file:
         csv_writer = csv.writer(csv_file)
         if flag:
@@ -118,7 +127,8 @@ def run_rulewerk(rls_files, RuleParser, Rule, Literal, rule_file_path, timestamp
             timestamp, task, "Rulewerk", round(execution_time, 2), round(memory_info, 2), result_count
         )
     except Exception as err:
-        print("An exception occurred while running Rulewerk: ", err)
+
+        logger.error(err)
 
 
 def run_clingo(rls_files, task, timestamp, RuleParser, ruleMapper):
@@ -161,7 +171,7 @@ def run_nemo(rls_files, timestamp, task):
         # call function to write bencmarking results to csv file
         write_benchmark_results(timestamp, task, "Nemo", round(execution_time, 2), round(memory_info, 2), result_count)
     except Exception as err:
-        print("An exception occurred: ", err)
+        logger.error(err)
 
 
 def run_souffle(rls_files, timestamp, task, RuleParser, ruleMapper):
@@ -238,9 +248,9 @@ def main():
         timestamp = datetime.datetime.now().strftime("%d-%m-%Y @%H:%M:%S")
 
         for solver in solvers:
-            if solver.lower() == "clingo":
+            if solver.lower() == 'clingo':
                 run_clingo(rls_files, task_name, timestamp, RuleParser, ruleMapper)
-            elif solver.lower() == "nemo":
+            elif solver.lower() == 'nemo':
                 run_nemo(rls_files, timestamp, task_name)
             elif solver.lower() == "rulewerk":
                 run_rulewerk(rls_files, RuleParser, Rule, Literal, rule_file_path, timestamp, task_name)

@@ -8,8 +8,9 @@ from jpype.types import *
 import csv
 import sys
 import pandas as pd
+from loguru import logger
 
-
+sys.tracebacklimit = 0
 class RulewerkController:
     def rulefileElements(self, parser, Rule, Literal, rlsFilePath):
         with open(rlsFilePath, "r") as rule_file:
@@ -41,9 +42,10 @@ class RulewerkController:
                 res_dir = file_path.split(".")[0]
                 f_name = file_name.split(".")[0]
                 cd = os.getcwd()
-                dir_name = f"{cd}\\rulewerk\\{f_name}"
+                dir_name = os.path.join(cd, "rulewerk", f_name)
                 try:
-                    result_csv = pd.read_csv(f"{dir_name}\\{pred_name}.csv")
+
+                    result_csv = pd.read_csv(os.path.join(dir_name, f"{pred_name}.csv"))
                     result_count = (
                         result_count + len(result_csv) + 1
                     )  # count total numebr of rows in each result csv file; +1 because we do not have header in our result csv
@@ -54,8 +56,8 @@ class RulewerkController:
     def runRulewerk(self, rule_file_path, query_dict):
         result_count = 0
 
-        print("------------Starting Rulewerk---------------")
-
+        logger.info("Running Rulewerk")
+        
         command = "java -jar lib/rulewerk-client.jar"
 
         cmd_process = subprocess.Popen(
@@ -97,5 +99,5 @@ class RulewerkController:
 
         result_count = self.count_res(query_dict)
 
-        print("---------Rulewerk processing complete!------------")
+        logger.info("Rulewerk processing complete")
         return execution_time, memory_usage, result_count
