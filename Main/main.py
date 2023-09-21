@@ -31,7 +31,7 @@ from souffle_controller import SouffleController
 
 
 def measure_memory_usage_and_time(commands):
-    start_time = time.time()
+    
     system = platform.system()
     if system == "Windows":
         args = ["cmd"]
@@ -43,6 +43,9 @@ def measure_memory_usage_and_time(commands):
     cmd_process = subprocess.Popen(
         args, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False
     )
+
+    start_time = time.time()
+    
     for command in commands:
         print("\nExecuting Command: ", command)
         # Send the command to the command prompt process
