@@ -7,6 +7,7 @@ import time
 import platform
 import datetime
 import json
+import threading
 
 from datalogrulemapper import *
 
@@ -20,20 +21,30 @@ import json
 import sys
 from loguru import logger
 
-sys.tracebacklimit = 0
+# sys.tracebacklimit = 0
 
 def input_path_error(exc):
     #if given rls file path does not exist then raise error
     raise exc
 from souffle_controller import SouffleController
 
+def measure_memory(pid, mu):
 
-def measure_memory_usage_and_time(commands):
-    max_vms = 0  # To store the maximum .vms observed
+    process = psutil.Process(pid)
+    
+    try:
 
-    # Measure the Memory Usage
-    memory_usage = max_vms / (1024 * 1024)  # Convert bytes to megabytes
-    start_time = time.time()
+        while process.is_running():
+            mu.append((process.memory_info().rss) / (1024 * 1024))
+    
+    except psutil.NoSuchProcess:
+        print("No Such Process Exist. Or Process finished executing.")
+        pass
+        
+def monitor_process(commands):
+
+    memory_usage = []
+    
     system = platform.system()
     if system == "Windows":
         args = ["cmd"]
@@ -45,26 +56,36 @@ def measure_memory_usage_and_time(commands):
     cmd_process = subprocess.Popen(
         args, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False
     )
-    for command in commands:
-        print("\nExecuting Command: ", command)
-        # Send the command to the command prompt process
-        cmd_process.stdin.write(command.encode("utf-8") + b"\n")
-        cmd_process.stdin.flush()
-        vms = psutil.Process(cmd_process.pid).memory_info().vms
-        if vms > max_vms:
-            max_vms = vms
-    # Measure the Memory Usage
-    memory_usage = psutil.Process(cmd_process.pid).memory_info().rss / 1024 / 1024
-    print('memory vms:', max_vms / 1024 / 1024)
-    # Close the command prompt process
-    cmd_process.stdin.close()
 
-    # Calculate the execution time
-    execution_time = (time.time() - start_time) * 1000
+    #Creating a thread to measure memory in backend
+    thread = threading.Thread(target=measure_memory, args=(cmd_process.pid, memory_usage))
+    thread.start()
 
-    cmd_process.stdout.read()
-    cmd_process.stdout.close()
-    return round(memory_usage, 2), round(execution_time, 2)
+    #Start Measuring Time 
+    start_time = time.perf_counter()
+    
+    try:
+        for command in commands:
+            print("\nExecuting Command: ", command)
+            # Send the command to the command prompt process
+            cmd_process.stdin.write(command.encode("utf-8") + b"\n")
+            cmd_process.stdin.flush()
+        
+        # Close the command prompt process
+        cmd_process.stdin.close()
+            
+        # Calculate the execution time
+        execution_time = (time.perf_counter() - start_time) * 1000
+        
+
+    except Exception as err:
+        raise err
+    
+    else:
+        memory_usage = max(memory_usage)
+        return round(memory_usage, 2), round(execution_time, 2)
+    
+
 
 def get_rls_file_paths(directory):
     rls_file_paths = []
@@ -126,12 +147,13 @@ def run_rulewerk(rls_files, RuleParser, Rule, Literal, rule_file_path, timestamp
             query, head_pred = rc.get_rule_file_elements(RuleParser, Rule, Literal, rls)
             query_dict[rls] = [query, head_pred]
         rulewerk_commands = rc.get_rulewerk_commands(rule_file_path, query_dict)
-        c_memory, c_exec_time = measure_memory_usage_and_time(rulewerk_commands)
+        c_memory, c_exec_time = monitor_process(rulewerk_commands)
+
         result_count = rc.count_rulewerk_results(query_dict)
         print(c_memory, c_exec_time, result_count)
         # call function to write bencmarking results to csv file
         write_benchmark_results(
-            timestamp, task, "Rulewerk", round(c_exec_time, 2), round(c_memory, 2), result_count
+            timestamp, task, "Rulewerk", c_exec_time, c_memory, result_count
         )
     except Exception as err:
         logger.error(err)
@@ -155,7 +177,11 @@ def run_clingo(rls_files, task, timestamp, RuleParser, ruleMapper):
         sav_loc_and_rule_head_predicates[saving_location] = rule_head_preds
 
     clingo_commands = cc.get_clingo_commands(sav_loc_and_rule_head_predicates)
-    c_memory, c_exec_time = measure_memory_usage_and_time(clingo_commands)
+    c_memory, c_exec_time = monitor_process(clingo_commands)
+
+    #Insert delay so that the outputs= files gets created
+    time.sleep(5)
+    
     c_count_ans = cc.save_clingo_output(sav_loc_and_rule_head_predicates)
 
     # call function to write benchmarking results to csv file
@@ -225,7 +251,7 @@ def run_souffle(rls_files, timestamp, task, RuleParser, ruleMapper):
         commands.append(command)
         process = subprocess.Popen(command.split(), stdout=subprocess.PIPE)
 
-    c_memory, c_exec_time = measure_memory_usage_and_time(commands)
+    c_memory, c_exec_time = monitor_process(commands)
     time.sleep(1)
     for folder_to_create in folders_to_create:
         c_count_ans += sc.count_answers(folder_to_create)

@@ -8,5 +8,5 @@
         {"name": "symmetric_transitive_closure", "path": "Rulewerk_Rules/symmetric_transitive_closure"},
         {"name": "all_rulewerk_basics", "path": "Rulewerk_Rules"}
     ] ,
-    "solvers": ["nemo", "rulewerk"]
+    "solvers": ["rulewerk"]
 }
