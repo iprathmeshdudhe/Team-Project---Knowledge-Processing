@@ -2,10 +2,10 @@ clingo version 5.6.2
 Reading from clingo/basic_union/basic_union-facts.lp ...
 Solving...
 Answer: 1
-sourceA(a,b,c) sourceA(b,b,d) sourceA(a,e,f) sourceA(c,d,d) abc(q,q,a) abc(z,z,z) abc(a,g,q) abc(a,c,f) abc(c,d,d) abc(b,b,d) abc(a,b,c) abc(a,e,f) sourceB(a,g,q) sourceB(a,c,f) sourceB(q,q,a) sourceB(c,d,d) sourceB(b,b,d) sourceC(q,q,a) sourceC(z,z,z) ab(a,g,q) ab(a,c,f) ab(q,q,a) ab(c,d,d) ab(b,b,d) ab(a,b,c) ab(a,e,f)
+sourceA(a,b,c) sourceA(a,e,f) sourceA(b,b,d) sourceA(c,d,d) abc(q,q,a) abc(z,z,z) abc(a,c,f) abc(a,g,q) abc(b,b,d) abc(c,d,d) abc(a,b,c) abc(a,e,f) sourceB(a,c,f) sourceB(a,g,q) sourceB(b,b,d) sourceB(c,d,d) sourceB(q,q,a) sourceC(q,q,a) sourceC(z,z,z) ab(a,c,f) ab(a,g,q) ab(b,b,d) ab(c,d,d) ab(q,q,a) ab(a,b,c) ab(a,e,f)
 SATISFIABLE
 
 Models       : 1
 Calls        : 1
-Time         : 0.005s (Solving: 0.00s 1st Model: 0.00s Unsat: 0.00s)
+Time         : 0.016s (Solving: 0.00s 1st Model: 0.00s Unsat: 0.00s)
 CPU Time     : 0.000s

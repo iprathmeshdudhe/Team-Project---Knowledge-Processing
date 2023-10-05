@@ -11,9 +11,9 @@ Timestamp (YYYY-MM-DD HH:MM:SS),Task,Tool,Execution Time (ms),Memory Info (MB),C
 16-08-2023 @11:43:56,repeated_variables,Rulewerk,1687.07,1.71,8
 16-08-2023 @11:44:15,symmetric_transitive_closure,Nemo,1183.7,1.52,57
 16-08-2023 @11:44:15,symmetric_transitive_closure,Rulewerk,1796.13,1.71,57
-16-08-2023 @18:55:38,basic_join,Clingo,4.0,1.86,8
+16-08-2023 @18:55:38,basic_join,Clingo,4,1.86,8
 16-08-2023 @18:55:56,basic_projection,Clingo,4.53,1.84,19
-16-08-2023 @18:56:12,basic_union,Clingo,4.0,1.86,15
+16-08-2023 @18:56:12,basic_union,Clingo,4,1.86,15
 16-08-2023 @18:56:34,load_multiple,Clingo,4.52,1.86,11
 16-08-2023 @18:56:54,repeated_variables,Clingo,4.01,1.86,8
 16-08-2023 @18:57:12,symmetric_transitive_closure,Clingo,4.29,1.86,57
@@ -25,7 +25,20 @@ Timestamp (YYYY-MM-DD HH:MM:SS),Task,Tool,Execution Time (ms),Memory Info (MB),C
 18-09-2023 @00:07:08,symmetric_transitive_closure,Souffle,36.08,0.09,57
 16-08-2023 @18:57:32,all_basics,Clingo,5.02,1.94,118
 16-08-2023 @19:15:19,all_basics,Clingo,4.01,1.92,118
-16-08-2023 @19:17:40,all_basics,Clingo,4.0,2.01,118
+16-08-2023 @19:17:40,all_basics,Clingo,4,2.01,118
 22-08-2023 @19:17:24,Rulewerk_Rules,Souffle,42.95,0.36,182
 22-08-2023 @19:21:23,Rulewerk_Rules,Souffle,46.95,0.09,182
+21-09-2023 @14:24:40,basic_join,Clingo,15.62,1.86,8
+21-09-2023 @14:24:40,basic_projection,Clingo,15.6,1.77,19
+21-09-2023 @14:24:40,basic_union,Clingo,15.63,2.05,15
+21-09-2023 @14:24:40,load_multiple,Clingo,15.62,1.77,11
+21-09-2023 @14:24:41,repeated_variables,Clingo,9.52,1.77,8
+21-09-2023 @14:24:41,symmetric_transitive_closure,Clingo,15.62,1.86,57
 
+05-10-2023 @10:30:46,basic_join,Rulewerk,347.23,4.65,8
+05-10-2023 @10:30:47,basic_projection,Rulewerk,331.26,4.54,19
+05-10-2023 @10:30:47,basic_union,Rulewerk,283.24,4.66,15
+05-10-2023 @10:30:48,load_multiple,Rulewerk,274.75,4.54,11
+05-10-2023 @10:30:49,repeated_variables,Rulewerk,339.98,4.66,8
+05-10-2023 @10:30:50,symmetric_transitive_closure,Rulewerk,266.1,4.66,57
+05-10-2023 @10:30:51,all_rulewerk_basics,Rulewerk,1581.18,4.66,118

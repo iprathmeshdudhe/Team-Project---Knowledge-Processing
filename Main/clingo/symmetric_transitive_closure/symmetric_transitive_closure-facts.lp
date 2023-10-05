@@ -1,18 +1,18 @@
-conn(berlin, paris) .
-city(kobe) .
 city(basel) .
-conn(vienna, zurich) .
-city(okayama) .
-conn(tokyo, kobe) .
-city(tokyo) .
-city(fukuoka) .
-city(vienna) .
 city(berlin) .
+city(fukuoka) .
+city(kobe) .
+city(niigata) .
+city(okayama) .
+city(paris) .
+city(rome) .
+city(tokyo) .
+city(vienna) .
+conn(berlin, paris) .
+conn(fukuoka, okayama) .
+conn(kobe, fukuoka) .
+conn(niigata, tokyo) .
+conn(tokyo, kobe) .
 conn(vienna, berlin) .
 conn(vienna, rome) .
-conn(kobe, fukuoka) .
-city(niigata) .
-city(rome) .
-city(paris) .
-conn(fukuoka, okayama) .
-conn(niigata, tokyo) .
+conn(vienna, zurich) .
