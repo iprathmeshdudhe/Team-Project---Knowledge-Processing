@@ -1,8 +1,6 @@
 import argparse
 import sys
 import os.path
-
-import logger
 import psutil
 import subprocess
 import time
@@ -23,7 +21,7 @@ import json
 import sys
 from loguru import logger
 
-sys.tracebacklimit = 0
+# sys.tracebacklimit = 0
 
 def input_path_error(exc):
     #if given rls file path does not exist then raise error
@@ -76,15 +74,15 @@ def monitor_process(commands):
         # Close the command prompt process
         cmd_process.stdin.close()
 
-        while process.is_running():
+        while cmd_process.poll() is None:                     
             pass
-            
-        # Calculate the execution time
+
+        # Calculate the execution time            
         execution_time = (time.perf_counter() - start_time) * 1000
         
 
-    except:
-        print("ERROR: Problem with Running the tools.")
+    except Exception as err:
+        raise err
     
     else:
         memory_usage = max(memory_usage)
@@ -149,15 +147,18 @@ def run_rulewerk(rls_files, RuleParser, Rule, Literal, rule_file_path, timestamp
     try:
         for rls in rls_files:
             file_name = os.path.basename(rls)
-            query, head_pred = rc.rulefileElements(RuleParser, Rule, Literal, rls)
+            query, head_pred = rc.get_rule_file_elements(RuleParser, Rule, Literal, rls)
             query_dict[rls] = [query, head_pred]
-        execution_time, memory_info, result_count = rc.runRulewerk(rule_file_path, query_dict)
+        rulewerk_commands = rc.get_rulewerk_commands(rule_file_path, query_dict)
+        c_memory, c_exec_time = monitor_process(rulewerk_commands)
+
+        result_count = rc.count_rulewerk_results(query_dict)
+        print(c_memory, c_exec_time, result_count)
         # call function to write bencmarking results to csv file
         write_benchmark_results(
-            timestamp, task, "Rulewerk", round(execution_time, 2), round(memory_info, 2), result_count
+            timestamp, task, "Rulewerk", c_exec_time, c_memory, result_count
         )
     except Exception as err:
-
         logger.error(err)
 
 
@@ -203,7 +204,9 @@ def run_nemo(rls_files, timestamp, task):
         execution_time, memory_info, result_count = nc.runNemo(rls_file_list)
 
         # call function to write bencmarking results to csv file
-        write_benchmark_results(timestamp, task, "Nemo", round(execution_time, 2), round(memory_info, 2), result_count)
+        write_benchmark_results(
+            timestamp, task, "Nemo", round(execution_time, 2), round(memory_info, 2), result_count
+        )
     except Exception as err:
         logger.error(err)
 
