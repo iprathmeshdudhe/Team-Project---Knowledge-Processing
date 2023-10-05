@@ -1,8 +1,6 @@
 import argparse
 import sys
 import os.path
-
-import logger
 import psutil
 import subprocess
 import time
@@ -31,6 +29,10 @@ from souffle_controller import SouffleController
 
 
 def measure_memory_usage_and_time(commands):
+    max_vms = 0  # To store the maximum .vms observed
+
+    # Measure the Memory Usage
+    memory_usage = max_vms / (1024 * 1024)  # Convert bytes to megabytes
     start_time = time.time()
     system = platform.system()
     if system == "Windows":
@@ -48,9 +50,12 @@ def measure_memory_usage_and_time(commands):
         # Send the command to the command prompt process
         cmd_process.stdin.write(command.encode("utf-8") + b"\n")
         cmd_process.stdin.flush()
+        vms = psutil.Process(cmd_process.pid).memory_info().vms
+        if vms > max_vms:
+            max_vms = vms
     # Measure the Memory Usage
     memory_usage = psutil.Process(cmd_process.pid).memory_info().rss / 1024 / 1024
-
+    print('memory vms:', max_vms / 1024 / 1024)
     # Close the command prompt process
     cmd_process.stdin.close()
 
@@ -60,7 +65,6 @@ def measure_memory_usage_and_time(commands):
     cmd_process.stdout.read()
     cmd_process.stdout.close()
     return round(memory_usage, 2), round(execution_time, 2)
-
 
 def get_rls_file_paths(directory):
     rls_file_paths = []
@@ -119,15 +123,17 @@ def run_rulewerk(rls_files, RuleParser, Rule, Literal, rule_file_path, timestamp
     try:
         for rls in rls_files:
             file_name = os.path.basename(rls)
-            query, head_pred = rc.rulefileElements(RuleParser, Rule, Literal, rls)
+            query, head_pred = rc.get_rule_file_elements(RuleParser, Rule, Literal, rls)
             query_dict[rls] = [query, head_pred]
-        execution_time, memory_info, result_count = rc.runRulewerk(rule_file_path, query_dict)
+        rulewerk_commands = rc.get_rulewerk_commands(rule_file_path, query_dict)
+        c_memory, c_exec_time = measure_memory_usage_and_time(rulewerk_commands)
+        result_count = rc.count_rulewerk_results(query_dict)
+        print(c_memory, c_exec_time, result_count)
         # call function to write bencmarking results to csv file
         write_benchmark_results(
-            timestamp, task, "Rulewerk", round(execution_time, 2), round(memory_info, 2), result_count
+            timestamp, task, "Rulewerk", round(c_exec_time, 2), round(c_memory, 2), result_count
         )
     except Exception as err:
-
         logger.error(err)
 
 
@@ -169,7 +175,9 @@ def run_nemo(rls_files, timestamp, task):
         execution_time, memory_info, result_count = nc.runNemo(rls_file_list)
 
         # call function to write bencmarking results to csv file
-        write_benchmark_results(timestamp, task, "Nemo", round(execution_time, 2), round(memory_info, 2), result_count)
+        write_benchmark_results(
+            timestamp, task, "Nemo", round(execution_time, 2), round(memory_info, 2), result_count
+        )
     except Exception as err:
         logger.error(err)
 
