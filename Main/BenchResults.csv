@@ -34,3 +34,10 @@ Timestamp (YYYY-MM-DD HH:MM:SS),Task,Tool,Execution Time (ms),Memory Info (MB),C
 21-09-2023 @14:24:40,load_multiple,Clingo,15.62,1.77,11
 21-09-2023 @14:24:41,repeated_variables,Clingo,9.52,1.77,8
 21-09-2023 @14:24:41,symmetric_transitive_closure,Clingo,15.62,1.86,57
+05-10-2023 @11:01:29,basic_join,Rulewerk,850.0,4.65,8
+05-10-2023 @11:01:30,basic_projection,Rulewerk,810.19,4.54,19
+05-10-2023 @11:01:31,basic_union,Rulewerk,797.69,4.65,15
+05-10-2023 @11:01:32,load_multiple,Rulewerk,737.05,4.54,11
+05-10-2023 @11:01:32,repeated_variables,Rulewerk,822.55,4.66,8
+05-10-2023 @11:01:33,symmetric_transitive_closure,Rulewerk,795.78,4.54,57
+05-10-2023 @11:01:34,all_rulewerk_basics,Rulewerk,1571.29,4.66,118

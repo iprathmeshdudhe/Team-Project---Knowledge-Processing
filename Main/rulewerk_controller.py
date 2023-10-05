@@ -12,7 +12,7 @@ from loguru import logger
 
 sys.tracebacklimit = 0
 class RulewerkController:
-    def rulefileElements(self, parser, Rule, Literal, rlsFilePath):
+    def get_rule_file_elements(self, parser, Rule, Literal, rlsFilePath):
         with open(rlsFilePath, "r") as rule_file:
             rls_file = rule_file.read()
             kb = parser.parse(rls_file)
@@ -33,7 +33,7 @@ class RulewerkController:
 
         return toQuery, pred_names
 
-    def count_res(self, query_dict):
+    def count_rulewerk_results(self, query_dict):
         result_count = 0
         for rls_file, to_query in query_dict.items():
             file_name = os.path.basename(rls_file)
@@ -53,20 +53,16 @@ class RulewerkController:
                     result_count = result_count
         return result_count
 
-    def runRulewerk(self, rule_file_path, query_dict):
+    def get_rulewerk_commands(self, rule_file_path, query_dict):
+        commands = []
         result_count = 0
 
         logger.info("Running Rulewerk")
         
-        command = "java -jar lib/rulewerk-client.jar"
+        start_command = "java -jar lib/rulewerk-client.jar"
 
-        cmd_process = subprocess.Popen(
-            ["cmd"], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False
-        )
-        process_id = cmd_process.pid
-        cmd_process.stdin.write(command.encode("utf-8") + b"\n")
+        commands.append(start_command)
 
-        start_time = time.time()
 
         for rls_file, to_query in query_dict.items():
             file_name = os.path.basename(rls_file)
@@ -76,9 +72,9 @@ class RulewerkController:
             file_path = str(file_path).replace("\\", "/")
 
             load_command = f"@load '{cd}/{file_path}/{file_name}'"
+            commands.append(load_command)
             reason_command = "@reason"
-            cmd_process.stdin.write(load_command.encode("utf-8") + b"\n")
-            cmd_process.stdin.write(reason_command.encode("utf-8") + b"\n")
+            commands.append(reason_command)
             for query, pred_name in zip(to_query[0], to_query[1]):
                 dir_name = str(file_name).split(".")[0]
                 res_dir_name = f"rulewerk/{dir_name}"
@@ -87,17 +83,9 @@ class RulewerkController:
                     os.makedirs(res_dir_name)
 
                 query_command = "@query {} EXPORTCSV '{}/{}.csv'".format(query, res_dir_name, pred_name)
-                cmd_process.stdin.write(query_command.encode("utf-8") + b"\n")
+                commands.append(query_command)
+
             clear_command = "@clear ALL".format(query, res_dir_name, pred_name)
-            cmd_process.stdin.write(clear_command.encode("utf-8") + b"\n")
+            commands.append(clear_command)
 
-        # measure usage of the process
-        memory_usage = psutil.Process(process_id).memory_info().rss / 1024 / 1024
-        stdout, stderr = cmd_process.communicate()
-
-        execution_time = (time.time() - start_time) * 1000
-
-        result_count = self.count_res(query_dict)
-
-        logger.info("Rulewerk processing complete")
-        return execution_time, memory_usage, result_count
+        return commands
