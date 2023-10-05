@@ -9,6 +9,7 @@ import time
 import platform
 import datetime
 import json
+import threading
 
 from datalogrulemapper import *
 
@@ -29,8 +30,22 @@ def input_path_error(exc):
     raise exc
 from souffle_controller import SouffleController
 
+def measure_memory(pid, mu):
 
-def measure_memory_usage_and_time(commands):
+    process = psutil.Process(pid)
+    
+    try:
+
+        while process.is_running():
+            mu.append((process.memory_info().rss) / (1024 * 1024))
+    
+    except psutil.NoSuchProcess:
+        print("No Such Process Exist. Or Process finished executing.")
+        pass
+        
+def monitor_process(commands):
+
+    memory_usage = []
     
     system = platform.system()
     if system == "Windows":
@@ -44,25 +59,37 @@ def measure_memory_usage_and_time(commands):
         args, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False
     )
 
-    start_time = time.time()
+    #Creating a thread to measure memory in backend
+    thread = threading.Thread(target=measure_memory, args=(cmd_process.pid, memory_usage))
+    thread.start()
+
+    #Start Measuring Time 
+    start_time = time.perf_counter()
     
-    for command in commands:
-        print("\nExecuting Command: ", command)
-        # Send the command to the command prompt process
-        cmd_process.stdin.write(command.encode("utf-8") + b"\n")
-        cmd_process.stdin.flush()
-    # Measure the Memory Usage
-    memory_usage = psutil.Process(cmd_process.pid).memory_info().rss / 1024 / 1024
+    try:
+        for command in commands:
+            print("\nExecuting Command: ", command)
+            # Send the command to the command prompt process
+            cmd_process.stdin.write(command.encode("utf-8") + b"\n")
+            cmd_process.stdin.flush()
+        
+        # Close the command prompt process
+        cmd_process.stdin.close()
 
-    # Close the command prompt process
-    cmd_process.stdin.close()
+        while process.is_running():
+            pass
+            
+        # Calculate the execution time
+        execution_time = (time.perf_counter() - start_time) * 1000
+        
 
-    # Calculate the execution time
-    execution_time = (time.time() - start_time) * 1000
-
-    cmd_process.stdout.read()
-    cmd_process.stdout.close()
-    return round(memory_usage, 2), round(execution_time, 2)
+    except:
+        print("ERROR: Problem with Running the tools.")
+    
+    else:
+        memory_usage = max(memory_usage)
+        return round(memory_usage, 2), round(execution_time, 2)
+    
 
 
 def get_rls_file_paths(directory):
@@ -152,7 +179,11 @@ def run_clingo(rls_files, task, timestamp, RuleParser, ruleMapper):
         sav_loc_and_rule_head_predicates[saving_location] = rule_head_preds
 
     clingo_commands = cc.get_clingo_commands(sav_loc_and_rule_head_predicates)
-    c_memory, c_exec_time = measure_memory_usage_and_time(clingo_commands)
+    c_memory, c_exec_time = monitor_process(clingo_commands)
+
+    #Insert delay so that the outputs= files gets created
+    time.sleep(5)
+    
     c_count_ans = cc.save_clingo_output(sav_loc_and_rule_head_predicates)
 
     # call function to write benchmarking results to csv file
@@ -220,7 +251,7 @@ def run_souffle(rls_files, timestamp, task, RuleParser, ruleMapper):
         commands.append(command)
         process = subprocess.Popen(command.split(), stdout=subprocess.PIPE)
 
-    c_memory, c_exec_time = measure_memory_usage_and_time(commands)
+    c_memory, c_exec_time = monitor_process(commands)
     time.sleep(1)
     for folder_to_create in folders_to_create:
         c_count_ans += sc.count_answers(folder_to_create)

@@ -154,7 +154,7 @@ class DatalogRuleMapper:
             for fact in tqdm(unique_facts, desc="Writing Facts to file: ", colour="blue"):
                 file.write(fact + "\n")
 
-        print(f"Facts File saved at location: {location_to_save}-facts.lp")
+        #print(f"Facts File saved at location: {location_to_save}-facts.lp")
 
     def rulewerk_to_clingo(self, rule_file_dir, rules, facts, data_sources, saving_location):
         rules_list, head_predicates = self.process_clingo_rules(rules)
@@ -166,7 +166,7 @@ class DatalogRuleMapper:
             print("The Rulewerk .rls provided file is Empty !!")
 
         elif len(facts_list) == 0 and len(rules_list) > 0 and len(data_sources_dict) > 0:
-            print("Rules and DataSources")
+            #print("Rules and DataSources")
             csvtofacts = CSVtoFacts()
             datasources_facts = csvtofacts.toFactsfile(data_sources_dict)
 
@@ -174,13 +174,13 @@ class DatalogRuleMapper:
             self.write_clingo_facts(datasources_facts, saving_location)
 
         elif len(facts_list) > 0 and len(rules_list) > 0 and len(data_sources_dict) == 0:
-            print("Rules and Facts")
+            #print("Rules and Facts")
 
             self.write_clingo_rules(rules_list, saving_location)
             self.write_clingo_facts(facts_list, saving_location)
 
         elif len(facts_list) > 0 and len(rules_list) > 0 and len(data_sources_dict) > 0:
-            print("Rules and Facts and Datasources")
+            #print("Rules and Facts and Datasources")
 
             csvtofacts = CSVtoFacts()
             datasource_facts = csvtofacts.toFactsfile(data_sources_dict)
