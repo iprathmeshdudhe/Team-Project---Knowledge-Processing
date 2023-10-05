@@ -73,8 +73,11 @@ def monitor_process(commands):
         
         # Close the command prompt process
         cmd_process.stdin.close()
-            
-        # Calculate the execution time
+
+        while cmd_process.poll() is None:                     
+            pass
+
+        # Calculate the execution time            
         execution_time = (time.perf_counter() - start_time) * 1000
         
 
