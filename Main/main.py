@@ -11,40 +11,40 @@ import threading
 
 from datalogrulemapper import *
 
-from src.errors import NoRlsFilesFound, DirectoryNotFound, SystemNotSupported, input_path_error
+from src.errors import NoRlsFilesFound, DirectoryNotFound, SystemNotSupported
 from src.config import Settings
 from clingo_controller import ClingoController
 from rulewerk_controller import RulewerkController
 from nemo_controller import NemoController
+from souffle_controller import SouffleController
 import traceback
 import json
 import sys
 from loguru import logger
 
+
 # sys.tracebacklimit = 0
 
-def input_path_error(exc):
-    #if given rls file path does not exist then raise error
-    raise exc
-from souffle_controller import SouffleController
-
-def measure_memory(pid, mu):
-
+def measure_memory(pid, rss, vms):
     process = psutil.Process(pid)
-    
+
     try:
 
         while process.is_running():
-            mu.append((process.memory_info().rss) / (1024 * 1024))
-    
-    except psutil.NoSuchProcess:
-        print("No Such Process Exist. Or Process finished executing.")
-        pass
-        
-def monitor_process(commands):
+            mem_info = process.memory_info()
+            rss.append(mem_info.rss / 1024 / 1024)
+            vms.append(mem_info.vms / 1024 / 1024)
+            time.sleep(Settings.memory_measurement_interval)
 
-    memory_usage = []
-    
+    except psutil.NoSuchProcess:
+        logger.info("No Such Process Exist. Or Process finished executing.")
+        pass
+
+
+def monitor_process(commands):
+    rss = []
+    vms = []
+
     system = platform.system()
     if system == "Windows":
         args = ["cmd"]
@@ -57,55 +57,56 @@ def monitor_process(commands):
         args, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False
     )
 
-    #Creating a thread to measure memory in backend
-    thread = threading.Thread(target=measure_memory, args=(cmd_process.pid, memory_usage))
+    # Creating a thread to measure memory in backend
+    thread = threading.Thread(target=measure_memory, args=(cmd_process.pid, rss, vms))
     thread.start()
 
-    #Start Measuring Time 
+    # Start Measuring Time
     start_time = time.perf_counter()
-    
+
     try:
         for command in commands:
-            print("\nExecuting Command: ", command)
+            logger.info(f"Executing Command: {command}")
             # Send the command to the command prompt process
             cmd_process.stdin.write(command.encode("utf-8") + b"\n")
             cmd_process.stdin.flush()
-        
+
         # Close the command prompt process
+        cmd_process.wait()
         cmd_process.stdin.close()
 
-        while cmd_process.poll() is None:                     
-            pass
-
-        # Calculate the execution time            
+        # Calculate the execution time
         execution_time = (time.perf_counter() - start_time) * 1000
-        
+
 
     except Exception as err:
         raise err
-    
+
     else:
-        memory_usage = max(memory_usage)
-        return round(memory_usage, 2), round(execution_time, 2)
-    
+        max_rss = round(max(rss), 2)
+        max_vms = round(max(vms), 2)
+        return max_rss, max_vms, round(execution_time, 2)
 
 
 def get_rls_file_paths(directory):
     rls_file_paths = []
-    for root, dirs, files in os.walk(directory, onerror=input_path_error):
+    for root, dirs, files in os.walk(directory, onerror=DirectoryNotFound):
         for file in files:
             if file.endswith(".rls"):
                 file_path = os.path.join(root, file)
                 rls_file_paths.append(file_path)
+        if not rls_file_paths:
+            raise NoRlsFilesFound("No .rls files found in the provided directory")
     return rls_file_paths
 
 
-def write_benchmark_results(timestamp, task, tool, execution_time, memory_info, count):
+def write_benchmark_results(timestamp, task, tool, execution_time, max_rss, max_vms, count):
     # if not csv file exist create a new one : in which directory?
     # header: timestamp task, tool, execution_time, memory_info
     # row: parameters in order
     # close csv
     flag = os.path.exists("BenchResults.csv")
+    logger.info("writing benchmark results to csv file")
     with open("BenchResults.csv", mode="a", newline="") as csv_file:
         csv_writer = csv.writer(csv_file)
         if flag:
@@ -119,12 +120,13 @@ def write_benchmark_results(timestamp, task, tool, execution_time, memory_info, 
                     "Task",
                     "Tool",
                     "Execution Time (ms)",
-                    "Memory Info (MB)",
+                    "Max. Resident Set Size (MB)",
+                    "Max. Virtual Memory Size (MB)",
                     "Count of grounded Rule Predicates",
                 ],
             )
             dw.writeheader()
-        csv_writer.writerow([timestamp, task, tool, execution_time, memory_info, count])
+        csv_writer.writerow([timestamp, task, tool, execution_time, max_rss, max_vms, count])
 
 
 def get_config(config_file_path):
@@ -182,9 +184,9 @@ def run_clingo(rls_files, task, timestamp, RuleParser, ruleMapper):
     clingo_commands = cc.get_clingo_commands(sav_loc_and_rule_head_predicates)
     c_memory, c_exec_time = monitor_process(clingo_commands)
 
-    #Insert delay so that the outputs= files gets created
+    # Insert delay so that the outputs= files gets created
     time.sleep(5)
-    
+
     c_count_ans = cc.save_clingo_output(sav_loc_and_rule_head_predicates)
 
     # call function to write benchmarking results to csv file
@@ -254,12 +256,12 @@ def run_souffle(rls_files, timestamp, task, RuleParser, ruleMapper):
         commands.append(command)
         process = subprocess.Popen(command.split(), stdout=subprocess.PIPE)
 
-    c_memory, c_exec_time = monitor_process(commands)
+    max_rss, max_vms, c_exec_time = monitor_process(commands)
     time.sleep(1)
     for folder_to_create in folders_to_create:
         c_count_ans += sc.count_answers(folder_to_create)
 
-    write_benchmark_results(timestamp, task, "Souffle", c_exec_time, c_memory, c_count_ans)
+    write_benchmark_results(timestamp, task, "Souffle", c_exec_time, max_rss, max_vms, c_count_ans)
 
 
 def main():
@@ -279,7 +281,7 @@ def main():
         try:
             rls_files = get_rls_file_paths(rule_file_path)
         except Exception as exc:
-            logger.exception(exc)
+            logger.error(exc)
             sys.exit(1)
 
         timestamp = datetime.datetime.now().strftime("%d-%m-%Y @%H:%M:%S")
