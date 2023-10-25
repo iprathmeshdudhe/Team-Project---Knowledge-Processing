@@ -4,9 +4,9 @@
 .decl source(A: symbol, B: symbol, C: symbol)
 
 // Facts
-source("A", "B", "C").
-source("B", "C", "D").
-source("Q", "B", "C").
+source(A, B, C).
+source(B, C, D).
+source(Q, B, C).
 source("Q", "E", "D").
 source("T", "B", "C").
 source("X", "Y", "Z").
@@ -16,8 +16,8 @@ source("B", "A", "D").
 
 // Rules
 combined(X, Y, Z) :- source(X, Y, Z).
-constant(X) :- combined(X, "B", "C").
-constant(X) :- combined(X, "Y", Z).
+constant(X) :- combined(X, B, C).
+constant(X) :- combined(X, Y, Z).
 
 // Query list
 .output combined
