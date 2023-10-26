@@ -41,3 +41,11 @@ Timestamp (YYYY-MM-DD HH:MM:SS),Task,Tool,Execution Time (ms),Memory Info (MB),C
 05-10-2023 @11:01:32,repeated_variables,Rulewerk,822.55,4.66,8
 05-10-2023 @11:01:33,symmetric_transitive_closure,Rulewerk,795.78,4.54,57
 05-10-2023 @11:01:34,all_rulewerk_basics,Rulewerk,1571.29,4.66,118
+23-10-2023 @16:16:38,basic_union,Nemo,144.13,4.54,15
+23-10-2023 @16:16:39,basic_projection,Nemo,129.8,4.55,19
+25-10-2023 @16:25:21,doctors100k,Nemo,1442.15,4.52,81500
+25-10-2023 @16:43:20,doctors1m,Nemo,9726.98,4.55,792500
+25-10-2023 @17:09:42,doctors1m,Nemo,8877.72,4.54,792500
+25-10-2023 @17:09:58,doctors1m,Nemo,8765.26,4.54,792500
+26-10-2023 @19:01:12,doctors1m,Nemo,10003.82,4.77,792500
+26-10-2023 @19:05:03,doctors1m,Nemo,9092.12,4.53,792500

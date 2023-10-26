@@ -1,8 +1,6 @@
 import os
 import time
 import psutil
-import nmo_python
-import json
 import subprocess
 from loguru import logger
 import pandas as pd
@@ -11,38 +9,43 @@ import ast
 
 
 class NemoController:
-    def runNemo(self, rls_file_list):
-        logger.info("Running Nemo")
+    def get_nemo_commands(self, rls_file_list):
+        commands = []
+        for rls_file in rls_file_list:
+            print("rls file list: {}".format(rls_file))
+            cwd = os.path.abspath(os.getcwd())
+            cd_rls_command = "cd {}".format(rls_file[1])
+            nmo_path = os.path.join(cwd, "lib")
+            result_dir_name = str(rls_file[0]).split(".")[0]
+            nmo_res_path = os.path.join(cwd, "nemo", result_dir_name)
+            nmo_command = "{}\\nmo {} -s -D {} --overwrite-results".format(nmo_path, rls_file[0], nmo_res_path)
+            cd_cwd_command = "cd {}".format(cwd)
+            commands.append(cd_rls_command)
+            commands.append(nmo_command)
+            commands.append(cd_cwd_command)
+        return commands
+    
+    def count_results(self, rls_file_list):
         result_count = 0
-        
-        # convert 2D list to json to pass as arguments to subprocess "nemo-reasoning.py"
-        list_json = json.dumps(rls_file_list)
-        subprocess_command = ["python", "nemo_reasoning.py", list_json]
-        start_time = time.time()
-        process = subprocess.Popen(subprocess_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        process_id = process.pid
-        process_memory = psutil.Process(process_id).memory_info().rss 
-        stdout, stderr = process.communicate()
+        for rls_file in rls_file_list:
+            cd = os.getcwd()
+            dir_name = str(rls_file[0]).split(".")[0] 
+            result_dir = os.path.join(cd, "nemo", dir_name)
+            for file_name in os.listdir(result_dir):
+                rls_file_path = os.path.join(result_dir, file_name)
+                if os.path.isfile(rls_file_path):
+                    try:
 
-        execution_time = round((time.time() - start_time) * 1000, 2)
-        memory_usage = round(process_memory / 1024 / 1024, 2)
+                        result_csv = pd.read_csv(rls_file_path)
+                        result_count = (
+                            result_count + len(result_csv) + 1
+                        )  # count total numebr of rows in each result csv file; +1 because we do not have header in our result csv
+                    except pd.errors.EmptyDataError:
+                        result_count = result_count
+        return result_count
 
-        if not stdout.decode() == "":
-            result_csv_files = ast.literal_eval(stdout.decode())
-            for csv in result_csv_files:
-                print("csv", csv)
-                try:
-                    result_csv = pd.read_csv(csv)
-                    result_count = result_count + len(result_csv) + 1
-                except pd.errors.EmptyDataError:
-                    result_count = result_count
-            print("Count: ", result_count)
-        if stderr:
-            raise RuntimeError(stderr.decode())
 
-        
-        logger.info("Nemo processing complete")
-        print(f"Execution Time: {execution_time} ms")
-        print(f"Memory usage: {memory_usage} MB")
 
-        return execution_time, memory_usage, result_count
+
+
+  

@@ -70,8 +70,13 @@ def monitor_process(commands):
             # Send the command to the command prompt process
             cmd_process.stdin.write(command.encode("utf-8") + b"\n")
             cmd_process.stdin.flush()
+            
         
         # Close the command prompt process
+        # stdout, stderr = cmd_process.communicate()
+        # print(stdout.decode())
+        # print(stderr.decode())
+
         cmd_process.stdin.close()
 
         while cmd_process.poll() is None:                     
@@ -150,13 +155,12 @@ def run_rulewerk(rls_files, RuleParser, Rule, Literal, rule_file_path, timestamp
             query, head_pred = rc.get_rule_file_elements(RuleParser, Rule, Literal, rls)
             query_dict[rls] = [query, head_pred]
         rulewerk_commands = rc.get_rulewerk_commands(rule_file_path, query_dict)
-        c_memory, c_exec_time = monitor_process(rulewerk_commands)
+        r_memory, r_exec_time = monitor_process(rulewerk_commands)
 
         result_count = rc.count_rulewerk_results(query_dict)
-        print(c_memory, c_exec_time, result_count)
         # call function to write bencmarking results to csv file
         write_benchmark_results(
-            timestamp, task, "Rulewerk", c_exec_time, c_memory, result_count
+            timestamp, task, "Rulewerk", r_exec_time, r_memory, result_count
         )
     except Exception as err:
         logger.error(err)
@@ -201,13 +205,17 @@ def run_nemo(rls_files, timestamp, task):
             rule_file_name = os.path.basename(rls)
             rule_file_path = os.path.dirname(rls)
             rls_file_list.append([rule_file_name, rule_file_path])
-        execution_time, memory_info, result_count = nc.runNemo(rls_file_list)
+        nemo_commands = nc.get_nemo_commands(rls_file_list)
+        n_memory, n_exec_time = monitor_process(nemo_commands)
+        result_count = nc.count_results(rls_file_list)
+        # execution_time, memory_info, result_count = nc.runNemo(rls_file_list)
 
-        # call function to write bencmarking results to csv file
+        # # call function to write bencmarking results to csv file
         write_benchmark_results(
-            timestamp, task, "Nemo", round(execution_time, 2), round(memory_info, 2), result_count
+            timestamp, task, "Nemo", n_exec_time, n_memory, result_count
         )
     except Exception as err:
+        print(traceback.format_exc())
         logger.error(err)
 
 
