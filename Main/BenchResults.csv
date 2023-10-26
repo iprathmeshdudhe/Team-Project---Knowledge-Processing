@@ -67,3 +67,4 @@ Timestamp (YYYY-MM-DD HH:MM:SS),Task,Tool,Execution Time (ms),Max. Resident Set 
 25-10-2023 @18:14:22,load_multiple,Souffle,5.04,0.79,33330.86,11
 25-10-2023 @18:14:23,repeated_variables,Souffle,5.18,0.95,33349.86,8
 25-10-2023 @18:14:24,symmetric_transitive_closure,Souffle,4.97,0.93,33341.95,57
+26-10-2023 @19:23:36,doctors1m,Nemo,8133.4,4.56,4.41,792500

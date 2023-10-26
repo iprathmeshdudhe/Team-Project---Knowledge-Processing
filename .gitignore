@@ -1,4 +1,5 @@
 *.json
+Main/lib/nmo.exe
 rulewerk_nemo/
 nemo-0.2.0/
 nemo_0.2.0/
