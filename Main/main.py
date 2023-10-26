@@ -192,7 +192,7 @@ def run_clingo(rls_files, task, timestamp, RuleParser, ruleMapper):
     c_count_ans = cc.save_clingo_output(sav_loc_and_rule_head_predicates)
 
     # call function to write benchmarking results to csv file
-    write_benchmark_results(timestamp, task, "Souffle", c_exec_time, c_max_rss, c_max_vms, c_count_ans)
+    write_benchmark_results(timestamp, task, "Clingo", c_exec_time, c_max_rss, c_max_vms, c_count_ans)
 
 
 def run_nemo(rls_files, timestamp, task):
