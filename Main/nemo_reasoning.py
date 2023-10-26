@@ -7,6 +7,8 @@ import nmo_python
 rls_file_list = json.loads(sys.argv[1])
 
 sys.tracebacklimit = 0
+
+
 def nemo_reasoning(rls_file_list):
     # initialize counter to count number of results generated
     owd = os.getcwd()
@@ -32,12 +34,12 @@ def nemo_reasoning(rls_file_list):
                 dir_name = rule_file_name.split(".")[0]
                 output_dir = os.path.join("nemo", dir_name)
                 nemo_rule.write_result(str(pred), nmo_python.NemoOutputManager(output_dir, True, False))
-                result_csv_file = os.path.join(output_dir, f"{pred}.csv")   
-                result_csv_files.append(result_csv_file)           
+                result_csv_file = os.path.join(output_dir, f"{pred}.csv")
+                result_csv_files.append(result_csv_file)
 
         except Exception as err:
             raise err
-        
+
     return result_csv_files
 
 

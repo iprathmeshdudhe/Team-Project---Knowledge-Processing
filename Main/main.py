@@ -25,11 +25,11 @@ from loguru import logger
 
 # sys.tracebacklimit = 0
 
+
 def measure_memory(pid, rss, vms):
     process = psutil.Process(pid)
 
     try:
-
         while process.is_running():
             mem_info = process.memory_info()
             rss.append(mem_info.rss / 1024 / 1024)
@@ -79,7 +79,6 @@ def monitor_process(commands):
 
         # Calculate the execution time
         execution_time = (time.perf_counter() - start_time) * 1000
-
 
     except Exception as err:
         raise err
@@ -147,21 +146,16 @@ def get_config(config_file_path):
 def run_rulewerk(rls_files, RuleParser, Rule, Literal, rule_file_path, timestamp, task):
     rc = RulewerkController()
     query_dict = {}
-    result_count = 0
     try:
         for rls in rls_files:
             file_name = os.path.basename(rls)
             query, head_pred = rc.get_rule_file_elements(RuleParser, Rule, Literal, rls)
             query_dict[rls] = [query, head_pred]
         rulewerk_commands = rc.get_rulewerk_commands(rule_file_path, query_dict)
-        c_memory, c_exec_time = monitor_process(rulewerk_commands)
+        max_rss, max_vms, exec_time = monitor_process(rulewerk_commands)
 
         result_count = rc.count_rulewerk_results(query_dict)
-        print(c_memory, c_exec_time, result_count)
-        # call function to write bencmarking results to csv file
-        write_benchmark_results(
-            timestamp, task, "Rulewerk", c_exec_time, c_memory, result_count
-        )
+        write_benchmark_results(timestamp, task, "Rulewerk", exec_time, max_rss, max_vms, result_count)
     except Exception as err:
         logger.error(err)
 
@@ -184,7 +178,7 @@ def run_clingo(rls_files, task, timestamp, RuleParser, ruleMapper):
         sav_loc_and_rule_head_predicates[saving_location] = rule_head_preds
 
     clingo_commands = cc.get_clingo_commands(sav_loc_and_rule_head_predicates)
-    c_max_rss, c_max_vms, c_memory, c_exec_time = monitor_process(clingo_commands)
+    c_max_rss, c_max_vms, c_exec_time = monitor_process(clingo_commands)
 
     # Insert delay so that the outputs= files gets created
     time.sleep(5)
@@ -206,9 +200,7 @@ def run_nemo(rls_files, timestamp, task):
         execution_time, memory_info, result_count = nc.runNemo(rls_file_list)
 
         # call function to write bencmarking results to csv file
-        write_benchmark_results(
-            timestamp, task, "Nemo", round(execution_time, 2), round(memory_info, 2), result_count
-        )
+        write_benchmark_results(timestamp, task, "Nemo", round(execution_time, 2), round(memory_info, 2), result_count)
     except Exception as err:
         logger.error(err)
 
@@ -256,12 +248,12 @@ def run_souffle(rls_files, timestamp, task, RuleParser, ruleMapper):
         commands.append(command)
         process = subprocess.Popen(command.split(), stdout=subprocess.PIPE)
 
-    max_rss, max_vms, c_exec_time = monitor_process(commands)
-    time.sleep(1)
+    max_rss, max_vms, exec_time = monitor_process(commands)
+
     for folder_to_create in folders_to_create:
         c_count_ans += sc.count_answers(folder_to_create)
 
-    write_benchmark_results(timestamp, task, "Souffle", c_exec_time, max_rss, max_vms, c_count_ans)
+    write_benchmark_results(timestamp, task, "Souffle", exec_time, max_rss, max_vms, c_count_ans)
 
 
 def main():
@@ -287,9 +279,9 @@ def main():
         timestamp = datetime.datetime.now().strftime("%d-%m-%Y @%H:%M:%S")
 
         for solver in solvers:
-            if solver.lower() == 'clingo':
+            if solver.lower() == "clingo":
                 run_clingo(rls_files, task_name, timestamp, RuleParser, ruleMapper)
-            elif solver.lower() == 'nemo':
+            elif solver.lower() == "nemo":
                 run_nemo(rls_files, timestamp, task_name)
             elif solver.lower() == "rulewerk":
                 run_rulewerk(rls_files, RuleParser, Rule, Literal, rule_file_path, timestamp, task_name)
