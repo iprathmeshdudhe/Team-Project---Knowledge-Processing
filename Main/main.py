@@ -49,7 +49,7 @@ def monitor_process(commands):
     if system == "Windows":
         args = ["cmd"]
     elif system == "Darwin":  # Mac OS
-        args = ["ls", "-l"]
+        args = ["open", "-a", "Terminal"]
     elif system == "Linux":
         args = ["gnome-terminal"]
     else:
