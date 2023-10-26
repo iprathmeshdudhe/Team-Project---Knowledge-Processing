@@ -1,6 +1,12 @@
 {
     "tasks": [
+        {"name": "basic_join", "path": "Rulewerk_Rules/basic_join"},
+        {"name": "basic_projection", "path": "Rulewerk_Rules/basic_projection"},
+        {"name": "basic_union", "path": "Rulewerk_Rules/basic_union"},
+        {"name": "load_multiple", "path": "Rulewerk_Rules/load_multiple"},
+        {"name": "repeated_variables", "path": "Rulewerk_Rules/repeated_variables"},
+        {"name": "symmetric_transitive_closure", "path": "Rulewerk_Rules/symmetric_transitive_closure"},
         {"name": "doctors1m", "path": "Rulewerk_Rules/doctors1m"}
     ] ,
-    "solvers": ["nemo"]
+    "solvers": ["souffle", "nemo", "rulewerk", "clingo"]
 }
