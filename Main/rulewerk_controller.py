@@ -11,6 +11,8 @@ import pandas as pd
 from loguru import logger
 
 sys.tracebacklimit = 0
+
+
 class RulewerkController:
     def get_rule_file_elements(self, parser, Rule, Literal, rlsFilePath):
         with open(rlsFilePath, "r") as rule_file:
@@ -44,7 +46,6 @@ class RulewerkController:
                 cd = os.getcwd()
                 dir_name = os.path.join(cd, "rulewerk", f_name)
                 try:
-
                     result_csv = pd.read_csv(os.path.join(dir_name, f"{pred_name}.csv"))
                     result_count = (
                         result_count + len(result_csv) + 1
@@ -58,11 +59,10 @@ class RulewerkController:
         result_count = 0
 
         logger.info("Running Rulewerk")
-        
+
         start_command = "java -jar lib/rulewerk-client.jar"
 
         commands.append(start_command)
-
 
         for rls_file, to_query in query_dict.items():
             file_name = os.path.basename(rls_file)
