@@ -32,7 +32,7 @@ git clone https://github.com/iprathmeshdudhe/Team-Project---Knowledge-Processing
 * Python 3.9 or higher   
 * Java 
 * Rulewerk reasoner 0.9.0 or higher -- see [installation instruction](https://github.com/knowsys/rulewerk).
-* Python packages listed in `requirements.txt`. To install, run:
+* Python packages listed in `requirements.txt`, and also Clingo. To do this, run:
 ```bash
 cd Main
 make install-requirements
