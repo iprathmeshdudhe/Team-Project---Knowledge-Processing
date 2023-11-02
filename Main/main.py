@@ -25,6 +25,17 @@ from loguru import logger
 
 # sys.tracebacklimit = 0
 
+system = platform.system()
+
+if system == "Windows":
+    terminal = ["cmd"]
+elif system == "Darwin":  # Mac OS
+    terminal = ["open", "-a", "Terminal"]
+elif system == "Linux":
+    terminal = ["gnome-terminal"]
+else:
+    raise SystemNotSupported(f"The system {system} is not supported")
+
 
 def measure_memory(pid, rss, vms):
     process = psutil.Process(pid)
@@ -45,18 +56,8 @@ def monitor_process(commands):
     rss = []
     vms = []
 
-    system = platform.system()
-    if system == "Windows":
-        args = ["cmd"]
-    elif system == "Darwin":  # Mac OS
-        args = ["open", "-a", "Terminal"]
-    elif system == "Linux":
-        args = ["gnome-terminal"]
-    else:
-        raise SystemNotSupported(f"The system {system} is not supported")
-
     cmd_process = subprocess.Popen(
-        args, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False
+        terminal, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False
     )
 
     # Creating a thread to measure memory in backend
@@ -89,6 +90,15 @@ def monitor_process(commands):
         max_rss = round(max(rss), 2)
         max_vms = round(max(vms), 2)
         return max_rss, max_vms, round(execution_time, 2)
+    
+
+def monitor_linux_process(commands):
+
+    for command in commands:
+        terminal_process = subprocess.Popen([command], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, shell=True)
+
+        stdout, stderr = terminal_process.communicate()
+
 
 
 def get_rls_file_paths(directory):
@@ -182,8 +192,13 @@ def run_clingo(rls_files, task, timestamp, RuleParser, ruleMapper):
         # Dictionary {"rule_file_location": [list of rule head predicates]........}
         sav_loc_and_rule_head_predicates[saving_location] = rule_head_preds
 
-    clingo_commands = cc.get_clingo_commands(sav_loc_and_rule_head_predicates)
-    c_max_rss, c_max_vms, c_exec_time = monitor_process(clingo_commands)
+    clingo_commands = cc.get_clingo_commands(sav_loc_and_rule_head_predicates.keys(), system)
+
+    if system in ["Windows", "Darwin"]:
+        c_max_rss, c_max_vms, c_exec_time = monitor_process(clingo_commands)
+
+    elif system == "Linux":
+        monitor_linux_process(clingo_commands)
 
     # Insert delay so that the outputs= files gets created
     time.sleep(5)
