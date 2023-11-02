@@ -1,7 +1,4 @@
 import os
-import time
-import psutil
-import subprocess
 import clingo
 import pandas as pd
 from loguru import logger
@@ -9,11 +6,17 @@ from loguru import logger
 
 class ClingoController:
     # Passing a dictionary as parameter whose keys contains the File Location and the value contains rule_head_predicates
-    def get_clingo_commands(self, loc_and_rule_head_predicates):
+    def get_clingo_commands(self, file_locations, system):
         commands = []
 
-        for file in loc_and_rule_head_predicates.keys():
-            commands.append(f"clingo {file}-facts.lp {file}.lp > {file}-output.txt")
+        if system in ["Windows", "Darwin"]:
+            for file in file_locations:
+                commands.append(f"clingo {file}-facts.lp {file}.lp > {file}-output.txt")
+                
+        elif system == "Linux":
+            for file in file_locations:
+                commands.append(f"memusage --data={file}.dat clingo {file}-facts.lp {file}.lp > {file}-output.txt")
+
 
         return commands
 
