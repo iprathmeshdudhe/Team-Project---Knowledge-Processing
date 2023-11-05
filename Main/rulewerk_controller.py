@@ -60,7 +60,7 @@ class RulewerkController:
 
         logger.info("Running Rulewerk")
 
-        start_command = f"java -jar lib/rulewerk-client.jar"
+        start_command = "java -jar lib/rulewerk-client.jar"
 
         #commented this out only for linux...work in progress
         commands.append(start_command)

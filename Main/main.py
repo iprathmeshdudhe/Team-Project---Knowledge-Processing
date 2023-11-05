@@ -25,6 +25,17 @@ from loguru import logger
 
 # sys.tracebacklimit = 0
 
+system = platform.system()
+
+if system == "Windows":
+    terminal = ["cmd"]
+elif system == "Darwin":  # Mac OS
+    terminal = ["open", "-a", "Terminal"]
+elif system == "Linux":
+    terminal = ["/bin/sh", '-c', '']
+else:
+    raise SystemNotSupported(f"The system {system} is not supported")
+
 
 def measure_memory(pid, rss, vms):
     process = psutil.Process(pid)
@@ -45,28 +56,8 @@ def monitor_process(commands, task):
     rss = []
     vms = []
 
-    system = platform.system()
-    if system == "Windows":
-        args = ["cmd"]
-    elif system == "Darwin":  # Mac OS
-        args = ["open", "-a", "Terminal"]
-    elif system == "Linux":
-        # #for nmo, it doesn’t work with stdin in Linux (some gnome terminal issue idk) so we pass entire command concatenated into the Popen funct
-        # cmd_command = " ; ".join(commands)
-        # cmd_process = subprocess.Popen(
-        # cmd_command, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True, text=True) 
-        # stdout, stderr = cmd_process.communicate()
-        # print(stdout)
-        # if err:
-        #     print("err in linux", stderr)
-
-    #for rulewerk it is a shell which accepts input so:
-        args = [f'memusage --data={task}.dat /bin/sh', '-c', '']
-    else:
-        raise SystemNotSupported(f"The system {system} is not supported")
-
     cmd_process = subprocess.Popen(
-        args, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, shell=True
+        terminal, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False
     )
     # Creating a thread to measure memory in backend
     thread = threading.Thread(target=measure_memory, args=(cmd_process.pid, rss, vms))
@@ -78,17 +69,16 @@ def monitor_process(commands, task):
     try:
         for command in commands:
             logger.info(f"Executing Command: {command} + b'\n")
-        #     # Send the command to the command prompt process
+            # Send the command to the command prompt process
             cmd_process.stdin.write(command +'\n')
             cmd_process.stdin.flush()
         
-        # cmd_process.stdin.close()
         # Close the command prompt process
         stdout, stderr = cmd_process.communicate()
-        print(stdout)
-        print(stderr)
-
-        
+        if stdout:
+            print(stdout)
+        if stderr:
+            print(stderr)        
 
         # Calculate the execution time
         execution_time = (time.perf_counter() - start_time) * 1000
@@ -100,6 +90,24 @@ def monitor_process(commands, task):
         max_rss = round(max(rss), 2)
         max_vms = round(max(vms), 2)
         return max_rss, max_vms, round(execution_time, 2)
+    
+
+def monitor_linux_process(commands, task):
+    args = [f'memusage --data={task}.dat /bin/sh', '-c', '']
+    terminal_process = subprocess.Popen([command], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, shell=True)
+    for command in commands:
+        logger.info(f"Executing Command: {command} + b'\n")
+        #Send the command to the command prompt process
+        terminal_process.stdin.write(command +'\n')
+        terminal_process.stdin.flush()
+
+    stdout, stderr = terminal_process.communicate()
+    if stdout:
+        print(stdout)
+    if stderr:
+        print(stderr)
+
+    #if tool is rulewerk then use java -jar rulewerk.jar instead of /bin/sh (pending)
 
 
 def get_rls_file_paths(directory):
@@ -165,13 +173,18 @@ def run_rulewerk(rls_files, RuleParser, Rule, Literal, rule_file_path, timestamp
             query, head_pred = rc.get_rule_file_elements(RuleParser, Rule, Literal, rls)
             query_dict[rls] = [query, head_pred]
         rulewerk_commands = rc.get_rulewerk_commands(task, rule_file_path, query_dict)
+        #for all os measure rss, vss and exec time (also for linux but w/o the memusage part)
         r_max_rss, r_max_vms, r_exec_time = monitor_process(rulewerk_commands, task)
+        result_count = rc.count_rulewerk_results(query_dict)
+        # call function to write bencmarking results to csv file
+        write_benchmark_results(
+            timestamp, task, "Rulewerk", r_exec_time, r_max_rss, r_max_vms, result_count
+        )
+        #only for linux to get memusage details run commands again with the memusage part
+        if system == "Linux":
+            monitor_linux_process(rulewerk_commands, task)
 
-        # result_count = rc.count_rulewerk_results(query_dict)
-        # # call function to write bencmarking results to csv file
-        # write_benchmark_results(
-        #     timestamp, task, "Rulewerk", r_exec_time, r_max_rss, r_max_vms, result_count
-        # )
+        
     except Exception as err:
         logger.error(err)
 
@@ -193,8 +206,13 @@ def run_clingo(rls_files, task, timestamp, RuleParser, ruleMapper):
         # Dictionary {"rule_file_location": [list of rule head predicates]........}
         sav_loc_and_rule_head_predicates[saving_location] = rule_head_preds
 
-    clingo_commands = cc.get_clingo_commands(sav_loc_and_rule_head_predicates)
-    c_max_rss, c_max_vms, c_exec_time = monitor_process(clingo_commands)
+    clingo_commands = cc.get_clingo_commands(sav_loc_and_rule_head_predicates.keys(), system)
+
+    if system in ["Windows", "Darwin"]:
+        c_max_rss, c_max_vms, c_exec_time = monitor_process(clingo_commands)
+
+    elif system == "Linux":
+        monitor_linux_process(clingo_commands, task)
 
     # Insert delay so that the outputs= files gets created
     time.sleep(5)
@@ -214,14 +232,17 @@ def run_nemo(rls_files, timestamp, task):
             rule_file_path = os.path.dirname(rls)
             rls_file_list.append([rule_file_name, rule_file_path])
         nemo_commands = nc.get_nemo_commands(rls_file_list)
+        #for all os measure rss, vss and exec time (also for linux but w/o the memusage part)
         n_max_rss, n_max_vms, n_exec_time = monitor_process(nemo_commands, task)
         result_count = nc.count_results(rls_file_list)
-        # execution_time, memory_info, result_count = nc.runNemo(rls_file_list)
-
-        # # call function to write bencmarking results to csv file
         write_benchmark_results(
             timestamp, task, "Nemo", n_exec_time, n_max_rss, n_max_vms, result_count
         )
+        #to get memusage date for linux
+        elif system = "Linux":
+            monitor_linux_process(nemo_commands, task)
+
+        
     except Exception as err:
         print(traceback.format_exc())
         logger.error(err)
