@@ -54,15 +54,17 @@ class RulewerkController:
                     result_count = result_count
         return result_count
 
-    def get_rulewerk_commands(self, rule_file_path, query_dict):
+    def get_rulewerk_commands(self, task, rule_file_path, query_dict):
         commands = []
         result_count = 0
 
         logger.info("Running Rulewerk")
 
-        start_command = "java -jar lib/rulewerk-client.jar"
+        start_command = f"java -jar lib/rulewerk-client.jar"
 
+        #commented this out only for linux...work in progress
         commands.append(start_command)
+        
 
         for rls_file, to_query in query_dict.items():
             file_name = os.path.basename(rls_file)

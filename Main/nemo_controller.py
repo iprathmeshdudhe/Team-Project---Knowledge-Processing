@@ -6,10 +6,14 @@ from loguru import logger
 import pandas as pd
 from pathlib import Path
 import ast
+from src.config import Settings
+import platform
 
 
 class NemoController:
     def get_nemo_commands(self, rls_file_list):
+        system = platform.system()
+        
         commands = []
         for rls_file in rls_file_list:
             print("rls file list: {}".format(rls_file))
@@ -18,11 +22,16 @@ class NemoController:
             nmo_path = os.path.join(cwd, "lib")
             result_dir_name = str(rls_file[0]).split(".")[0]
             nmo_res_path = os.path.join(cwd, "nemo", result_dir_name)
-            nmo_command = "{}\\nmo {} -s -D {} --overwrite-results".format(nmo_path, rls_file[0], nmo_res_path)
-            cd_cwd_command = "cd {}".format(cwd)
+            if system == "Windows":
+                nmo_command = "{}\\nmo {} -s -D {} --overwrite-results".format(nmo_path, rls_file[0], nmo_res_path)
+            elif system == "Linux":
+                nmo_command = "{}/nmo_lin {} -s -D {} --overwrite-results".format(nmo_path, rls_file[0], nmo_res_path)
+
+
             commands.append(cd_rls_command)
             commands.append(nmo_command)
-            commands.append(cd_cwd_command)
+            
+            # commands.append(cd_cwd_command)
         return commands
     
     def count_results(self, rls_file_list):

@@ -41,7 +41,7 @@ def measure_memory(pid, rss, vms):
         pass
 
 
-def monitor_process(commands):
+def monitor_process(commands, task):
     rss = []
     vms = []
 
@@ -51,14 +51,23 @@ def monitor_process(commands):
     elif system == "Darwin":  # Mac OS
         args = ["open", "-a", "Terminal"]
     elif system == "Linux":
-        args = ["gnome-terminal"]
+        # #for nmo, it doesn’t work with stdin in Linux (some gnome terminal issue idk) so we pass entire command concatenated into the Popen funct
+        # cmd_command = " ; ".join(commands)
+        # cmd_process = subprocess.Popen(
+        # cmd_command, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True, text=True) 
+        # stdout, stderr = cmd_process.communicate()
+        # print(stdout)
+        # if err:
+        #     print("err in linux", stderr)
+
+    #for rulewerk it is a shell which accepts input so:
+        args = [f'memusage --data={task}.dat /bin/sh', '-c', '']
     else:
         raise SystemNotSupported(f"The system {system} is not supported")
 
     cmd_process = subprocess.Popen(
-        args, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False
+        args, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, shell=True
     )
-
     # Creating a thread to measure memory in backend
     thread = threading.Thread(target=measure_memory, args=(cmd_process.pid, rss, vms))
     thread.start()
@@ -68,16 +77,18 @@ def monitor_process(commands):
 
     try:
         for command in commands:
-            logger.info(f"Executing Command: {command}")
-            # Send the command to the command prompt process
-            cmd_process.stdin.write(command.encode("utf-8") + b"\n")
+            logger.info(f"Executing Command: {command} + b'\n")
+        #     # Send the command to the command prompt process
+            cmd_process.stdin.write(command +'\n')
             cmd_process.stdin.flush()
-
-        # Close the command prompt process
         
-        cmd_process.stdin.close()
+        # cmd_process.stdin.close()
+        # Close the command prompt process
+        stdout, stderr = cmd_process.communicate()
+        print(stdout)
+        print(stderr)
 
-        cmd_process.wait()
+        
 
         # Calculate the execution time
         execution_time = (time.perf_counter() - start_time) * 1000
@@ -153,14 +164,14 @@ def run_rulewerk(rls_files, RuleParser, Rule, Literal, rule_file_path, timestamp
             file_name = os.path.basename(rls)
             query, head_pred = rc.get_rule_file_elements(RuleParser, Rule, Literal, rls)
             query_dict[rls] = [query, head_pred]
-        rulewerk_commands = rc.get_rulewerk_commands(rule_file_path, query_dict)
-        r_max_rss, r_max_vms, r_exec_time = monitor_process(rulewerk_commands)
+        rulewerk_commands = rc.get_rulewerk_commands(task, rule_file_path, query_dict)
+        r_max_rss, r_max_vms, r_exec_time = monitor_process(rulewerk_commands, task)
 
-        result_count = rc.count_rulewerk_results(query_dict)
-        # call function to write bencmarking results to csv file
-        write_benchmark_results(
-            timestamp, task, "Rulewerk", r_exec_time, r_max_rss, r_max_vms, result_count
-        )
+        # result_count = rc.count_rulewerk_results(query_dict)
+        # # call function to write bencmarking results to csv file
+        # write_benchmark_results(
+        #     timestamp, task, "Rulewerk", r_exec_time, r_max_rss, r_max_vms, result_count
+        # )
     except Exception as err:
         logger.error(err)
 
@@ -203,7 +214,7 @@ def run_nemo(rls_files, timestamp, task):
             rule_file_path = os.path.dirname(rls)
             rls_file_list.append([rule_file_name, rule_file_path])
         nemo_commands = nc.get_nemo_commands(rls_file_list)
-        n_max_rss, n_max_vms, n_exec_time = monitor_process(nemo_commands)
+        n_max_rss, n_max_vms, n_exec_time = monitor_process(nemo_commands, task)
         result_count = nc.count_results(rls_file_list)
         # execution_time, memory_info, result_count = nc.runNemo(rls_file_list)
 
