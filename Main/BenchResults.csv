@@ -82,3 +82,4 @@ Timestamp (YYYY-MM-DD HH:MM:SS),Task,Tool,Execution Time (ms),Max. Resident Set 
 31-10-2023 @00:46:30,basic_union,Rulewerk,926.87,1.5,2.82,15
 05-11-2023 @14:58:49,basic_union,Nemo,117.98,1.5,2.82,15
 05-11-2023 @14:58:49,basic_join,Nemo,72.25,1.5,2.82,8
+07-11-2023 @22:05:24,basic_join,Nemo,1.28,0.0,0.0,8

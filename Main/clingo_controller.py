@@ -15,7 +15,7 @@ class ClingoController:
                 
         elif system == "Linux":
             for file in file_locations:
-                commands.append(f"memusage --data={file}.dat clingo {file}-facts.lp {file}.lp > {file}-output.txt")
+                commands.append(f"memusage --data={file}.dat --png={file}.png clingo {file}-facts.lp {file}.lp > {file}-output.txt")
 
 
         return commands
@@ -71,4 +71,4 @@ class ClingoController:
 
         clingo_location = f"{directory_path}/{ex_name}"
 
-        return clingo_location
+        return clingo_location 

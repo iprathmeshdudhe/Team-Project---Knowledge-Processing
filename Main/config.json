@@ -3,5 +3,5 @@
         {"name": "basic_union", "path": "Rulewerk_Rules/basic_union"},
         {"name": "basic_join", "path":"Rulewerk_Rules/basic_join"}
     ] ,
-    "solvers": ["nemo"]
+    "solvers": ["clingo"]
 }
