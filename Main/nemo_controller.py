@@ -22,17 +22,21 @@ class NemoController:
             nmo_path = os.path.join(cwd, "lib")
             result_dir_name = str(rls_file[0]).split(".")[0]
             nmo_res_path = os.path.join(cwd, "nemo", result_dir_name)
+            commands.append(cd_rls_command)
             if system == "Windows":
                 nmo_command = "{}\\nmo {} -s -D {} --overwrite-results".format(nmo_path, rls_file[0], nmo_res_path)
+                commands.append(nmo_command)
+                return commands, nmo_res_path
             elif system == "Linux":
-                nmo_command = "memusage --data={}/{}.dat --png={}/{}.png   {}/nmo_lin {} -s -D {} --overwrite-results".format(nmo_res_path, task_name, nmo_res_path, task_name, nmo_path, rls_file[0], nmo_res_path)
-
-
-            commands.append(cd_rls_command)
-            commands.append(nmo_command)
+                nmo_mem_command = "memusage --data={}/{}.dat --png={}/{}.png {}/nmo_lin {} -s -D {} --overwrite-results".format(nmo_res_path, task_name, nmo_res_path, task_name, nmo_path, rls_file[0], nmo_res_path)
+                mem_command = commands + [nmo_mem_command]
+                
+                nmo_command = "{}/nmo_lin {} -s -D {} --overwrite-results".format(nmo_path, rls_file[0], nmo_res_path)
+                commands.append(nmo_command)
+                return commands, mem_command, nmo_res_path
             
             # commands.append(cd_cwd_command)
-        return commands, nmo_res_path
+        
     
     def count_results(self, rls_file_list):
         result_count = 0

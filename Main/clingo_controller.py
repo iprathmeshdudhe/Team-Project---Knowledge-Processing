@@ -12,13 +12,16 @@ class ClingoController:
         if system in ["Windows", "Darwin"]:
             for file in file_locations:
                 commands.append(f"clingo {file}-facts.lp {file}.lp > {file}-output.txt")
+                return commands
                 
         elif system == "Linux":
+            mem_commands = []
             for file in file_locations:
-                commands.append(f"memusage --data={file}.dat --png={file}.png clingo {file}-facts.lp {file}.lp > {file}-output.txt")
+                commands.append(f"clingo {file}-facts.lp {file}.lp > {file}-output.txt")
+                mem_commands.append(f"memusage --data={file}.dat --png={file}.png clingo {file}-facts.lp {file}.lp > {file}-output.txt")
+            return commands, mem_commands
 
-
-        return commands
+        
 
     def save_clingo_output(self, loc_rule_head_predicate):
         try:

@@ -53,7 +53,7 @@ def measure_memory(pid, rss, vms):
         pass
 
 
-def monitor_process(commands, task):
+def monitor_process(commands):
     rss = []
     vms = []
 
@@ -93,10 +93,10 @@ def monitor_process(commands, task):
         return max_rss, max_vms, round(execution_time, 2)
     
 
-def monitor_linux_process(commands, task, result_directory):
+def monitor_linux_process(commands, mem_commands, task, result_directory):
     args = ['/bin/sh', '-c', '']
     terminal_process = subprocess.Popen(args, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, shell=True)
-    for command in commands:
+    for command in mem_commands:
         logger.info(f"Executing Command: {command} \n")
         #Send the command to the command prompt process
         terminal_process.stdin.write(command +'\n')
@@ -152,6 +152,21 @@ def monitor_linux_process(commands, task, result_directory):
                     f.write(f"{measure_name}: {total_calls}, {total_memory}\n")
         
 
+    #measure execution time (for commands without memusage)
+    terminal_process = subprocess.Popen(args, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, shell=True)
+    start_time = time.perf_counter()
+    for command in commands:
+        logger.info(f"Executing Command: {command} \n")
+        #Send the command to the command prompt process
+        terminal_process.stdin.write(command +'\n')
+        terminal_process.stdin.flush()
+
+    stdout, stderr = terminal_process.communicate()
+    exec_time = (time.perf_counter() - start_time) *1000
+    if stderr:
+        logger.error(stderr)
+    return round(exec_time, 2)
+
 
     #if tool is rulewerk then use java -jar rulewerk.jar instead of /bin/sh (pending)
 
@@ -163,6 +178,7 @@ def get_rls_file_paths(directory):
             if file.endswith(".rls"):
                 file_path = os.path.join(root, file)
                 rls_file_paths.append(file_path)
+                print(rls_file_paths)
         if not rls_file_paths:
             raise NoRlsFilesFound("No .rls files found in the provided directory")
     return rls_file_paths
@@ -222,7 +238,7 @@ def run_rulewerk(rls_files, RuleParser, Rule, Literal, rule_file_path, timestamp
         
         #for all os except Linux measure rss, vss and exec time 
         if system in ['Windows', 'Darwin']:
-            r_max_rss, r_max_vms, r_exec_time = monitor_process(rulewerk_commands, task)
+            r_max_rss, r_max_vms, r_exec_time = monitor_process(rulewerk_commands)
             result_count = rc.count_rulewerk_results(query_dict)
             # call function to write bencmarking results to csv file
             write_benchmark_results(
@@ -254,11 +270,11 @@ def run_clingo(rls_files, task, timestamp, RuleParser, ruleMapper):
         saving_location = cc.get_clingo_location(example_name) 
         rule_head_preds = ruleMapper.rulewerk_to_clingo(file_path, rules, facts, data_sources, saving_location)
         # Dictionary {"rule_file_location": [list of rule head predicates]........}
-        sav_loc_and_rule_head_predicates[saving_location] = rule_head_preds
-
-    clingo_commands = cc.get_clingo_commands(sav_loc_and_rule_head_predicates.keys(), system)
+        sav_loc_and_rule_head_predicates[saving_location] = rule_head_preds    
 
     if system in ["Windows", "Darwin"]:
+        clingo_commands = cc.get_clingo_commands(sav_loc_and_rule_head_predicates.keys(), system)
+
         c_max_rss, c_max_vms, c_exec_time = monitor_process(clingo_commands)
         # Insert delay so that the outputs= files gets created
         time.sleep(5)
@@ -269,10 +285,14 @@ def run_clingo(rls_files, task, timestamp, RuleParser, ruleMapper):
         write_benchmark_results(timestamp, task, "Clingo", c_exec_time, c_max_rss, c_max_vms, c_count_ans)
 
     elif system == "Linux":
-        monitor_linux_process(clingo_commands, task, result_directory)
+        #if system is Linux, we have 2 sets of commands (1. with memusage, 2. w/0 memusage for exec_time measurement)
+        clingo_commands, clingo_mem_commands = cc.get_clingo_commands(sav_loc_and_rule_head_predicates.keys(), system)
+
+        c_exec_time = monitor_linux_process(clingo_commands, clingo_mem_commands, task, result_directory)
         time.sleep(5)
 
         c_count_ans = cc.save_clingo_output(sav_loc_and_rule_head_predicates)
+        write_benchmark_results(timestamp, task, "Clingo", c_exec_time, 0, 0, c_count_ans)
 
     
 
@@ -285,10 +305,11 @@ def run_nemo(rls_files, timestamp, task):
             rule_file_name = os.path.basename(rls)
             rule_file_path = os.path.dirname(rls)
             rls_file_list.append([rule_file_name, rule_file_path])
-        nemo_commands, result_directory = nc.get_nemo_commands(rls_file_list, task)
+        
 
         if system in ["Windows", "Darwin"]:
-            n_max_rss, n_max_vms, n_exec_time = monitor_process(nemo_commands, task)
+            nemo_commands, result_directory = nc.get_nemo_commands(rls_file_list, task)
+            n_max_rss, n_max_vms, n_exec_time = monitor_process(nemo_commands)
             result_count = nc.count_results(rls_file_list)
             write_benchmark_results(
                 timestamp, task, "Nemo", n_exec_time, n_max_rss, n_max_vms, result_count
@@ -296,8 +317,13 @@ def run_nemo(rls_files, timestamp, task):
 
         #to get memusage data for linux
         elif system == "Linux":
-            monitor_linux_process(nemo_commands, task, result_directory)
+            #if linux then get two sets of commands: one with memusage and one without (for exec_time measurement)
+            nemo_commands, nmo_mem_commands, result_directory = nc.get_nemo_commands(rls_file_list, task)
+            n_exec_time = monitor_linux_process(nemo_commands, nmo_mem_commands, task, result_directory)
             result_count = nc.count_results(rls_file_list)
+            write_benchmark_results(
+                timestamp, task, "Nemo", n_exec_time, 0, 0, result_count
+            )
 
         
     except Exception as err:

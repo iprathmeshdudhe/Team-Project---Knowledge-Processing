@@ -83,3 +83,11 @@ Timestamp (YYYY-MM-DD HH:MM:SS),Task,Tool,Execution Time (ms),Max. Resident Set 
 05-11-2023 @14:58:49,basic_union,Nemo,117.98,1.5,2.82,15
 05-11-2023 @14:58:49,basic_join,Nemo,72.25,1.5,2.82,8
 07-11-2023 @22:05:24,basic_join,Nemo,1.28,0.0,0.0,8
+10-11-2023 @19:52:26,basic_union,Nemo,16.14,0,0,15
+10-11-2023 @19:52:29,basic_join,Nemo,17.71,0,0,8
+10-11-2023 @20:02:27,basic_union,Nemo,31.27,0,0,15
+10-11-2023 @20:02:27,basic_union,Clingo,13.16,0,0,15
+10-11-2023 @20:02:36,basic_join,Nemo,16.99,0,0,8
+10-11-2023 @20:02:36,basic_join,Clingo,15.23,0,0,8
+10-11-2023 @20:15:03,basic_join,Nemo,567.28,5.18,4.28,8
+10-11-2023 @20:16:48,basic_join,Nemo,60.01,5.13,4.29,8
