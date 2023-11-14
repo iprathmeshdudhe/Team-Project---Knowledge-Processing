@@ -1,6 +1,6 @@
 {
     "tasks": [
-        {"name": "basic_join", "path":"Rulewerk_Rules/basic_join"}
+        {"name": "basics", "path":"Rulewerk_Rules"}
     ] ,
-    "solvers": ["nemo", "clingo"]
+    "solvers": ["nemo"]
 }

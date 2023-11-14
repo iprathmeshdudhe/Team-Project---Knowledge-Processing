@@ -109,9 +109,10 @@ def monitor_linux_process(commands, mem_commands, task, result_directory):
 
     if stderr:
         output = stderr.split("\n")
+        mem_usage_data = {} #to store the mem_usage outputs 
 
-        output_file_path = f"{result_directory}/{task}.txt"
-        with open(output_file_path, 'w') as f:
+        # output_file_path = f"{result_directory}/{task}.txt"
+        # with open(output_file_path, 'w') as f:
 
             for line in output:
                 formatted_line = re.sub(r'\x1b\[[0-9;]*m', '', line)
@@ -124,7 +125,15 @@ def monitor_linux_process(commands, mem_commands, task, result_directory):
                         heap_total = int(matches.group(1))
                         heap_peak = int(matches.group(2))
                         stack_peak = int(matches.group(3))
-                        f.write(f'heap_total: {heap_total}\nheap_peak: {heap_peak}\nstack_peak: {stack_peak}\n')
+                        if 'heap_total' not in mem_usage_data.keys():
+                            mem_usage_data['heap_total'] = [heap_total]
+                            mem_usage_data['heap_peak'] = [heap_peak]
+                            mem_usage_data['stack_peak'] = [stack_peak]
+                        else:
+                            mem_usage_data['heap_total'].append(heap_total)
+                            mem_usage_data['heap_peak'].append(heap_peak)
+                            mem_usage_data['stack_peak'].append(stack_peak)
+                        # f.write(f'heap_total: {heap_total}\nheap_peak: {heap_peak}\nstack_peak: {stack_peak}\n')
 
 
                 if "malloc" in formatted_line.split("|")[0] or "calloc" in formatted_line.split("|")[0]:
@@ -133,7 +142,15 @@ def monitor_linux_process(commands, mem_commands, task, result_directory):
                     # Find all matches in the input string
                     measures = [int(match.group()) for match in pattern.finditer(formatted_line)]
                     total_calls, total_memory, failed_calls = measures[0], measures[1], measures[2]
-                    f.write(f"{measure_name}: {total_calls}, {total_memory}, {failed_calls}\n")
+                    if f"{measure_name}_total_calls" not in mem_usage_data.keys():
+                        mem_usage_data[f"{measure_name}_total_calls"] = [total_calls]
+                        mem_usage_data[f"{measure_name}_total_memory"] = [total_memory]
+                        mem_usage_data[f"{measure_name}_failed_calls"] = [failed_calls]
+                    else:
+                        mem_usage_data[f"{measure_name}_total_calls"].append(total_calls)
+                        mem_usage_data[f"{measure_name}_total_memory"].append(total_memory)
+                        mem_usage_data[f"{measure_name}_failed_calls"].append(failed_calls)
+                    # f.write(f"{measure_name}: {total_calls}, {total_memory}, {failed_calls}\n")
 
                 if "realloc" in formatted_line.split("|")[0]:
                     measure_name = formatted_line.split("|")[0].replace(" ", "")
@@ -141,7 +158,21 @@ def monitor_linux_process(commands, mem_commands, task, result_directory):
                     # Find all matches in the input string
                     measures = [int(match.group()) for match in pattern.finditer(formatted_line)]
                     total_calls, total_memory, failed_calls, nomove, dec, free = measures[0], measures[1], measures[2], measures[3], measures[4], measures[5] 
-                    f.write(f"{measure_name}: {total_calls}, {total_memory}, {failed_calls}, {nomove}, {dec}, {free}\n")
+                    if f"{measure_name}_total_calls" not in mem_usage_data.keys():
+                        mem_usage_data[f"{measure_name}_total_calls"] = [total_calls]
+                        mem_usage_data[f"{measure_name}_total_memory"] = [total_memory]
+                        mem_usage_data[f"{measure_name}_failed_calls"] = [failed_calls]
+                        mem_usage_data[f"{measure_name}_nomove"] = [nomove]
+                        mem_usage_data[f"{measure_name}_dec"] = [dec]
+                        mem_usage_data[f"{measure_name}_free"] = [free]
+                    else:
+                        mem_usage_data[f"{measure_name}_total_calls"].append(total_calls)
+                        mem_usage_data[f"{measure_name}_total_memory"].append(total_memory)
+                        mem_usage_data[f"{measure_name}_failed_calls"].append(failed_calls)
+                        mem_usage_data[f"{measure_name}_nomove"].append(nomove)
+                        mem_usage_data[f"{measure_name}_dec"].append(dec)
+                        mem_usage_data[f"{measure_name}_free"].append(free)
+                    # f.write(f"{measure_name}: {total_calls}, {total_memory}, {failed_calls}, {nomove}, {dec}, {free}\n")
 
                 if "free" in formatted_line.split("|")[0]:
                     measure_name = formatted_line.split("|")[0].replace(" ", "")
@@ -149,8 +180,13 @@ def monitor_linux_process(commands, mem_commands, task, result_directory):
                     # Find all matches in the input string
                     measures = [int(match.group()) for match in pattern.finditer(formatted_line)]
                     total_calls, total_memory = measures[0], measures[1]
-                    f.write(f"{measure_name}: {total_calls}, {total_memory}\n")
-        
+                    if f"{measure_name}_total_calls" not in mem_usage_data.keys():
+                        mem_usage_data[f"{measure_name}_total_calls"] = [total_calls]
+                        mem_usage_data[f"{measure_name}_total_memory"] = [total_memory]
+                    else:
+                        mem_usage_data[f"{measure_name}_total_calls"].append(total_calls)
+                        mem_usage_data[f"{measure_name}_total_memory"].append(total_memory)
+                    # f.write(f"{measure_name}: {total_calls}, {total_memory}\n")
 
     #measure execution time (for commands without memusage)
     terminal_process = subprocess.Popen(args, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, shell=True)
@@ -165,22 +201,68 @@ def monitor_linux_process(commands, mem_commands, task, result_directory):
     exec_time = (time.perf_counter() - start_time) *1000
     if stderr:
         logger.error(stderr)
-    return round(exec_time, 2)
-
+    return round(exec_time, 2), mem_usage_data
 
     #if tool is rulewerk then use java -jar rulewerk.jar instead of /bin/sh (pending)
+
+def lin_write_bench_results(timestamp, task, tool, exec_time, result_count, mem_usage_data):
+    flag = os.path.exists("MemUsageResults.csv")
+    logger.info("writing memusage results to csv file")
+    mem_usage_sum = []
+    for key, value in mem_usage_data.items(): #using the sum of measurement values of rls files in a task to represent the task's bench measurements in the csv file
+        val_sum = sum(mem_usage_data[key])  
+        print(val_sum)
+        mem_usage_sum.append(val_sum)
+    print(mem_usage_sum)
+    with open("MemUsageResults.csv", mode="a", newline="") as csv_file:
+        csv_writer = csv.writer(csv_file)
+        if flag:
+            pass
+        else:
+            dw = csv.DictWriter(
+                csv_file,
+                delimiter=",",
+                fieldnames=[
+                    "Timestamp (YYYY-MM-DD HH:MM:SS)",
+                    "Task",
+                    "Tool",
+                    "Execution Time",
+                    "Result Count",
+                    "Heap Total",
+                    "Heap Peak",
+                    "Stack Peak",
+                    "Malloc Total Calls",
+                    "Malloc Total Memory",
+                    "Malloc Failed Calls",
+                    "Calloc Total Calls",
+                    "Calloc Total Memory",
+                    "Calloc Failed Calls",
+                    "Realloc Total Calls",
+                    "Realloc Total Memory",
+                    "Realloc Failed Calls",
+                    "Realloc Nomove",
+                    "Realloc Dec",
+                    "Realloc Free",
+                    "Free Total Calls",
+                    "Free Total Memory"
+                ],
+            )
+            dw.writeheader()
+        csv_writer.writerow([timestamp, task, tool, exec_time, result_count]+mem_usage_sum)
+     #take the list of rls files in a task and from the memusage txt file of these rls files extract the info and do avg or max 
+     #returns set of max or avg mem info 
 
 
 def get_rls_file_paths(directory):
     rls_file_paths = []
     for root, dirs, files in os.walk(directory, onerror=DirectoryNotFound):
         for file in files:
+            print (file)
             if file.endswith(".rls"):
                 file_path = os.path.join(root, file)
                 rls_file_paths.append(file_path)
-                print(rls_file_paths)
-        if not rls_file_paths:
-            raise NoRlsFilesFound("No .rls files found in the provided directory")
+    if not rls_file_paths:
+        raise NoRlsFilesFound("No .rls files found in the provided directory")
     return rls_file_paths
 
 
@@ -288,11 +370,11 @@ def run_clingo(rls_files, task, timestamp, RuleParser, ruleMapper):
         #if system is Linux, we have 2 sets of commands (1. with memusage, 2. w/0 memusage for exec_time measurement)
         clingo_commands, clingo_mem_commands = cc.get_clingo_commands(sav_loc_and_rule_head_predicates.keys(), system)
 
-        c_exec_time = monitor_linux_process(clingo_commands, clingo_mem_commands, task, result_directory)
+        c_exec_time, mem_usage_data = monitor_linux_process(clingo_commands, clingo_mem_commands, task, result_directory)
         time.sleep(5)
 
         c_count_ans = cc.save_clingo_output(sav_loc_and_rule_head_predicates)
-        write_benchmark_results(timestamp, task, "Clingo", c_exec_time, 0, 0, c_count_ans)
+        lin_write_bench_results(timestamp, task, "Clingo", c_exec_time, c_count_ans, mem_usage_data)
 
     
 
@@ -317,12 +399,13 @@ def run_nemo(rls_files, timestamp, task):
 
         #to get memusage data for linux
         elif system == "Linux":
+            print(rls_file_list)
             #if linux then get two sets of commands: one with memusage and one without (for exec_time measurement)
             nemo_commands, nmo_mem_commands, result_directory = nc.get_nemo_commands(rls_file_list, task)
-            n_exec_time = monitor_linux_process(nemo_commands, nmo_mem_commands, task, result_directory)
+            n_exec_time, mem_usage_data = monitor_linux_process(nemo_commands, nmo_mem_commands, task, result_directory)
             result_count = nc.count_results(rls_file_list)
-            write_benchmark_results(
-                timestamp, task, "Nemo", n_exec_time, 0, 0, result_count
+            lin_write_bench_results(
+                timestamp, task, "Nemo", n_exec_time, result_count, mem_usage_data
             )
 
         

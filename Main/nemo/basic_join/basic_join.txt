@@ -1,7 +1,0 @@
-heap_total: 2839851
-heap_peak: 130944
-stack_peak: 29872
-malloc: 25661, 2138832, 0
-realloc: 8574, 577923, 0, 287, 0, 0
-calloc: 16, 123096, 0
-free: 25642, 2835390
