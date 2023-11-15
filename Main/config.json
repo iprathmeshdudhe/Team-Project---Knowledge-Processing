@@ -1,7 +1,6 @@
 {
     "tasks": [
-        {"name": "basic_union", "path": "Rulewerk_Rules/basic_union"},
-        {"name": "basic_join", "path":"Rulewerk_Rules/basic_join"}
+        {"name": "basics", "path":"Rulewerk_Rules"}
     ] ,
-    "solvers": ["clingo"]
+    "solvers": ["nemo"]
 }

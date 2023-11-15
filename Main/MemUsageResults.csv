@@ -1,0 +1,2 @@
+Timestamp (YYYY-MM-DD HH:MM:SS),Task,Tool,Execution Time,Result Count,Heap Total,Heap Peak,Stack Peak,Malloc Total Calls,Malloc Total Memory,Malloc Failed Calls,Calloc Total Calls,Calloc Total Memory,Calloc Failed Calls,Realloc Total Calls,Realloc Total Memory,Realloc Failed Calls,Realloc Nomove,Realloc Dec,Realloc Free,Free Total Calls,Free Total Memory
+14-11-2023 @18:28:50,basics,Nemo,121.92,118,14748726,771033,180336,141352,11536350,0,48490,2570040,0,2186,0,0,144,642336,0,141276,14720686
