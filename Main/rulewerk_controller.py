@@ -128,28 +128,6 @@ class RulewerkController:
                 lin_commands.append(cd_owd_command)
                 lin_mem_commands.append(cd_owd_command)
 
-                # load_command = f"@load '{cd}/{file_path}/{file_name}'"
-                # lin_commands.append(load_command)
-                # lin_mem_commands.append(load_command)
-                # reason_command = "@reason"
-                # lin_commands.append(reason_command)
-                # lin_mem_commands.append(reason_command)
-                # for query, pred_name in zip(to_query[0], to_query[1]):
-                    
-
-                #     if not os.path.exists(res_dir_name):
-                #         os.makedirs(res_dir_name)
-
-                #     query_command = "@query {} EXPORTCSV '{}/{}.csv'".format(query, res_dir_name, pred_name)
-                #     lin_commands.append(query_command)
-                #     lin_mem_commands.append(query_command)
-
-                # clear_command = "@clear ALL".format(query, res_dir_name, pred_name)
-                # lin_commands.append(clear_command)
-                # lin_mem_commands.append(clear_command)
-
-                # lin_commands.append("@exit")
-                # lin_mem_commands.append("@exit")
         return lin_commands, lin_mem_commands
 
     def rulewerk_lin_write_output(self, output):
