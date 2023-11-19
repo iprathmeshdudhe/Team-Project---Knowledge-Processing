@@ -1,0 +1,11 @@
+clingo version 5.6.2
+Reading from .../symmetric_transitive_closure-facts.lp ...
+Solving...
+Answer: 1
+conn(berlin,paris) conn(fukuoka,okayama) conn(kobe,fukuoka) conn(niigata,tokyo) conn(tokyo,kobe) conn(vienna,berlin) conn(vienna,rome) conn(vienna,zurich) conn(zurich,vienna) conn(rome,vienna) conn(berlin,vienna) conn(kobe,tokyo) conn(tokyo,niigata) conn(fukuoka,kobe) conn(okayama,fukuoka) conn(paris,berlin) city(basel) city(berlin) city(fukuoka) city(kobe) city(niigata) city(okayama) city(paris) city(rome) city(tokyo) city(vienna) connected(berlin,paris) connected(fukuoka,okayama) connected(kobe,fukuoka) connected(niigata,tokyo) connected(tokyo,kobe) connected(vienna,berlin) connected(vienna,rome) connected(rome,vienna) connected(berlin,vienna) connected(kobe,tokyo) connected(tokyo,niigata) connected(fukuoka,kobe) connected(okayama,fukuoka) connected(paris,berlin) connected(paris,paris) connected(paris,vienna) connected(okayama,okayama) connected(okayama,kobe) connected(fukuoka,fukuoka) connected(fukuoka,tokyo) connected(tokyo,tokyo) connected(kobe,kobe) connected(kobe,niigata) connected(berlin,berlin) connected(berlin,rome) connected(rome,berlin) connected(rome,rome) connected(vienna,vienna) connected(vienna,paris) connected(tokyo,fukuoka) connected(niigata,kobe) connected(niigata,niigata) connected(kobe,okayama) connected(niigata,fukuoka) connected(tokyo,okayama) connected(rome,paris) connected(fukuoka,niigata) connected(okayama,tokyo) connected(paris,rome) connected(okayama,niigata) connected(niigata,okayama)
+SATISFIABLE
+
+Models       : 1
+Calls        : 1
+Time         : 0.005s (Solving: 0.00s 1st Model: 0.00s Unsat: 0.00s)
+CPU Time     : 0.000s

@@ -6,3 +6,17 @@ Timestamp (YYYY-MM-DD HH:MM:SS),Task,Tool,Execution Time (ms),Max. Resident Set 
 19-11-2023 @14:50:55,repeated_variables,Rulewerk,772.95,5.06,4.3,8
 19-11-2023 @14:50:56,symmetric_transitive_closure,Rulewerk,703.78,4.99,4.26,57
 19-11-2023 @14:50:56,all_basics,Rulewerk,837.14,5.05,4.26,118
+19-11-2023 @16:52:48,basic_join,Clingo,63.75,5.13,5.24,8
+19-11-2023 @16:52:54,basic_projection,Clingo,30.39,5.13,5.23,19
+19-11-2023 @16:53:00,basic_union,Clingo,31.73,5.12,5.24,15
+19-11-2023 @16:53:05,load_multiple,Clingo,31.3,5.13,5.35,11
+19-11-2023 @16:53:11,repeated_variables,Clingo,29.15,5.12,5.23,8
+19-11-2023 @16:53:16,symmetric_transitive_closure,Clingo,30.03,5.11,4.23,57
+19-11-2023 @16:53:37,basic_join,Nemo,12.57,4.76,5.06,8
+19-11-2023 @16:53:38,basic_projection,Nemo,9.53,4.75,5.03,19
+19-11-2023 @16:53:38,basic_union,Nemo,9.34,4.77,5.21,15
+19-11-2023 @16:53:38,load_multiple,Nemo,11.21,4.75,5.03,11
+19-11-2023 @16:53:39,repeated_variables,Nemo,10.22,4.76,5.21,8
+19-11-2023 @16:53:39,symmetric_transitive_closure,Nemo,10.25,4.73,5.05,57
+19-11-2023 @18:33:51,all_basics,Nemo,22.66,4.83,5.06,118
+19-11-2023 @18:53:32,all_basics,Clingo,197.0,5.28,5.37,118
