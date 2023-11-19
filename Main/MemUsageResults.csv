@@ -1,2 +1,15 @@
-Timestamp (YYYY-MM-DD HH:MM:SS),Task,Tool,Execution Time,Result Count,Heap Total,Heap Peak,Stack Peak,Malloc Total Calls,Malloc Total Memory,Malloc Failed Calls,Calloc Total Calls,Calloc Total Memory,Calloc Failed Calls,Realloc Total Calls,Realloc Total Memory,Realloc Failed Calls,Realloc Nomove,Realloc Dec,Realloc Free,Free Total Calls,Free Total Memory
-14-11-2023 @18:28:50,basics,Nemo,121.92,118,14748726,771033,180336,141352,11536350,0,48490,2570040,0,2186,0,0,144,642336,0,141276,14720686
+Timestamp (YYYY-MM-DD HH:MM:SS),Task,Tool,Execution Time,Result Count,Heap Total,Heap Peak,Stack Peak
+19-11-2023 @15:14:38,basic_join,Rulewerk,706.75,8,39195507,15921300,71680
+19-11-2023 @15:14:49,basic_projection,Rulewerk,798.6,19,38749137,15966004,71680
+19-11-2023 @15:15:01,basic_union,Rulewerk,829.07,15,39371740,16641199,71680
+19-11-2023 @15:15:14,load_multiple,Rulewerk,811.21,11,33798925,14661321,71680
+19-11-2023 @15:15:24,repeated_variables,Rulewerk,814.04,8,39754288,15928704,71680
+19-11-2023 @15:15:35,symmetric_transitive_closure,Rulewerk,776.85,57,40458422,15766148,71680
+19-11-2023 @15:15:49,all_basics,Rulewerk,4771.83,118,227266478,92766616,431648
+19-11-2023 @15:32:24,basic_join,Nemo,19.8,8,2750889,130944,29872
+19-11-2023 @15:32:27,basic_projection,Nemo,17.09,19,1775568,124005,29872
+19-11-2023 @15:32:29,basic_union,Nemo,32.52,15,2495391,132021,29872
+19-11-2023 @15:32:32,load_multiple,Nemo,15.03,11,1839901,120784,30976
+19-11-2023 @15:32:35,repeated_variables,Nemo,21.18,8,3314535,141775,29872
+19-11-2023 @15:32:39,symmetric_transitive_closure,Nemo,18.05,57,2483480,121504,29872
+19-11-2023 @15:32:41,all_basics,Nemo,136.92,118,14659476,771033,180336
