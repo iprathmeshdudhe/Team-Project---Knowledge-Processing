@@ -93,100 +93,96 @@ def monitor_process(commands):
         return max_rss, max_vms, round(execution_time, 2)
     
 
-def monitor_linux_process(commands, mem_commands, task, result_directory):
+def monitor_linux_process(commands, mem_commands):
     args = ['/bin/sh', '-c', '']
-    terminal_process = subprocess.Popen(args, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, shell=True)
+    mem_usage_data = {}
+    mem_terminal_process = subprocess.Popen(args, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, shell=True)
     for command in mem_commands:
-        logger.info(f"Executing Command: {command} \n")
-        #Send the command to the command prompt process
-        terminal_process.stdin.write(command +'\n')
-        terminal_process.stdin.flush()
-        # time.sleep(5)
+        mem_terminal_process.stdin.write(command +'\n')
+        mem_terminal_process.stdin.flush()
 
-    stdout, stderr = terminal_process.communicate()
-    if stdout:
+    mem_stdout, mem_stats = mem_terminal_process.communicate()
+    if mem_stdout:
+        if 'Configuration:' in mem_stdout:
+            rc = RulewerkController()
+            rc.rulewerk_lin_write_output(mem_stdout)
+        # print('stdout', mem_stdout)
         logger.success("Process complete.")
 
-    if stderr:
-        output = stderr.split("\n")
-        mem_usage_data = {} #to store the mem_usage outputs 
+    if mem_stats:
+        # print('stats:', mem_stats)
+        output = mem_stats.split("\n")
+        #to store the mem_usage outputs 
 
-        # output_file_path = f"{result_directory}/{task}.txt"
-        # with open(output_file_path, 'w') as f:
+        for line in output:
+            formatted_line = re.sub(r'\x1b\[[0-9;]*m', '', line)
+            if "Memory usage summary" in line:
+                pattern = re.compile(r"heap total: (\d+), heap peak: (\d+), stack peak: (\d+)")
+                matches = pattern.search(line)
 
-            for line in output:
-                formatted_line = re.sub(r'\x1b\[[0-9;]*m', '', line)
-                if "Memory usage summary" in line:
-                    pattern = re.compile(r"heap total: (\d+), heap peak: (\d+), stack peak: (\d+)")
-                    matches = pattern.search(line)
-
-                # Check if there are matches
-                    if matches:
-                        heap_total = int(matches.group(1))
-                        heap_peak = int(matches.group(2))
-                        stack_peak = int(matches.group(3))
-                        if 'heap_total' not in mem_usage_data.keys():
-                            mem_usage_data['heap_total'] = [heap_total]
-                            mem_usage_data['heap_peak'] = [heap_peak]
-                            mem_usage_data['stack_peak'] = [stack_peak]
-                        else:
-                            mem_usage_data['heap_total'].append(heap_total)
-                            mem_usage_data['heap_peak'].append(heap_peak)
-                            mem_usage_data['stack_peak'].append(stack_peak)
-                        # f.write(f'heap_total: {heap_total}\nheap_peak: {heap_peak}\nstack_peak: {stack_peak}\n')
-
-
-                if "malloc" in formatted_line.split("|")[0] or "calloc" in formatted_line.split("|")[0]:
-                    measure_name = formatted_line.split("|")[0].replace(" ", "")
-                    pattern = re.compile(r'\b\d+\b')
-                    # Find all matches in the input string
-                    measures = [int(match.group()) for match in pattern.finditer(formatted_line)]
-                    total_calls, total_memory, failed_calls = measures[0], measures[1], measures[2]
-                    if f"{measure_name}_total_calls" not in mem_usage_data.keys():
-                        mem_usage_data[f"{measure_name}_total_calls"] = [total_calls]
-                        mem_usage_data[f"{measure_name}_total_memory"] = [total_memory]
-                        mem_usage_data[f"{measure_name}_failed_calls"] = [failed_calls]
+            # Check if there are matches
+                if matches:
+                    heap_total = int(matches.group(1))
+                    heap_peak = int(matches.group(2))
+                    stack_peak = int(matches.group(3))
+                    if 'heap_total' not in mem_usage_data.keys():
+                        mem_usage_data['heap_total'] = [heap_total]
+                        mem_usage_data['heap_peak'] = [heap_peak]
+                        mem_usage_data['stack_peak'] = [stack_peak]
                     else:
-                        mem_usage_data[f"{measure_name}_total_calls"].append(total_calls)
-                        mem_usage_data[f"{measure_name}_total_memory"].append(total_memory)
-                        mem_usage_data[f"{measure_name}_failed_calls"].append(failed_calls)
-                    # f.write(f"{measure_name}: {total_calls}, {total_memory}, {failed_calls}\n")
+                        mem_usage_data['heap_total'].append(heap_total)
+                        mem_usage_data['heap_peak'].append(heap_peak)
+                        mem_usage_data['stack_peak'].append(stack_peak)
 
-                if "realloc" in formatted_line.split("|")[0]:
-                    measure_name = formatted_line.split("|")[0].replace(" ", "")
-                    pattern = re.compile(r'\b\d+\b')
-                    # Find all matches in the input string
-                    measures = [int(match.group()) for match in pattern.finditer(formatted_line)]
-                    total_calls, total_memory, failed_calls, nomove, dec, free = measures[0], measures[1], measures[2], measures[3], measures[4], measures[5] 
-                    if f"{measure_name}_total_calls" not in mem_usage_data.keys():
-                        mem_usage_data[f"{measure_name}_total_calls"] = [total_calls]
-                        mem_usage_data[f"{measure_name}_total_memory"] = [total_memory]
-                        mem_usage_data[f"{measure_name}_failed_calls"] = [failed_calls]
-                        mem_usage_data[f"{measure_name}_nomove"] = [nomove]
-                        mem_usage_data[f"{measure_name}_dec"] = [dec]
-                        mem_usage_data[f"{measure_name}_free"] = [free]
-                    else:
-                        mem_usage_data[f"{measure_name}_total_calls"].append(total_calls)
-                        mem_usage_data[f"{measure_name}_total_memory"].append(total_memory)
-                        mem_usage_data[f"{measure_name}_failed_calls"].append(failed_calls)
-                        mem_usage_data[f"{measure_name}_nomove"].append(nomove)
-                        mem_usage_data[f"{measure_name}_dec"].append(dec)
-                        mem_usage_data[f"{measure_name}_free"].append(free)
-                    # f.write(f"{measure_name}: {total_calls}, {total_memory}, {failed_calls}, {nomove}, {dec}, {free}\n")
 
-                if "free" in formatted_line.split("|")[0]:
-                    measure_name = formatted_line.split("|")[0].replace(" ", "")
-                    pattern = re.compile(r'\b\d+\b')
-                    # Find all matches in the input string
-                    measures = [int(match.group()) for match in pattern.finditer(formatted_line)]
-                    total_calls, total_memory = measures[0], measures[1]
-                    if f"{measure_name}_total_calls" not in mem_usage_data.keys():
-                        mem_usage_data[f"{measure_name}_total_calls"] = [total_calls]
-                        mem_usage_data[f"{measure_name}_total_memory"] = [total_memory]
-                    else:
-                        mem_usage_data[f"{measure_name}_total_calls"].append(total_calls)
-                        mem_usage_data[f"{measure_name}_total_memory"].append(total_memory)
-                    # f.write(f"{measure_name}: {total_calls}, {total_memory}\n")
+            if "malloc" in formatted_line.split("|")[0] or "calloc" in formatted_line.split("|")[0]:
+                measure_name = formatted_line.split("|")[0].replace(" ", "")
+                pattern = re.compile(r'\b\d+\b')
+                # Find all matches in the input string
+                measures = [int(match.group()) for match in pattern.finditer(formatted_line)]
+                total_calls, total_memory, failed_calls = measures[0], measures[1], measures[2]
+                if f"{measure_name}_total_calls" not in mem_usage_data.keys():
+                    mem_usage_data[f"{measure_name}_total_calls"] = [total_calls]
+                    mem_usage_data[f"{measure_name}_total_memory"] = [total_memory]
+                    mem_usage_data[f"{measure_name}_failed_calls"] = [failed_calls]
+                else:
+                    mem_usage_data[f"{measure_name}_total_calls"].append(total_calls)
+                    mem_usage_data[f"{measure_name}_total_memory"].append(total_memory)
+                    mem_usage_data[f"{measure_name}_failed_calls"].append(failed_calls)
+
+            if "realloc" in formatted_line.split("|")[0]:
+                measure_name = formatted_line.split("|")[0].replace(" ", "")
+                pattern = re.compile(r'\b\d+\b')
+                # Find all matches in the input string
+                measures = [int(match.group()) for match in pattern.finditer(formatted_line)]
+                total_calls, total_memory, failed_calls, nomove, dec, free = measures[0], measures[1], measures[2], measures[3], measures[4], measures[5] 
+                if f"{measure_name}_total_calls" not in mem_usage_data.keys():
+                    mem_usage_data[f"{measure_name}_total_calls"] = [total_calls]
+                    mem_usage_data[f"{measure_name}_total_memory"] = [total_memory]
+                    mem_usage_data[f"{measure_name}_failed_calls"] = [failed_calls]
+                    mem_usage_data[f"{measure_name}_nomove"] = [nomove]
+                    mem_usage_data[f"{measure_name}_dec"] = [dec]
+                    mem_usage_data[f"{measure_name}_free"] = [free]
+                else:
+                    mem_usage_data[f"{measure_name}_total_calls"].append(total_calls)
+                    mem_usage_data[f"{measure_name}_total_memory"].append(total_memory)
+                    mem_usage_data[f"{measure_name}_failed_calls"].append(failed_calls)
+                    mem_usage_data[f"{measure_name}_nomove"].append(nomove)
+                    mem_usage_data[f"{measure_name}_dec"].append(dec)
+                    mem_usage_data[f"{measure_name}_free"].append(free)
+
+            if "free" in formatted_line.split("|")[0]:
+                measure_name = formatted_line.split("|")[0].replace(" ", "")
+                pattern = re.compile(r'\b\d+\b')
+                # Find all matches in the input string
+                measures = [int(match.group()) for match in pattern.finditer(formatted_line)]
+                total_calls, total_memory = measures[0], measures[1]
+                if f"{measure_name}_total_calls" not in mem_usage_data.keys():
+                    mem_usage_data[f"{measure_name}_total_calls"] = [total_calls]
+                    mem_usage_data[f"{measure_name}_total_memory"] = [total_memory]
+                else:
+                    mem_usage_data[f"{measure_name}_total_calls"].append(total_calls)
+                    mem_usage_data[f"{measure_name}_total_memory"].append(total_memory)
 
     #measure execution time (for commands without memusage)
     terminal_process = subprocess.Popen(args, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, shell=True)
@@ -203,18 +199,17 @@ def monitor_linux_process(commands, mem_commands, task, result_directory):
         logger.error(stderr)
     return round(exec_time, 2), mem_usage_data
 
-    #if tool is rulewerk then use java -jar rulewerk.jar instead of /bin/sh (pending)
+
 
 def lin_write_bench_results(timestamp, task, tool, exec_time, result_count, mem_usage_data):
-    flag = os.path.exists("MemUsageResults.csv")
+    flag = os.path.exists("../MemUsageResults.csv")
     logger.info("writing memusage results to csv file")
-    mem_usage_sum = []
-    for key, value in mem_usage_data.items(): #using the sum of measurement values of rls files in a task to represent the task's bench measurements in the csv file
-        val_sum = sum(mem_usage_data[key])  
-        print(val_sum)
-        mem_usage_sum.append(val_sum)
-    print(mem_usage_sum)
-    with open("MemUsageResults.csv", mode="a", newline="") as csv_file:
+
+    agg_heap_total =  round(sum(mem_usage_data['heap_total'])/ 1024 / 1024, 2)
+    agg_heap_peak = round(sum(mem_usage_data['heap_peak'])/ 1024 / 1024, 2)
+    agg_stack_peak = round(sum(mem_usage_data['stack_peak'])/ 1024 / 1024, 2)
+
+    with open("../MemUsageResults.csv", mode="a", newline="") as csv_file:
         csv_writer = csv.writer(csv_file)
         if flag:
             pass
@@ -226,32 +221,17 @@ def lin_write_bench_results(timestamp, task, tool, exec_time, result_count, mem_
                     "Timestamp (YYYY-MM-DD HH:MM:SS)",
                     "Task",
                     "Tool",
-                    "Execution Time",
+                    "Execution Time (ms)",
                     "Result Count",
-                    "Heap Total",
-                    "Heap Peak",
-                    "Stack Peak",
-                    "Malloc Total Calls",
-                    "Malloc Total Memory",
-                    "Malloc Failed Calls",
-                    "Calloc Total Calls",
-                    "Calloc Total Memory",
-                    "Calloc Failed Calls",
-                    "Realloc Total Calls",
-                    "Realloc Total Memory",
-                    "Realloc Failed Calls",
-                    "Realloc Nomove",
-                    "Realloc Dec",
-                    "Realloc Free",
-                    "Free Total Calls",
-                    "Free Total Memory"
+                    "Heap Total (MB)",
+                    "Heap Peak (MB)",
+                    "Stack Peak (MB)"
                 ],
             )
             dw.writeheader()
-        csv_writer.writerow([timestamp, task, tool, exec_time, result_count]+mem_usage_sum)
+        csv_writer.writerow([timestamp, task, tool, exec_time, result_count, agg_heap_total, agg_heap_peak, agg_stack_peak])
      #take the list of rls files in a task and from the memusage txt file of these rls files extract the info and do avg or max 
      #returns set of max or avg mem info 
-
 
 def get_rls_file_paths(directory):
     rls_file_paths = []
@@ -265,15 +245,14 @@ def get_rls_file_paths(directory):
         raise NoRlsFilesFound("No .rls files found in the provided directory")
     return rls_file_paths
 
-
 def write_benchmark_results(timestamp, task, tool, execution_time, max_rss, max_vms, count):
     # if not csv file exist create a new one : in which directory?
     # header: timestamp task, tool, execution_time, memory_info
     # row: parameters in order
     # close csv
-    flag = os.path.exists("BenchResults.csv")
+    flag = os.path.exists("../BenchResults.csv")
     logger.info("writing benchmark results to csv file")
-    with open("BenchResults.csv", mode="a", newline="") as csv_file:
+    with open("../BenchResults.csv", mode="a", newline="") as csv_file:
         csv_writer = csv.writer(csv_file)
         if flag:
             pass
@@ -294,7 +273,6 @@ def write_benchmark_results(timestamp, task, tool, execution_time, max_rss, max_
             dw.writeheader()
         csv_writer.writerow([timestamp, task, tool, execution_time, max_rss, max_vms, count])
 
-
 def get_config(config_file_path):
     try:
         config_file = open(config_file_path)
@@ -307,7 +285,6 @@ def get_config(config_file_path):
     solvers = configs["solvers"]
     return solvers, tasks
 
-
 def run_rulewerk(rls_files, RuleParser, Rule, Literal, rule_file_path, timestamp, task):
     rc = RulewerkController()
     query_dict = {}
@@ -316,10 +293,11 @@ def run_rulewerk(rls_files, RuleParser, Rule, Literal, rule_file_path, timestamp
             file_name = os.path.basename(rls)
             query, head_pred = rc.get_rule_file_elements(RuleParser, Rule, Literal, rls)
             query_dict[rls] = [query, head_pred]
-        rulewerk_commands = rc.get_rulewerk_commands(task, rule_file_path, query_dict)
+        
         
         #for all os except Linux measure rss, vss and exec time 
         if system in ['Windows', 'Darwin']:
+            rulewerk_commands = rc.get_rulewerk_commands(task, rule_file_path, query_dict)
             r_max_rss, r_max_vms, r_exec_time = monitor_process(rulewerk_commands)
             result_count = rc.count_rulewerk_results(query_dict)
             # call function to write bencmarking results to csv file
@@ -329,13 +307,49 @@ def run_rulewerk(rls_files, RuleParser, Rule, Literal, rule_file_path, timestamp
 
         #only for linux to get memusage details run commands with the memusage part
         if system == "Linux":
-            pass 
-            # monitor_linux_process(rulewerk_commands, task, result_directory)
-
+            r_commands, r_mem_commands = rc.get_rulewerk_commands(task, rule_file_path, query_dict)
+            r_exec_time, mem_usage_data = monitor_linux_process(r_commands, r_mem_commands)
+            result_count = rc.count_rulewerk_results(query_dict)
+            lin_write_bench_results(
+                timestamp, task, "Rulewerk", r_exec_time, result_count, mem_usage_data
+            )
         
     except Exception as err:
         logger.error(err)
 
+def run_nemo(rls_files, timestamp, task):
+    nc = NemoController()
+    rls_file_list = []
+    try:
+        for rls in rls_files:
+            rule_file_name = os.path.basename(rls)
+            rule_file_path = os.path.dirname(rls)
+            rls_file_list.append([rule_file_name, rule_file_path])
+        
+
+        if system in ["Windows", "Darwin"]:
+            nemo_commands = nc.get_nemo_commands(rls_file_list, task)
+            n_max_rss, n_max_vms, n_exec_time = monitor_process(nemo_commands)
+            result_count = nc.count_results(rls_file_list)
+            write_benchmark_results(
+                timestamp, task, "Nemo", n_exec_time, n_max_rss, n_max_vms, result_count
+            )
+
+        #to get memusage data for linux
+        elif system == "Linux":
+            print(rls_file_list)
+            #if linux then get two sets of commands: one with memusage and one without (for exec_time measurement)
+            nemo_commands, nmo_mem_commands = nc.get_nemo_commands(rls_file_list, task)
+            n_exec_time, mem_usage_data = monitor_linux_process(nemo_commands, nmo_mem_commands)
+            result_count = nc.count_results(rls_file_list)
+            lin_write_bench_results(
+                timestamp, task, "Nemo", n_exec_time, result_count, mem_usage_data
+            )
+
+        
+    except Exception as err:
+        print(traceback.format_exc())
+        logger.error(err)
 
 def run_clingo(rls_files, task, timestamp, RuleParser, ruleMapper):
     # Dictionary to save locaion and rule head Predicates
@@ -348,7 +362,6 @@ def run_clingo(rls_files, task, timestamp, RuleParser, ruleMapper):
         # file_name = os.path.basename(rls)
         file_path = os.path.dirname(rls)
         rules, facts, data_sources, example_name = ruleMapper.rulewerktoobject(rls, RuleParser)
-        result_directory = os.path.join("clingo/", example_name) #to store memusage txt file in this direcotry
         saving_location = cc.get_clingo_location(example_name) 
         rule_head_preds = ruleMapper.rulewerk_to_clingo(file_path, rules, facts, data_sources, saving_location)
         # Dictionary {"rule_file_location": [list of rule head predicates]........}
@@ -370,50 +383,12 @@ def run_clingo(rls_files, task, timestamp, RuleParser, ruleMapper):
         #if system is Linux, we have 2 sets of commands (1. with memusage, 2. w/0 memusage for exec_time measurement)
         clingo_commands, clingo_mem_commands = cc.get_clingo_commands(sav_loc_and_rule_head_predicates.keys(), system)
 
-        c_exec_time, mem_usage_data = monitor_linux_process(clingo_commands, clingo_mem_commands, task, result_directory)
+        c_exec_time, mem_usage_data = monitor_linux_process(clingo_commands, clingo_mem_commands)
         time.sleep(5)
 
         c_count_ans = cc.save_clingo_output(sav_loc_and_rule_head_predicates)
         lin_write_bench_results(timestamp, task, "Clingo", c_exec_time, c_count_ans, mem_usage_data)
-
-    
-
-
-def run_nemo(rls_files, timestamp, task):
-    nc = NemoController()
-    rls_file_list = []
-    try:
-        for rls in rls_files:
-            rule_file_name = os.path.basename(rls)
-            rule_file_path = os.path.dirname(rls)
-            rls_file_list.append([rule_file_name, rule_file_path])
-        
-
-        if system in ["Windows", "Darwin"]:
-            nemo_commands, result_directory = nc.get_nemo_commands(rls_file_list, task)
-            n_max_rss, n_max_vms, n_exec_time = monitor_process(nemo_commands)
-            result_count = nc.count_results(rls_file_list)
-            write_benchmark_results(
-                timestamp, task, "Nemo", n_exec_time, n_max_rss, n_max_vms, result_count
-            )
-
-        #to get memusage data for linux
-        elif system == "Linux":
-            print(rls_file_list)
-            #if linux then get two sets of commands: one with memusage and one without (for exec_time measurement)
-            nemo_commands, nmo_mem_commands, result_directory = nc.get_nemo_commands(rls_file_list, task)
-            n_exec_time, mem_usage_data = monitor_linux_process(nemo_commands, nmo_mem_commands, task, result_directory)
-            result_count = nc.count_results(rls_file_list)
-            lin_write_bench_results(
-                timestamp, task, "Nemo", n_exec_time, result_count, mem_usage_data
-            )
-
-        
-    except Exception as err:
-        print(traceback.format_exc())
-        logger.error(err)
-
-
+ 
 def run_souffle(rls_files, timestamp, task, RuleParser, ruleMapper):
     sc = SouffleController()
     commands = []

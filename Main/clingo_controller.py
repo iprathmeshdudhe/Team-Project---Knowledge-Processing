@@ -12,7 +12,7 @@ class ClingoController:
         if system in ["Windows", "Darwin"]:
             for file in file_locations:
                 commands.append(f"clingo {file}-facts.lp {file}.lp > {file}-output.txt")
-                return commands
+            return commands
                 
         elif system == "Linux":
             mem_commands = []

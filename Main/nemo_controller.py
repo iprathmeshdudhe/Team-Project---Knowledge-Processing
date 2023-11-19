@@ -40,9 +40,9 @@ class NemoController:
                 mem_commands.append(f"cd {owd}")
             
         if system == 'Windows':
-            return commands, nmo_res_path
+            return commands
         elif system == 'Linux':
-            return  commands, mem_commands, nmo_res_path
+            return  commands, mem_commands
         
     
     def count_results(self, rls_file_list):
