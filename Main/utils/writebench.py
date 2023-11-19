@@ -35,14 +35,14 @@ class WriteBench:
 
 
     def lin_write_bench_results(timestamp, task, tool, exec_time, result_count, mem_usage_data):
-        flag = os.path.exists("../MemUsageResults.csv")
+        flag = os.path.exists("MemUsageResults.csv")
         logger.info("writing memusage results to csv file")
 
         agg_heap_total =  round(sum(mem_usage_data['heap_total'])/ 1024 / 1024, 2)
         agg_heap_peak = round(sum(mem_usage_data['heap_peak'])/ 1024 / 1024, 2)
         agg_stack_peak = round(sum(mem_usage_data['stack_peak'])/ 1024 / 1024, 2)
 
-        with open("../MemUsageResults.csv", mode="a", newline="") as csv_file:
+        with open("MemUsageResults.csv", mode="a", newline="") as csv_file:
             csv_writer = csv.writer(csv_file)
             if flag:
                 pass
