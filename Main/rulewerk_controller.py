@@ -150,4 +150,37 @@ class RulewerkController:
 
                 # lin_commands.append("@exit")
                 # lin_mem_commands.append("@exit")
-        return lin_commands, lin_mem_commands, res_dir_name
+        return lin_commands, lin_mem_commands
+
+    def rulewerk_lin_write_output(self, output):
+        printFlag = False
+        output = output.split("\n")
+        dir_name = ''
+        for line in output:
+            if '--rule-file' in line:
+                file_name = str(line.split()[1]).split('.')[0]
+                if not os.path.exists(f'rulewerk/{file_name}'):
+                    os.makedirs(f'rulewerk/{file_name}')
+                dir_name=f'rulewerk/{file_name}'
+            if line != "" and not line.isspace():
+                if(line.split()[0]=="Answers"):
+                    printFlag = True
+                    queryName = line.split()[3].split("(")[0]
+                    # queryResFile = open(currPath +R"\{}.txt".format(queryName), 'w')
+                    queryResFile = open(f"{dir_name}/{queryName}.csv", 'w')
+                    queryResFile.close()
+                    continue
+
+                if(line.split()[0]=="Query"):
+                    printFlag = False
+                    queryName = line.split()[3].split("(")[0]
+                    continue
+        
+                if printFlag==True:                
+                    # queryResFile = open(currPath +R"\{}.csv".format(queryName), 'a')
+                    results = line.replace('[', "-").replace(']', '-').split('-')[3].split(',')
+                    print (results)
+                    with open(f"{dir_name}/{queryName}.csv", 'a', newline='') as queryResFile:
+                        writer = csv.writer(queryResFile)
+                        writer.writerow(results)
+                    queryResFile.close()

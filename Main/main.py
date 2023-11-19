@@ -93,31 +93,26 @@ def monitor_process(commands):
         return max_rss, max_vms, round(execution_time, 2)
     
 
-def monitor_linux_process(commands, mem_commands, task, result_directory):
+def monitor_linux_process(commands, mem_commands):
     args = ['/bin/sh', '-c', '']
     mem_usage_data = {}
     mem_terminal_process = subprocess.Popen(args, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, shell=True)
     for command in mem_commands:
-        # logger.info(f"Executing Command: {command} \n")
-        #Send the command to the command prompt process
         mem_terminal_process.stdin.write(command +'\n')
         mem_terminal_process.stdin.flush()
-        # time.sleep(5)
 
-    mem_stdout, mem_stderr = mem_terminal_process.communicate()
+    mem_stdout, mem_stats = mem_terminal_process.communicate()
     if mem_stdout:
         if 'Configuration:' in mem_stdout:
-            rulewerk_lin_write_output(mem_stdout)
-        print('stdout', mem_stdout)
+            rc = RulewerkController()
+            rc.rulewerk_lin_write_output(mem_stdout)
+        # print('stdout', mem_stdout)
         logger.success("Process complete.")
 
-    if mem_stderr:
-        print('stderr:', mem_stderr)
-        output = mem_stderr.split("\n")
-         #to store the mem_usage outputs 
-
-        # output_file_path = f"{result_directory}/{task}.txt"
-        # with open(output_file_path, 'w') as f:
+    if mem_stats:
+        # print('stats:', mem_stats)
+        output = mem_stats.split("\n")
+        #to store the mem_usage outputs 
 
         for line in output:
             formatted_line = re.sub(r'\x1b\[[0-9;]*m', '', line)
@@ -138,7 +133,6 @@ def monitor_linux_process(commands, mem_commands, task, result_directory):
                         mem_usage_data['heap_total'].append(heap_total)
                         mem_usage_data['heap_peak'].append(heap_peak)
                         mem_usage_data['stack_peak'].append(stack_peak)
-                    # f.write(f'heap_total: {heap_total}\nheap_peak: {heap_peak}\nstack_peak: {stack_peak}\n')
 
 
             if "malloc" in formatted_line.split("|")[0] or "calloc" in formatted_line.split("|")[0]:
@@ -155,7 +149,6 @@ def monitor_linux_process(commands, mem_commands, task, result_directory):
                     mem_usage_data[f"{measure_name}_total_calls"].append(total_calls)
                     mem_usage_data[f"{measure_name}_total_memory"].append(total_memory)
                     mem_usage_data[f"{measure_name}_failed_calls"].append(failed_calls)
-                # f.write(f"{measure_name}: {total_calls}, {total_memory}, {failed_calls}\n")
 
             if "realloc" in formatted_line.split("|")[0]:
                 measure_name = formatted_line.split("|")[0].replace(" ", "")
@@ -177,7 +170,6 @@ def monitor_linux_process(commands, mem_commands, task, result_directory):
                     mem_usage_data[f"{measure_name}_nomove"].append(nomove)
                     mem_usage_data[f"{measure_name}_dec"].append(dec)
                     mem_usage_data[f"{measure_name}_free"].append(free)
-                # f.write(f"{measure_name}: {total_calls}, {total_memory}, {failed_calls}, {nomove}, {dec}, {free}\n")
 
             if "free" in formatted_line.split("|")[0]:
                 measure_name = formatted_line.split("|")[0].replace(" ", "")
@@ -191,7 +183,6 @@ def monitor_linux_process(commands, mem_commands, task, result_directory):
                 else:
                     mem_usage_data[f"{measure_name}_total_calls"].append(total_calls)
                     mem_usage_data[f"{measure_name}_total_memory"].append(total_memory)
-                # f.write(f"{measure_name}: {total_calls}, {total_memory}\n")
 
     #measure execution time (for commands without memusage)
     terminal_process = subprocess.Popen(args, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, shell=True)
@@ -208,58 +199,17 @@ def monitor_linux_process(commands, mem_commands, task, result_directory):
         logger.error(stderr)
     return round(exec_time, 2), mem_usage_data
 
-    #if tool is rulewerk then use java -jar rulewerk.jar instead of /bin/sh (pending)
 
-def rulewerk_lin_write_output(output):
-    print(output)
-    printFlag = False
-    output = output.split("\n")
-    dir_name = ''
-    for line in output:
-        if '--rule-file' in line:
-            file_name = str(line.split()[1]).split('.')[0]
-            if not os.path.exists(f'rulewerk/{file_name}'):
-                os.makedirs(f'rulewerk/{file_name}')
-            dir_name=f'rulewerk/{file_name}'
-        if line != "" and not line.isspace():
-            if(line.split()[0]=="Answers"):
-                printFlag = True
-                queryName = line.split()[3].split("(")[0]
-                # queryResFile = open(currPath +R"\{}.txt".format(queryName), 'w')
-                queryResFile = open(f"{dir_name}/{queryName}.csv", 'w')
-                queryResFile.close()
-                continue
-
-            if(line.split()[0]=="Query"):
-                printFlag = False
-                queryName = line.split()[3].split("(")[0]
-                continue
-        
-            if printFlag==True:
-                
-                # queryResFile = open(currPath +R"\{}.csv".format(queryName), 'a')
-                results = line.replace('[', "-").replace(']', '-').split('-')[3].split(',')
-                print (results)
-                with open(f"{dir_name}/{queryName}.csv", 'a', newline='') as queryResFile:
-                    writer = csv.writer(queryResFile)
-                    writer.writerow(results)
-                queryResFile.close()
 
 def lin_write_bench_results(timestamp, task, tool, exec_time, result_count, mem_usage_data):
-    flag = os.path.exists("MemUsageResults.csv")
+    flag = os.path.exists("../MemUsageResults.csv")
     logger.info("writing memusage results to csv file")
-    mem_usage_sum = []
-    for key, value in mem_usage_data.items(): #using the sum of measurement values of rls files in a task to represent the task's bench measurements in the csv file
-        val_sum = sum(mem_usage_data[key])  
-        print(val_sum)
-        mem_usage_sum.append(val_sum)
-    print(mem_usage_sum)
 
-    agg_heap_total =  sum(mem_usage_data['heap_total'])
-    agg_heap_peak = sum(mem_usage_data['heap_peak'])
-    agg_stack_peak = sum(mem_usage_data['stack_peak'])
+    agg_heap_total =  round(sum(mem_usage_data['heap_total'])/ 1024 / 1024, 2)
+    agg_heap_peak = round(sum(mem_usage_data['heap_peak'])/ 1024 / 1024, 2)
+    agg_stack_peak = round(sum(mem_usage_data['stack_peak'])/ 1024 / 1024, 2)
 
-    with open("MemUsageResults.csv", mode="a", newline="") as csv_file:
+    with open("../MemUsageResults.csv", mode="a", newline="") as csv_file:
         csv_writer = csv.writer(csv_file)
         if flag:
             pass
@@ -271,11 +221,11 @@ def lin_write_bench_results(timestamp, task, tool, exec_time, result_count, mem_
                     "Timestamp (YYYY-MM-DD HH:MM:SS)",
                     "Task",
                     "Tool",
-                    "Execution Time",
+                    "Execution Time (ms)",
                     "Result Count",
-                    "Heap Total",
-                    "Heap Peak",
-                    "Stack Peak"
+                    "Heap Total (MB)",
+                    "Heap Peak (MB)",
+                    "Stack Peak (MB)"
                 ],
             )
             dw.writeheader()
@@ -300,9 +250,9 @@ def write_benchmark_results(timestamp, task, tool, execution_time, max_rss, max_
     # header: timestamp task, tool, execution_time, memory_info
     # row: parameters in order
     # close csv
-    flag = os.path.exists("BenchResults.csv")
+    flag = os.path.exists("../BenchResults.csv")
     logger.info("writing benchmark results to csv file")
-    with open("BenchResults.csv", mode="a", newline="") as csv_file:
+    with open("../BenchResults.csv", mode="a", newline="") as csv_file:
         csv_writer = csv.writer(csv_file)
         if flag:
             pass
@@ -357,8 +307,8 @@ def run_rulewerk(rls_files, RuleParser, Rule, Literal, rule_file_path, timestamp
 
         #only for linux to get memusage details run commands with the memusage part
         if system == "Linux":
-            r_commands, r_mem_commands, result_directory = rc.get_rulewerk_commands(task, rule_file_path, query_dict)
-            r_exec_time, mem_usage_data = monitor_linux_process(r_commands, r_mem_commands, task, result_directory)
+            r_commands, r_mem_commands = rc.get_rulewerk_commands(task, rule_file_path, query_dict)
+            r_exec_time, mem_usage_data = monitor_linux_process(r_commands, r_mem_commands)
             result_count = rc.count_rulewerk_results(query_dict)
             lin_write_bench_results(
                 timestamp, task, "Rulewerk", r_exec_time, result_count, mem_usage_data
@@ -378,7 +328,7 @@ def run_nemo(rls_files, timestamp, task):
         
 
         if system in ["Windows", "Darwin"]:
-            nemo_commands, result_directory = nc.get_nemo_commands(rls_file_list, task)
+            nemo_commands = nc.get_nemo_commands(rls_file_list, task)
             n_max_rss, n_max_vms, n_exec_time = monitor_process(nemo_commands)
             result_count = nc.count_results(rls_file_list)
             write_benchmark_results(
@@ -389,8 +339,8 @@ def run_nemo(rls_files, timestamp, task):
         elif system == "Linux":
             print(rls_file_list)
             #if linux then get two sets of commands: one with memusage and one without (for exec_time measurement)
-            nemo_commands, nmo_mem_commands, result_directory = nc.get_nemo_commands(rls_file_list, task)
-            n_exec_time, mem_usage_data = monitor_linux_process(nemo_commands, nmo_mem_commands, task, result_directory)
+            nemo_commands, nmo_mem_commands = nc.get_nemo_commands(rls_file_list, task)
+            n_exec_time, mem_usage_data = monitor_linux_process(nemo_commands, nmo_mem_commands)
             result_count = nc.count_results(rls_file_list)
             lin_write_bench_results(
                 timestamp, task, "Nemo", n_exec_time, result_count, mem_usage_data
@@ -412,7 +362,6 @@ def run_clingo(rls_files, task, timestamp, RuleParser, ruleMapper):
         # file_name = os.path.basename(rls)
         file_path = os.path.dirname(rls)
         rules, facts, data_sources, example_name = ruleMapper.rulewerktoobject(rls, RuleParser)
-        result_directory = os.path.join("clingo/", example_name) #to store memusage txt file in this direcotry
         saving_location = cc.get_clingo_location(example_name) 
         rule_head_preds = ruleMapper.rulewerk_to_clingo(file_path, rules, facts, data_sources, saving_location)
         # Dictionary {"rule_file_location": [list of rule head predicates]........}
@@ -434,7 +383,7 @@ def run_clingo(rls_files, task, timestamp, RuleParser, ruleMapper):
         #if system is Linux, we have 2 sets of commands (1. with memusage, 2. w/0 memusage for exec_time measurement)
         clingo_commands, clingo_mem_commands = cc.get_clingo_commands(sav_loc_and_rule_head_predicates.keys(), system)
 
-        c_exec_time, mem_usage_data = monitor_linux_process(clingo_commands, clingo_mem_commands, task, result_directory)
+        c_exec_time, mem_usage_data = monitor_linux_process(clingo_commands, clingo_mem_commands)
         time.sleep(5)
 
         c_count_ans = cc.save_clingo_output(sav_loc_and_rule_head_predicates)
