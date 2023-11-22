@@ -237,7 +237,6 @@ def get_rls_file_paths(directory):
     rls_file_paths = []
     for root, dirs, files in os.walk(directory, onerror=DirectoryNotFound):
         for file in files:
-            print (file)
             if file.endswith(".rls"):
                 file_path = os.path.join(root, file)
                 rls_file_paths.append(file_path)

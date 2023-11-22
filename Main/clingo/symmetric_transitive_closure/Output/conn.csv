@@ -1,0 +1,16 @@
+berlin,paris
+fukuoka,okayama
+kobe,fukuoka
+niigata,tokyo
+tokyo,kobe
+vienna,berlin
+vienna,rome
+vienna,zurich
+zurich,vienna
+rome,vienna
+berlin,vienna
+kobe,tokyo
+tokyo,niigata
+fukuoka,kobe
+okayama,fukuoka
+paris,berlin

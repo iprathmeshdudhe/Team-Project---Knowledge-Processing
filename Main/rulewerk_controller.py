@@ -63,7 +63,7 @@ class RulewerkController:
         logger.info("Running Rulewerk")
 
         if system == "Windows":
-            start_command = "java -jar lib/rulewerk-client-win.jar"
+            start_command = "java -jar lib/rulewerk-client/rulewerk.jar"
 
             #commented this out only for linux...work in progress
             commands.append(start_command)
@@ -118,10 +118,10 @@ class RulewerkController:
                 lin_commands.append(cd_rls_command)
                 lin_mem_commands.append(cd_rls_command)
 
-                start_command = f"java -jar ../../lib/rulewerk-client-lin.jar materialize --rule-file={file_name} {toQuery} --print-query-result-size=false --print-complete-query-result=true" #putting this inside the for loop for linux to make it similar to other tools (do for each file separately and then get their aggregate in bench csv)
+                start_command = f"java -jar ../../lib/rulewerk-client/rulewerk-0.6.0.jar materialize --rule-file={file_name} {toQuery} --print-query-result-size=false --print-complete-query-result=true" #putting this inside the for loop for linux to make it similar to other tools (do for each file separately and then get their aggregate in bench csv)
                 lin_commands.append(start_command)
 
-                mem_start_command = f"memusage --data={cd}/{res_dir_name}/{task}.dat --png={cd}/{res_dir_name}/{task}.png java -jar ../../lib/rulewerk-client-lin.jar materialize --rule-file={file_name} {toQuery} --print-query-result-size=false --print-complete-query-result=true" 
+                mem_start_command = f"memusage --data={cd}/{res_dir_name}/{task}.dat --png={cd}/{res_dir_name}/{task}.png java -jar ../../lib/rulewerk-client/rulewerk-0.6.0.jar materialize --rule-file={file_name} {toQuery} --print-query-result-size=false --print-complete-query-result=true" 
                 lin_mem_commands.append(mem_start_command)
 
                 cd_owd_command = f"cd {cd}"
@@ -157,7 +157,6 @@ class RulewerkController:
                 if printFlag==True:                
                     # queryResFile = open(currPath +R"\{}.csv".format(queryName), 'a')
                     results = line.replace('[', "-").replace(']', '-').split('-')[3].split(',')
-                    print (results)
                     with open(f"{dir_name}/{queryName}.csv", 'a', newline='') as queryResFile:
                         writer = csv.writer(queryResFile)
                         writer.writerow(results)
