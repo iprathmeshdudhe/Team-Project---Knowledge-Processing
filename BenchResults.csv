@@ -1,8 +1,0 @@
-Timestamp (YYYY-MM-DD HH:MM:SS),Task,Tool,Execution Time (ms),Max. Resident Set Size (MB),Max. Virtual Memory Size (MB),Count of grounded Rule Predicates
-19-11-2023 @14:50:52,basic_join,Rulewerk,680.44,4.97,4.28,8
-19-11-2023 @14:50:52,basic_projection,Rulewerk,798.91,4.95,4.27,19
-19-11-2023 @14:50:53,basic_union,Rulewerk,718.44,5.05,4.29,15
-19-11-2023 @14:50:54,load_multiple,Rulewerk,707.98,5.15,4.29,11
-19-11-2023 @14:50:55,repeated_variables,Rulewerk,772.95,5.06,4.3,8
-19-11-2023 @14:50:56,symmetric_transitive_closure,Rulewerk,703.78,4.99,4.26,57
-22-11-2023 @12:38:55,all_basics,Rulewerk,1316.51,5.29,4.31,118

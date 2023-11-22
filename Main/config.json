@@ -1,6 +1,6 @@
 {
     "tasks": [
-        {"name": "basic_join", "path":"Rulewerk_Rules/basic_join"}
+        {"name": "load_multiple", "path":"Rulewerk_Rules/load_multiple"}
     ] ,
-    "solvers": ["clingo"]
+    "solvers": ["rulewerk"]
 }

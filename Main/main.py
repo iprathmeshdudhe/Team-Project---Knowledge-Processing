@@ -10,21 +10,21 @@ import json
 import threading
 import re
 
-from datalogrulemapper import *
+from utils.datalogrulemapper import *
+from utils.plot_hist import plot_hist
+from utils.writebench import WriteBench as wb
 
 from src.errors import NoRlsFilesFound, DirectoryNotFound, SystemNotSupported
 from src.config import Settings
-from clingo_controller import ClingoController
-from rulewerk_controller import RulewerkController
-from nemo_controller import NemoController
-from souffle_controller import SouffleController
+from controllers.clingo_controller import ClingoController
+from controllers.rulewerk_controller import RulewerkController
+from controllers.nemo_controller import NemoController
+from controllers.souffle_controller import SouffleController
 import traceback
 import json
 import sys
 from loguru import logger
 
-
-# sys.tracebacklimit = 0
 
 system = platform.system()
 
@@ -58,8 +58,8 @@ def monitor_process(commands):
     vms = []
 
     cmd_process = subprocess.Popen(
-        terminal, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False, text=True
-    )
+        terminal, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False)
+
     # Creating a thread to measure memory in backend
     thread = threading.Thread(target=measure_memory, args=(cmd_process.pid, rss, vms))
     thread.start()
@@ -69,17 +69,16 @@ def monitor_process(commands):
 
     try:
         for command in commands:
-            logger.info(f"Executing Command: {command} + b'\n")
+            logger.info(f"Executing Command: {command}")
             # Send the command to the command prompt process
-            cmd_process.stdin.write(command +'\n')
+            cmd_process.stdin.write(command.encode("utf-8") + b"\n")
             cmd_process.stdin.flush()
-        
+
         # Close the command prompt process
-        stdout, stderr = cmd_process.communicate()
-        if stdout:
-            print(stdout)
-        if stderr:
-            print(stderr)        
+        
+        cmd_process.stdin.close()
+
+        cmd_process.wait()
 
         # Calculate the execution time
         execution_time = (time.perf_counter() - start_time) * 1000
@@ -90,7 +89,10 @@ def monitor_process(commands):
     else:
         max_rss = round(max(rss), 2)
         max_vms = round(max(vms), 2)
-        return max_rss, max_vms, round(execution_time, 2)
+        exe_time = round(execution_time, 2)
+        rss = list(map(lambda x: round(x, 2), rss))
+        vms = list(map(lambda y: round(y, 2), vms))
+        return max_rss, max_vms, exe_time, rss, vms
     
 
 def monitor_linux_process(commands, mem_commands):
@@ -199,40 +201,6 @@ def monitor_linux_process(commands, mem_commands):
         logger.error(stderr)
     return round(exec_time, 2), mem_usage_data
 
-
-
-def lin_write_bench_results(timestamp, task, tool, exec_time, result_count, mem_usage_data):
-    flag = os.path.exists("../MemUsageResults.csv")
-    logger.info("writing memusage results to csv file")
-
-    agg_heap_total =  round(sum(mem_usage_data['heap_total'])/ 1024 / 1024, 2)
-    agg_heap_peak = round(sum(mem_usage_data['heap_peak'])/ 1024 / 1024, 2)
-    agg_stack_peak = round(sum(mem_usage_data['stack_peak'])/ 1024 / 1024, 2)
-
-    with open("../MemUsageResults.csv", mode="a", newline="") as csv_file:
-        csv_writer = csv.writer(csv_file)
-        if flag:
-            pass
-        else:
-            dw = csv.DictWriter(
-                csv_file,
-                delimiter=",",
-                fieldnames=[
-                    "Timestamp (YYYY-MM-DD HH:MM:SS)",
-                    "Task",
-                    "Tool",
-                    "Execution Time (ms)",
-                    "Result Count",
-                    "Heap Total (MB)",
-                    "Heap Peak (MB)",
-                    "Stack Peak (MB)"
-                ],
-            )
-            dw.writeheader()
-        csv_writer.writerow([timestamp, task, tool, exec_time, result_count, agg_heap_total, agg_heap_peak, agg_stack_peak])
-     #take the list of rls files in a task and from the memusage txt file of these rls files extract the info and do avg or max 
-     #returns set of max or avg mem info 
-
 def get_rls_file_paths(directory):
     rls_file_paths = []
     for root, dirs, files in os.walk(directory, onerror=DirectoryNotFound):
@@ -244,33 +212,6 @@ def get_rls_file_paths(directory):
         raise NoRlsFilesFound("No .rls files found in the provided directory")
     return rls_file_paths
 
-def write_benchmark_results(timestamp, task, tool, execution_time, max_rss, max_vms, count):
-    # if not csv file exist create a new one : in which directory?
-    # header: timestamp task, tool, execution_time, memory_info
-    # row: parameters in order
-    # close csv
-    flag = os.path.exists("../BenchResults.csv")
-    logger.info("writing benchmark results to csv file")
-    with open("../BenchResults.csv", mode="a", newline="") as csv_file:
-        csv_writer = csv.writer(csv_file)
-        if flag:
-            pass
-        else:
-            dw = csv.DictWriter(
-                csv_file,
-                delimiter=",",
-                fieldnames=[
-                    "Timestamp (YYYY-MM-DD HH:MM:SS)",
-                    "Task",
-                    "Tool",
-                    "Execution Time (ms)",
-                    "Max. Resident Set Size (MB)",
-                    "Max. Virtual Memory Size (MB)",
-                    "Count of grounded Rule Predicates",
-                ],
-            )
-            dw.writeheader()
-        csv_writer.writerow([timestamp, task, tool, execution_time, max_rss, max_vms, count])
 
 def get_config(config_file_path):
     try:
@@ -297,19 +238,21 @@ def run_rulewerk(rls_files, RuleParser, Rule, Literal, rule_file_path, timestamp
         #for all os except Linux measure rss, vss and exec time 
         if system in ['Windows', 'Darwin']:
             rulewerk_commands = rc.get_rulewerk_commands(task, rule_file_path, query_dict)
-            r_max_rss, r_max_vms, r_exec_time = monitor_process(rulewerk_commands)
+            r_max_rss, r_max_vms, r_exec_time, r_rss, r_vms = monitor_process(rulewerk_commands)
             result_count = rc.count_rulewerk_results(query_dict)
             # call function to write bencmarking results to csv file
-            write_benchmark_results(
+            wb.write_benchmark_results(
                 timestamp, task, "Rulewerk", r_exec_time, r_max_rss, r_max_vms, result_count
             )
+
+            plot_hist(r_rss, r_vms, "rulewerk/", task)
 
         #only for linux to get memusage details run commands with the memusage part
         if system == "Linux":
             r_commands, r_mem_commands = rc.get_rulewerk_commands(task, rule_file_path, query_dict)
             r_exec_time, mem_usage_data = monitor_linux_process(r_commands, r_mem_commands)
             result_count = rc.count_rulewerk_results(query_dict)
-            lin_write_bench_results(
+            wb.lin_write_bench_results(
                 timestamp, task, "Rulewerk", r_exec_time, result_count, mem_usage_data
             )
         
@@ -328,20 +271,21 @@ def run_nemo(rls_files, timestamp, task):
 
         if system in ["Windows", "Darwin"]:
             nemo_commands = nc.get_nemo_commands(rls_file_list, task)
-            n_max_rss, n_max_vms, n_exec_time = monitor_process(nemo_commands)
+            n_max_rss, n_max_vms, n_exec_time, n_rss, n_vms  = monitor_process(nemo_commands)
             result_count = nc.count_results(rls_file_list)
-            write_benchmark_results(
+            wb.write_benchmark_results(
                 timestamp, task, "Nemo", n_exec_time, n_max_rss, n_max_vms, result_count
             )
 
+            plot_hist(n_rss, n_vms, "nemo/", task)
+
         #to get memusage data for linux
         elif system == "Linux":
-            print(rls_file_list)
             #if linux then get two sets of commands: one with memusage and one without (for exec_time measurement)
             nemo_commands, nmo_mem_commands = nc.get_nemo_commands(rls_file_list, task)
             n_exec_time, mem_usage_data = monitor_linux_process(nemo_commands, nmo_mem_commands)
             result_count = nc.count_results(rls_file_list)
-            lin_write_bench_results(
+            wb.lin_write_bench_results(
                 timestamp, task, "Nemo", n_exec_time, result_count, mem_usage_data
             )
 
@@ -369,14 +313,15 @@ def run_clingo(rls_files, task, timestamp, RuleParser, ruleMapper):
     if system in ["Windows", "Darwin"]:
         clingo_commands = cc.get_clingo_commands(sav_loc_and_rule_head_predicates.keys(), system)
 
-        c_max_rss, c_max_vms, c_exec_time = monitor_process(clingo_commands)
+        c_max_rss, c_max_vms, c_exec_time, c_rss, c_vms = monitor_process(clingo_commands)
         # Insert delay so that the outputs= files gets created
         time.sleep(5)
 
         c_count_ans = cc.save_clingo_output(sav_loc_and_rule_head_predicates)
+        plot_hist(c_rss, c_vms, saving_location, example_name)
 
         # call function to write benchmarking results to csv file
-        write_benchmark_results(timestamp, task, "Clingo", c_exec_time, c_max_rss, c_max_vms, c_count_ans)
+        wb.write_benchmark_results(timestamp, task, "Clingo", c_exec_time, c_max_rss, c_max_vms, c_count_ans)
 
     elif system == "Linux":
         #if system is Linux, we have 2 sets of commands (1. with memusage, 2. w/0 memusage for exec_time measurement)
@@ -386,9 +331,9 @@ def run_clingo(rls_files, task, timestamp, RuleParser, ruleMapper):
         time.sleep(5)
 
         c_count_ans = cc.save_clingo_output(sav_loc_and_rule_head_predicates)
-        lin_write_bench_results(timestamp, task, "Clingo", c_exec_time, c_count_ans, mem_usage_data)
+        wb.lin_write_bench_results(timestamp, task, "Clingo", c_exec_time, c_count_ans, mem_usage_data)
  
-def run_souffle(rls_files, timestamp, task, RuleParser, ruleMapper):
+'''def run_souffle(rls_files, timestamp, task, RuleParser, ruleMapper):
     sc = SouffleController()
     commands = []
     c_count_ans = 0
@@ -436,7 +381,7 @@ def run_souffle(rls_files, timestamp, task, RuleParser, ruleMapper):
     for folder_to_create in folders_to_create:
         c_count_ans += sc.count_answers(folder_to_create)
 
-    write_benchmark_results(timestamp, task, "Souffle", exec_time, max_rss, max_vms, c_count_ans)
+    wb.write_benchmark_results(timestamp, task, "Souffle", exec_time, max_rss, max_vms, c_count_ans)'''
 
 
 def main():
@@ -468,13 +413,13 @@ def main():
                 run_nemo(rls_files, timestamp, task_name)
             elif solver.lower() == "rulewerk":
                 run_rulewerk(rls_files, RuleParser, Rule, Literal, rule_file_path, timestamp, task_name)
-            elif solver.lower() == "souffle":
-                run_souffle(rls_files, timestamp, task_name, RuleParser, ruleMapper)
+            #elif solver.lower() == "souffle":
+                #run_souffle(rls_files, timestamp, task_name, RuleParser, ruleMapper)
             elif solver.lower() == "all":
                 run_clingo(rls_files, task_name, timestamp, RuleParser, ruleMapper)
                 run_nemo(rls_files, timestamp, task_name)
                 run_rulewerk(rls_files, RuleParser, Rule, Literal, rule_file_path, timestamp, task_name)
-                run_souffle(rls_files, timestamp, task_name, RuleParser, ruleMapper)
+                #run_souffle(rls_files, timestamp, task_name, RuleParser, ruleMapper)
             else:
                 logger.exception(f"{solver} Solver not recognized! Please check your config.json file.")
                 sys.exit(1)
