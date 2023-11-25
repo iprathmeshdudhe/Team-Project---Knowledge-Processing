@@ -238,12 +238,14 @@ def run_rulewerk(rls_files, RuleParser, Rule, Literal, rule_file_path, timestamp
         #for all os except Linux measure rss, vss and exec time 
         if system in ['Windows', 'Darwin']:
             rulewerk_commands = rc.get_rulewerk_commands(task, rule_file_path, query_dict)
-            r_max_rss, r_max_vms, r_exec_time = monitor_process(rulewerk_commands)
+            r_max_rss, r_max_vms, r_exec_time, r_rss, r_vms = monitor_process(rulewerk_commands)
             result_count = rc.count_rulewerk_results(query_dict)
             # call function to write bencmarking results to csv file
             wb.write_benchmark_results(
                 timestamp, task, "Rulewerk", r_exec_time, r_max_rss, r_max_vms, result_count
             )
+
+            plot_hist(r_rss, r_vms, "rulewerk/", task)
 
         #only for linux to get memusage details run commands with the memusage part
         if system == "Linux":

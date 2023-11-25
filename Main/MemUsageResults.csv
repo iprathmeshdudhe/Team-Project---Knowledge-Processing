@@ -1,15 +1,22 @@
-Timestamp (YYYY-MM-DD HH:MM:SS),Task,Tool,Execution Time,Result Count,Heap Total,Heap Peak,Stack Peak
-19-11-2023 @15:14:38,basic_join,Rulewerk,706.75,8,39195507,15921300,71680
-19-11-2023 @15:14:49,basic_projection,Rulewerk,798.6,19,38749137,15966004,71680
-19-11-2023 @15:15:01,basic_union,Rulewerk,829.07,15,39371740,16641199,71680
-19-11-2023 @15:15:14,load_multiple,Rulewerk,811.21,11,33798925,14661321,71680
-19-11-2023 @15:15:24,repeated_variables,Rulewerk,814.04,8,39754288,15928704,71680
-19-11-2023 @15:15:35,symmetric_transitive_closure,Rulewerk,776.85,57,40458422,15766148,71680
-19-11-2023 @15:15:49,all_basics,Rulewerk,4771.83,118,227266478,92766616,431648
-19-11-2023 @15:32:24,basic_join,Nemo,19.8,8,2750889,130944,29872
-19-11-2023 @15:32:27,basic_projection,Nemo,17.09,19,1775568,124005,29872
-19-11-2023 @15:32:29,basic_union,Nemo,32.52,15,2495391,132021,29872
-19-11-2023 @15:32:32,load_multiple,Nemo,15.03,11,1839901,120784,30976
-19-11-2023 @15:32:35,repeated_variables,Nemo,21.18,8,3314535,141775,29872
-19-11-2023 @15:32:39,symmetric_transitive_closure,Nemo,18.05,57,2483480,121504,29872
-19-11-2023 @15:32:41,all_basics,Nemo,136.92,118,14659476,771033,180336
+Timestamp (YYYY-MM-DD HH:MM:SS),Task,Tool,Execution Time (ms),Result Count,Heap Total (MB),Heap Peak (MB),Stack Peak (MB)
+19-11-2023 @17:49:13,basic_union,Rulewerk,757.92,15,36.28,15.24,0.07
+19-11-2023 @17:49:13,basic_union,Nemo,17.82,15,2.38,0.13,0.03
+19-11-2023 @17:49:29,basic_join,Rulewerk,908.47,8,37.85,15.2,0.07
+19-11-2023 @17:49:29,basic_join,Nemo,24.12,8,2.71,0.12,0.03
+19-11-2023 @17:49:42,basic_projection,Rulewerk,815.01,19,33.11,15.03,0.07
+19-11-2023 @17:49:42,basic_projection,Nemo,16.71,19,1.69,0.12,0.03
+19-11-2023 @17:49:57,load_multiple,Rulewerk,875.63,11,39.16,14.55,0.07
+19-11-2023 @17:49:57,load_multiple,Nemo,47.58,11,1.75,0.12,0.03
+19-11-2023 @17:50:13,repeated_variables,Rulewerk,810.73,8,37.88,15.27,0.07
+19-11-2023 @17:50:13,repeated_variables,Nemo,25.31,8,3.16,0.14,0.03
+19-11-2023 @17:50:30,symmetric_transitive_closure,Rulewerk,785.06,57,37.22,15.18,0.07
+19-11-2023 @17:50:30,symmetric_transitive_closure,Nemo,18.09,57,2.37,0.12,0.03
+19-11-2023 @17:50:46,all_basics,Rulewerk,4411.6,118,220.54,91.12,0.41
+19-11-2023 @17:50:46,all_basics,Nemo,162.37,118,14.07,0.74,0.17
+22-11-2023 @12:54:54,basic_join,Clingo,10.05,8,0.25,0.13,0.0
+22-11-2023 @12:55:00,basic_union,Clingo,14.2,15,0.25,0.13,0.0
+22-11-2023 @12:55:05,basic_projection,Clingo,10.57,19,0.23,0.13,0.0
+22-11-2023 @12:55:11,load_multiple,Clingo,9.52,11,0.21,0.13,0.0
+22-11-2023 @12:55:16,repeated_variables,Clingo,27.67,8,0.26,0.14,0.0
+22-11-2023 @12:55:22,symmetric_transitive_closure,Clingo,14.69,57,0.28,0.13,0.0
+22-11-2023 @12:48:39,all_basics,Clingo,63.7,118,1.48,0.8,0.03

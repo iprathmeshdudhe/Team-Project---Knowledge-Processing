@@ -5,7 +5,6 @@ Timestamp (YYYY-MM-DD HH:MM:SS),Task,Tool,Execution Time (ms),Max. Resident Set 
 19-11-2023 @14:50:54,load_multiple,Rulewerk,707.98,5.15,4.29,11
 19-11-2023 @14:50:55,repeated_variables,Rulewerk,772.95,5.06,4.3,8
 19-11-2023 @14:50:56,symmetric_transitive_closure,Rulewerk,703.78,4.99,4.26,57
-19-11-2023 @14:50:56,all_basics,Rulewerk,837.14,5.05,4.26,118
 19-11-2023 @16:52:48,basic_join,Clingo,63.75,5.13,5.24,8
 19-11-2023 @16:52:54,basic_projection,Clingo,30.39,5.13,5.23,19
 19-11-2023 @16:53:00,basic_union,Clingo,31.73,5.12,5.24,15
@@ -20,3 +19,4 @@ Timestamp (YYYY-MM-DD HH:MM:SS),Task,Tool,Execution Time (ms),Max. Resident Set 
 19-11-2023 @16:53:39,symmetric_transitive_closure,Nemo,10.25,4.73,5.05,57
 19-11-2023 @18:33:51,all_basics,Nemo,22.66,4.83,5.06,118
 19-11-2023 @18:53:32,all_basics,Clingo,197.0,5.28,5.37,118
+22-11-2023 @14:01:33,all_basics,Rulewerk,852.21,5.23,4.32,118
