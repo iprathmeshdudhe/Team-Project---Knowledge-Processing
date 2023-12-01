@@ -95,11 +95,11 @@ def monitor_process(commands, solver):
     else:
         stop_event.set()
         memory_measurement_thread.join()
-        max_rss = round(max(rss), 2) / 1024 / 1024
-        max_vms = round(max(vms), 2) / 1024 / 1024
+        max_rss = round(max(rss) / 1024 / 1024, 2)
+        max_vms = round(max(vms) / 1024 / 1024, 2)
         exe_time = round(execution_time, 2)
-        rss = list(map(lambda x: round(x, 2) / 1024 / 1024, rss))
-        vms = list(map(lambda y: round(y, 2) / 1024 / 1024, vms))
+        rss = list(map(lambda x: round(x / 1024 / 1024, 2), rss))
+        vms = list(map(lambda y: round(y / 1024 / 1024, 2), vms))
         return max_rss, max_vms, exe_time, rss, vms
     
 
