@@ -27,6 +27,7 @@ from loguru import logger
 
 
 system = platform.system()
+stop_event = threading.Event()
 
 if system == "Windows":
     terminal = ["cmd"]
@@ -38,31 +39,34 @@ else:
     raise SystemNotSupported(f"The system {system} is not supported")
 
 
-def measure_memory(pid, rss, vms):
-    process = psutil.Process(pid)
+def get_memory_usage_by_name(process_name):
+    
+    for proc in psutil.process_iter(['pid', 'name', 'memory_info']):
+        if process_name.lower() in proc.info['name'].lower():            
+            return proc.info['memory_info'].rss, proc.info['memory_info'].vms
+    return None, None
 
-    try:
-        while process.is_running():
-            mem_info = process.memory_info()
-            rss.append(mem_info.rss / 1024 / 1024)
-            vms.append(mem_info.vms / 1024 / 1024)
-            time.sleep(Settings.memory_measurement_interval)
+def measure_memory_usage(process_name, rss, vms):
 
-    except psutil.NoSuchProcess:
-        logger.info("No Such Process Exist. Or Process finished executing.")
-        pass
+    while not stop_event.is_set():
+        #print("THread Running")
+        rss_val, vms_val = get_memory_usage_by_name(process_name)
+        if rss_val is not None and vms_val is not None:
+            rss.append(rss_val)
+            vms.append(vms_val)
 
 
-def monitor_process(commands):
+
+def monitor_process(commands, solver):
     rss = []
     vms = []
 
     cmd_process = subprocess.Popen(
         terminal, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False)
-
-    # Creating a thread to measure memory in backend
-    thread = threading.Thread(target=measure_memory, args=(cmd_process.pid, rss, vms))
-    thread.start()
+    
+    app_name = solver
+    memory_measurement_thread = threading.Thread(target=measure_memory_usage, args=(app_name, rss, vms))
+    memory_measurement_thread.start()
 
     # Start Measuring Time
     start_time = time.perf_counter()
@@ -72,6 +76,7 @@ def monitor_process(commands):
             logger.info(f"Executing Command: {command}")
             # Send the command to the command prompt process
             cmd_process.stdin.write(command.encode("utf-8") + b"\n")
+
             cmd_process.stdin.flush()
 
         # Close the command prompt process
@@ -84,14 +89,17 @@ def monitor_process(commands):
         execution_time = (time.perf_counter() - start_time) * 1000
 
     except Exception as err:
+        stop_event.set()
         raise err
 
     else:
-        max_rss = round(max(rss), 2)
-        max_vms = round(max(vms), 2)
+        stop_event.set()
+        memory_measurement_thread.join()
+        max_rss = round(max(rss) / 1024 / 1024, 2)
+        max_vms = round(max(vms) / 1024 / 1024, 2)
         exe_time = round(execution_time, 2)
-        rss = list(map(lambda x: round(x, 2), rss))
-        vms = list(map(lambda y: round(y, 2), vms))
+        rss = list(map(lambda x: round(x / 1024 / 1024, 2), rss))
+        vms = list(map(lambda y: round(y / 1024 / 1024, 2), vms))
         return max_rss, max_vms, exe_time, rss, vms
     
 
@@ -311,17 +319,23 @@ def run_clingo(rls_files, task, timestamp, RuleParser, ruleMapper):
         sav_loc_and_rule_head_predicates[saving_location] = rule_head_preds    
 
     if system in ["Windows", "Darwin"]:
-        clingo_commands = cc.get_clingo_commands(sav_loc_and_rule_head_predicates.keys(), system)
+        try:
+            clingo_commands = cc.get_clingo_commands(sav_loc_and_rule_head_predicates.keys(), system)
 
-        c_max_rss, c_max_vms, c_exec_time, c_rss, c_vms = monitor_process(clingo_commands)
-        # Insert delay so that the outputs= files gets created
-        time.sleep(5)
+            c_max_rss, c_max_vms, c_exec_time, c_rss, c_vms = monitor_process(clingo_commands, solver="clingo.exe")
+            # Insert delay so that the outputs= files gets created
+            time.sleep(5)
 
-        c_count_ans = cc.save_clingo_output(sav_loc_and_rule_head_predicates)
-        plot_hist(c_rss, c_vms, saving_location, example_name)
+            c_count_ans = cc.save_clingo_output(sav_loc_and_rule_head_predicates)
+            plot_hist(c_rss, c_vms, saving_location, example_name)
 
-        # call function to write benchmarking results to csv file
-        wb.write_benchmark_results(timestamp, task, "Clingo", c_exec_time, c_max_rss, c_max_vms, c_count_ans)
+        except Exception as e:
+            logger.info("Problem in main.py/run_clingo")
+            logger.exception(e)
+
+        else:
+            # call function to write benchmarking results to csv file
+            wb.write_benchmark_results(timestamp, task, "Clingo", c_exec_time, c_max_rss, c_max_vms, c_count_ans)
 
     elif system == "Linux":
         #if system is Linux, we have 2 sets of commands (1. with memusage, 2. w/0 memusage for exec_time measurement)

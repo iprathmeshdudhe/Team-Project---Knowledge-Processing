@@ -2,6 +2,10 @@ import os
 import clingo
 import pandas as pd
 from loguru import logger
+from urllib.parse import unquote
+import warnings
+
+warnings.filterwarnings("ignore")
 
 
 class ClingoController:
@@ -29,12 +33,12 @@ class ClingoController:
             for output_file, rule_head_preds in loc_rule_head_predicate.items():
                 models = []
 
-                with open(f"{output_file}-output.txt", "r") as file:
+                with open(f"{output_file}-output.txt", "r", encoding='utf-8', errors='ignore') as file:
                     output_list = file.readlines()
                     symbols = output_list[4].strip().split()
 
                 for symbol in symbols:
-                    model = clingo.parse_term(symbol)
+                    model = clingo.parse_term(unquote(symbol))
                     models.append(model)
 
                 # Find the last occurrence of "/"

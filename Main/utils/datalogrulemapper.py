@@ -144,13 +144,13 @@ class DatalogRuleMapper:
         return rules_list, head_atom_pred
 
     def write_clingo_rules(self, rule_list, location_to_save):
-        with open(f"{location_to_save}.lp", "w") as clingo_rule:
+        with open(f"{location_to_save}.lp", "w", encoding='utf-8', errors='ignore') as clingo_rule:
             clingo_rule.writelines("\n".join(rule_list))
 
     def write_clingo_facts(self, facts_list, location_to_save):
         unique_facts = sorted(list(set(facts_list)))
 
-        with open(location_to_save + "-facts.lp", "w") as file:
+        with open(location_to_save + "-facts.lp", "w", encoding='utf-8', errors='ignore') as file:
             for fact in tqdm(unique_facts, desc="Writing Facts to file: ", colour="blue"):
                 file.write(fact + "\n")
 
