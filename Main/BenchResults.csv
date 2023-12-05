@@ -21,3 +21,5 @@ Timestamp (YYYY-MM-DD HH:MM:SS),Task,Tool,Execution Time (ms),Max. Resident Set 
 19-11-2023 @18:53:32,all_basics,Clingo,197.0,5.28,5.37,118
 22-11-2023 @14:01:33,all_basics,Rulewerk,852.21,5.23,4.32,118
 01-12-2023 @16:14:30,lime_trees,Clingo,56279.39,1866.460938,1988.769531,0
+03-12-2023 @13:42:04,old_lime_trees,Rulewerk,88719.81,4.47,4.25,8525
+03-12-2023 @13:42:04,old_lime_trees,Nemo,42553.85,4.56,4.26,8525
