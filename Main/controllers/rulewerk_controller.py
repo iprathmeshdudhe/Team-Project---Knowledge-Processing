@@ -27,14 +27,26 @@ class RulewerkController:
                 ruleHead = rule.getHead()
                 ruleHeadName = ruleHead.getLiterals()[0].getPredicate()
                 # to remove redundant query. Queries like Ancestor(?X, ?Y) and Ancestor(?X, ?Z) have same meaning even with different arguments. So, we check only the predicate names
-                if ruleHeadName in ruleHeads:
+                if str(ruleHeadName) in ruleHeads:
+                    pred_name_str = str(ruleHeadName.getName())
+                    for i in toQuery:
+                        print(type(i))
+
+                    # Construct the regex pattern dynamically
+                    pattern = re.compile(fr'{re.escape(pred_name_str)}\(([^)]*)\)')
+                    # print('matchlist', matches_list)
+                    new_word = str(ruleHead.toString().replace(" ", ""))
+                    print(ruleHeadName, new_word, ruleHead)
+                    toQuery = [pattern.sub(new_word, s) for s in toQuery]
                     continue
-                ruleHeads.append(ruleHeadName)
+                ruleHeads.append(str(ruleHeadName))
                 pred_names.append(ruleHeadName.getName())
                 # query command does not accept spaces between arguments, but our rules might have them so we remove them
-                toQuery.append(ruleHead.toString().replace(" ", ""))
-
+                toQuery.append(str(ruleHead.toString().replace(" ", "")))
+                
+            print(f'toQuery: {toQuery}')   
         return toQuery, pred_names
+
 
     def count_rulewerk_results(self, query_dict):
         result_count = 0

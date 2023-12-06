@@ -1,0 +1,7 @@
+@source tree[4]: load-csv("sources/dresden_trees_ages_heights.csv") .    
+@source taxon[3]: load-csv("sources/wikidata_taxon_name_parent.csv") . 
+
+limeSpecies(?X, Tilia) :- taxon(?X, Tilia, ?P).
+limeSpecies(?X, ?Name) :- taxon(?X, ?Name, ?Y), limeSpecies(?Y, ?N).
+
+oldLime(?location,?species,?age) :- tree(?location,?species,?age,?heightInMeters), limeSpecies(?id,?species).
