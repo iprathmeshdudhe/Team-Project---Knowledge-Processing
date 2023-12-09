@@ -84,6 +84,13 @@ def monitor_process(commands, solver):
         cmd_process.stdin.close()
 
         cmd_process.wait()
+        memory_measurement_thread.join(timeout=1)
+
+        # Explicitly measure memory one last time after process termination
+        final_rss, final_vms = get_memory_usage_by_name(app_name)
+        if final_rss is not None and final_vms is not None:
+            rss.append(final_rss)
+            vms.append(final_vms)
 
         # Calculate the execution time
         execution_time = (time.perf_counter() - start_time) * 1000
@@ -314,7 +321,7 @@ def run_clingo(rls_files, task, timestamp, RuleParser, ruleMapper):
         file_path = os.path.dirname(rls)
         rules, facts, data_sources, example_name = ruleMapper.rulewerktoobject(rls, RuleParser)
         saving_location = cc.get_clingo_location(example_name) 
-        rule_head_preds = ruleMapper.rulewerk_to_clingo(file_path, rules, facts, data_sources, saving_location)
+        rule_head_preds = cc.rulewerk_to_clingo(file_path, rules, facts, data_sources, saving_location)
         # Dictionary {"rule_file_location": [list of rule head predicates]........}
         sav_loc_and_rule_head_predicates[saving_location] = rule_head_preds    
 
