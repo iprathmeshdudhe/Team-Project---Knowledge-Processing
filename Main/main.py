@@ -90,11 +90,13 @@ def monitor_process(commands, solver):
 
     except Exception as err:
         stop_event.set()
+        stop_event.clear()
         raise err
 
     else:
         stop_event.set()
         memory_measurement_thread.join()
+        stop_event.clear()
         max_rss = round(max(rss) / 1024 / 1024, 2)
         max_vms = round(max(vms) / 1024 / 1024, 2)
         exe_time = round(execution_time, 2)
