@@ -1,9 +1,9 @@
 Timestamp (YYYY-MM-DD HH:MM:SS),Task,Tool,Execution Time (ms),Max. Resident Set Size (MB),Max. Virtual Memory Size (MB),Count of grounded Rule Predicates
-06-12-2023 @17:45:23,doctors_10k,Clingo,1214.7,12.58,8.82,10208
-06-12-2023 @17:47:43,doctors_500k,Clingo,7505.54,222.09,230.84,397500
-06-12-2023 @17:49:37,doctors_100k,Clingo,2933.51,37.23,35.23,81500
-06-12-2023 @17:50:08,doctors_1m,Clingo,15739.8,434.85,463.57,792500
-06-12-2023 @17:23:36,old_lime_trees,Clingo,83921.9,1868.88,1991.1,8525
+06-12-2023 @17:45:23,Doctors-10k,Clingo,1214.7,12.58,8.82,10208
+06-12-2023 @17:47:43,Doctors-500k,Clingo,7505.54,222.09,230.84,397500
+06-12-2023 @17:49:37,Doctors-100k,Clingo,2933.51,37.23,35.23,81500
+06-12-2023 @17:50:08,Doctors-1m,Clingo,15739.8,434.85,463.57,792500
+06-12-2023 @17:23:36,Old-Lime-Trees,Clingo,83921.9,1868.88,1991.1,8525
 25-12-2023 @22:41:22,Doctors-10k,Rulewerk,3546.76,4.43,4.25,10208
 25-12-2023 @22:41:51,Doctors-100k,Rulewerk,4302.66,4.54,4.26,81500
 25-12-2023 @22:42:21,Doctors-500k,Rulewerk,9434.25,4.54,4.24,397500
