@@ -44,7 +44,7 @@ def get_memory_usage_by_name(process_name):
     for proc in psutil.process_iter(['pid', 'name', 'memory_info']):
         if process_name.lower() in proc.info['name'].lower():            
             return proc.info['memory_info'].rss, proc.info['memory_info'].vms
-    return None, None
+    return 0, 0
 
 def measure_memory_usage(process_name, rss, vms):
 
