@@ -3,7 +3,7 @@ import clingo
 import pandas as pd
 from tqdm import tqdm
 from utils.csvtofacts import *
-from utils.datalogrulemapper import DatalogRuleMapper as rulemapper
+from utils.datalogrulemapper import DatalogRuleMapper 
 from loguru import logger
 from urllib.parse import unquote
 import warnings
@@ -149,6 +149,7 @@ class ClingoController:
         # print(f"Facts File saved at location: {location_to_save}-facts.lp")
 
     def rulewerk_to_clingo(self, rule_file_dir, rules, facts, data_sources, saving_location):
+        rulemapper = DatalogRuleMapper()
         rules_list, head_predicates = self.process_clingo_rules(rules)
         facts_list = self.process_clingo_facts(facts)
         data_sources_dict = rulemapper.processDataSources(rule_file_dir, data_sources)
