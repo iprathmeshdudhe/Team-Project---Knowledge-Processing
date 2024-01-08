@@ -67,7 +67,7 @@ class RulewerkController:
                     result_count = result_count
         return result_count
 
-    def get_rulewerk_commands(self, task, rule_file_path, query_dict):
+    def get_rulewerk_commands(self, task, query_dict):
         system = platform.system()
         commands = []
         result_count = 0
